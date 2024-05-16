@@ -7,9 +7,13 @@ namespace SandBoxBot.Commands.Black;
 
 public class BlackAddCommand : ICommand
 {
-    private readonly List<long> _allowedId = new List<long>()
+    private static readonly List<long> AllowedId = new List<long>()
     {
-        208049718
+        // TheCrazyWolf
+        208049718,
+        // NV
+        1238285272,
+        
     };
 
     public async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
@@ -19,7 +23,7 @@ public class BlackAddCommand : ICommand
         if (word == null || word.Length < 2)
             return;
 
-        if (message.From != null && _allowedId.Contains(message.From.Id))
+        if (message.From != null && AllowedId.Contains(message.From.Id))
         {
             BlackBoxService.Instance.AddWord(word[1]);
 

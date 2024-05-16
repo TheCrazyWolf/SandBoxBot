@@ -7,9 +7,12 @@ namespace SandBoxBot.Commands.Black;
 
 public class BlackReadAndDeleteCommand : ICommand
 {
-    private readonly List<long> _warnsId = new List<long>()
+    private static readonly List<long> WarnsId = new List<long>()
     {
-        208049718
+        // TheCrazyWolf
+        208049718,
+        // NV
+        1238285272,
     };
     
     public async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
@@ -32,7 +35,7 @@ public class BlackReadAndDeleteCommand : ICommand
 
         await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken: cancellationToken);
         
-        foreach (var id in _warnsId)
+        foreach (var id in WarnsId)
         {
             await botClient.SendTextMessageAsync(id,
                 $"[!] Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со следующем содержанием: \n\n{message.Text}",

@@ -7,7 +7,7 @@ namespace SandBoxBot.Commands.Black;
 
 public class BlackDeleteCommand : ICommand
 {
-    private readonly List<long> _allowedId = new List<long>()
+    private static readonly List<long> AllowedId = new List<long>()
     {
         // TheCrazyWolf
         208049718,
@@ -23,7 +23,7 @@ public class BlackDeleteCommand : ICommand
         if (word == null || word.Length < 2)
             return; 
                 
-        if (message.From != null && _allowedId.Contains(message.From.Id))
+        if (message.From != null && AllowedId.Contains(message.From.Id))
         {
             BlackBoxService.Instance.Remove(word[1]);
 
