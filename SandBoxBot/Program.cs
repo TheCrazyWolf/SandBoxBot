@@ -1,3 +1,12 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using SandBoxBot.Events.Base;
+using Telegram.Bot;
 
-Console.WriteLine("Hello, World!");
+string token = "";
+
+var botClient = new TelegramBotClient(token);
+
+UpdateHandler updateHandler = new UpdateHandler();
+
+await botClient.ReceiveAsync(updateHandler);
+
+await Task.Delay(-1);
