@@ -13,7 +13,10 @@ public class BlackAddCommand : ICommand
         208049718,
         // NV
         1238285272,
-        
+        // Anastasiya
+        508925377,
+        // vladimir
+        430154369
     };
 
     public async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
