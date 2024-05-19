@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SandBoxBot.Commands.Base;
-using SandBoxBot.Database;
+﻿using SandBoxBot.Commands.Base;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
