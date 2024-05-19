@@ -1,24 +1,13 @@
-﻿using SandBoxBot.Commands.Base;
-using SandBoxBot.Services;
+﻿using Microsoft.EntityFrameworkCore;
+using SandBoxBot.Commands.Base;
+using SandBoxBot.Database;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBoxBot.Commands.Black;
 
-public class BlackDeleteCommand : ICommand
+public class BlackDeleteCommand : BlackBase, ICommand
 {
-    private static readonly List<long> AllowedId = new List<long>()
-    {
-        // TheCrazyWolf
-        208049718,
-        // NV
-        1238285272,
-        // Anastasiya
-        508925377,
-        // vladimir
-        430154369
-    };
-    
     public async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
         var word = message.Text?.Split(' ');
@@ -26,10 +15,10 @@ public class BlackDeleteCommand : ICommand
         if (word == null || word.Length < 2)
             return; 
                 
-        if (message.From != null && AllowedId.Contains(message.From.Id))
+        if (message.From != null && IsAdmin(message.From.Id))
         {
-            BlackBoxService.Instance.Remove(word[1]);
-
+            await Delete(word[1].ToLower());
+            
             await botClient.SendTextMessageAsync(message.Chat.Id, "[!] Команда выполнена",
                 cancellationToken: cancellationToken);
         }
