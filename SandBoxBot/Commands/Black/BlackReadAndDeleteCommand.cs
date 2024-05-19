@@ -22,7 +22,7 @@ public class BlackReadAndDeleteCommand : ICommand
     public async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
         if (message.Text is null)
-            return ;
+            return;
 
         var words = message.Text.Split(' ');
 
@@ -35,7 +35,7 @@ public class BlackReadAndDeleteCommand : ICommand
         }
         
         if(!toDelete)
-            return ;
+            return;
 
         await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken: cancellationToken);
         
