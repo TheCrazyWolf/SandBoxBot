@@ -1,4 +1,5 @@
-﻿using SandBoxBot.Commands.Black;
+﻿using SandBoxBot.Commands.About;
+using SandBoxBot.Commands.Black;
 using SandBoxBot.Commands.Keyboard.Black;
 using SandBoxBot.Database;
 using Telegram.Bot;
@@ -55,6 +56,10 @@ public class UpdateHandler : IUpdateHandler
         
         var action = messageText.Split(' ')[0] switch
         {
+            "/start" => new StartCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(message, cancellationToken),
+            "/ver" => new StartCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(message, cancellationToken),
             "/add" => new BlackAddCommand(botClient, new (SandBoxContext.Instance))
                 .Execute(message, cancellationToken),
             "/del" => new BlackDeleteCommand(botClient, new (SandBoxContext.Instance))
