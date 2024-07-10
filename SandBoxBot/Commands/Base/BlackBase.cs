@@ -10,7 +10,7 @@ public class BlackBase(ITelegramBotClient botClient, SandBoxRepository repositor
 
     protected async Task<bool> ValidateAdmin(long idAccount, long chatId)
     {
-        if (await Repository.Admins.IsAdmin(idAccount))
+        if (await Repository.Accounts.IsAdmin(idAccount))
             return true;
 
         await BotClient.SendTextMessageAsync(chatId, "\u26a0\ufe0f Недостаточно прав");

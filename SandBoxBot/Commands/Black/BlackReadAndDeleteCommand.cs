@@ -21,6 +21,8 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
         if (message.Text is null)
             return;
 
+        bool canBypass = await CanBypass(message.From!.Id);
+        
         string blackWords = string.Empty;
 
         var wordArray = TextTreatmentService.GetArrayWordsTreatmentMessage(message.Text);
@@ -56,7 +58,7 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
 
     private async Task NotifyAdmin(Message message, string blackWords, long idIncident)
     {
-        foreach (var id in await Repository.Admins.GetAdminsIds())
+        foreach (var id in await Repository.Accounts.GetAdmins())
         {
             var buttons = new InlineKeyboardButton[][]
             {
@@ -68,7 +70,7 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
                 ]
             };
 
-            await BotClient.SendTextMessageAsync(id,
+            await BotClient.SendTextMessageAsync(id.IdAccountTelegram,
                 $"[!] Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со " +
                 $"следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blackWords} ",
                 replyMarkup: new InlineKeyboardMarkup(buttons));
@@ -103,7 +105,7 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
 
         if (account is null)
         {
-            account = new Account()
+            account = new Account
             {
                 IdAccountTelegram = user.Id,
                 ChatId = chatId,
@@ -118,7 +120,20 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
         }
 
         account.LastActivity = DateTime.Now;
+        account.UserName = user.Username;
+        account.FirstName = user.FirstName;
+        account.LastName = user.LastName;
         await Repository.Accounts.Update(account);
+    }
+
+    private async Task<bool> CanBypass(long idAccount)
+    {
+        var account = await Repository.Accounts.Get(idAccount);
+        
+        if ((DateTime.Now.Date - account!.DateTimeJoined.Date).TotalDays >= 4)
+            return true;
+
+        return account.IsAdmin;
     }
 
     public BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository) : base(botClient,
