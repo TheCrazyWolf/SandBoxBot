@@ -8,8 +8,13 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBoxBot.Commands.Black;
 
-public class BlackReadAndDeleteCommand : BlackBase, ICommand
+public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository) : BlackBase(
+    botClient,
+    repository), ICommand
 {
+    private bool _isCanBypass;
+    private bool _toDelete;
+    
     public async Task Execute(Message message, CancellationToken cancellationToken)
     {
         if (message.NewChatMembers is not null)
@@ -21,39 +26,40 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
         if (message.Text is null)
             return;
 
-        bool canBypass = await CanBypass(message.From!.Id);
+        _isCanBypass = await CanBypass(message.From!.Id);
         
         string blackWords = string.Empty;
 
         var wordArray = TextTreatmentService.GetArrayWordsTreatmentMessage(message.Text);
 
-        bool toDelete = false;
+        _toDelete = false;
 
         foreach (var word in wordArray)
         {
             if (!await Repository.Words.IsContainsWord(word)) continue;
 
-            toDelete = true;
+            _toDelete = true;
             blackWords += $"{word} ";
         }
 
         var sentence = new Incident
         {
             Value = message.Text,
-            IsSpam = toDelete,
+            IsSpam = _toDelete,
             DateTime = DateTime.Now,
+            ChatId = message.Chat.Id,
             IdAccountTelegram = message.From?.Id
         };
 
-        if (canBypass)
+        if (_isCanBypass)
         {
             sentence.IsSpam = false;
-            toDelete = false;
+            _toDelete = false;
         }
 
         var incident = await Repository.Incidents.Add(sentence);
         
-        if (toDelete)
+        if (_toDelete)
         {
             await BotClient.DeleteMessageAsync(message.Chat.Id, message.MessageId,
                 cancellationToken: cancellationToken);
@@ -136,20 +142,14 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
     {
         var account = await Repository.Accounts.Get(idAccount);
 
-        if (account is not null)
-        {
-            if (account.IsAdmin)
-                return true;
+        if (account is null) return false;
+        
+        if (account.IsAdmin)
+            return true;
             
-            if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 4)
-                return true;
-        }
+        if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 4)
+            return true;
 
         return false;
-    }
-
-    public BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository) : base(botClient,
-        repository)
-    {
     }
 }

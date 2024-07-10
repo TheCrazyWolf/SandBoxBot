@@ -5,7 +5,7 @@ namespace SandBoxBot.Commands.Base;
 
 public class BlackBase(ITelegramBotClient botClient, SandBoxRepository repository)
 {
-    protected ITelegramBotClient BotClient = botClient;
+    protected readonly ITelegramBotClient BotClient = botClient;
     protected readonly SandBoxRepository Repository = repository;
 
     protected async Task<bool> ValidateAdmin(long idAccount, long chatId)

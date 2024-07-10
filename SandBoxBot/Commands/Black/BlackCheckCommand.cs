@@ -6,7 +6,8 @@ using Telegram.Bot.Types;
 
 namespace SandBoxBot.Commands.Black;
 
-public class BlackCheckCommand : BlackBase, ICommand
+public class BlackCheckCommand(ITelegramBotClient botClient, SandBoxRepository repository)
+    : BlackBase(botClient, repository), ICommand
 {
     public async Task Execute(Message message, CancellationToken cancellationToken)
     {
@@ -23,11 +24,8 @@ public class BlackCheckCommand : BlackBase, ICommand
             : "\ud83d\uded1 Вероятно сообщение является спамом";
         
         await BotClient.SendTextMessageAsync(message.Chat.Id,
-            $"[!] Команда выполнена \n\nРезультат: {verdict} \n\nОпознанные слова для блокировки: {blackWords}",
+            $"[!] Команда выполнена \n\nРезультат: {verdict}" +
+            $"\n\nОпознанные слова для блокировки: {blackWords}",
             cancellationToken: cancellationToken);
-    }
-
-    public BlackCheckCommand(ITelegramBotClient botClient, SandBoxRepository repository) : base(botClient, repository)
-    {
     }
 }

@@ -5,7 +5,8 @@ using Telegram.Bot.Types;
 
 namespace SandBoxBot.Commands.Black;
 
-public class BlackDeleteCommand : BlackBase, ICommand
+public class BlackDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository)
+    : BlackBase(botClient, repository), ICommand
 {
     public async Task Execute(Message message, CancellationToken cancellationToken)
     {
@@ -21,9 +22,5 @@ public class BlackDeleteCommand : BlackBase, ICommand
             
         await BotClient.SendTextMessageAsync(message.Chat.Id, "\u2705 Команда выполнена",
             cancellationToken: cancellationToken);
-    }
-
-    public BlackDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository) : base(botClient, repository)
-    {
     }
 }

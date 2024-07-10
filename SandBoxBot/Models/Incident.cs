@@ -10,7 +10,7 @@ public class Incident
     [Key] public long Id { get; set; }
     public string Value { get; set; }
     public bool IsSpam { get; set; }
-
+    public long ChatId { get; set; }
     public DateTime DateTime { get; set; }
 
     [ForeignKey("IdAccountTelegram")] public Account? Account { get; set; }

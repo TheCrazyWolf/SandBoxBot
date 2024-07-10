@@ -17,31 +17,33 @@ public class RestoreMessage(ITelegramBotClient botClient, SandBoxRepository repo
         if (!await ValidateAdmin(callbackQuery.From.Id, callbackQuery.From.Id))
             return;
 
-        string message = string.Empty;
+        string message = words.Skip(1).Aggregate(string.Empty, (current, word) => current + $"{word} ");
 
-        foreach (var word in words.Skip(1))
-        {
-            message += $"{word} ";
-        }
-        
         try
         {
             var incident = await Repository.Incidents.Get(Convert.ToInt64(message));
-            incident!.IsSpam = false;
-            
-            await Repository.Incidents.Update(incident);
 
-            var account = await Repository.Accounts.Get(incident.IdAccountTelegram ?? 0);
+            if (incident is not null)
+            {
+                incident.IsSpam = false;
+                await Repository.Incidents.Update(incident);
+                var account = await Repository.Accounts.Get(incident.IdAccountTelegram ?? 0);
+                
+                await BotClient.SendTextMessageAsync(chatId: Convert.ToInt64(words[0]), 
+                    $"@{account?.UserName}: {incident.Value}. (Восстановленно)", 
+                    cancellationToken: cancellationToken);
             
-            await BotClient.SendTextMessageAsync(chatId: Convert.ToInt64(words[0]), 
-                $"Восстановлено сообщение от пользователя: @{account?.UserName}: {incident.Value}", cancellationToken: cancellationToken);
+                await BotClient.SendTextMessageAsync(callbackQuery.From.Id, 
+                    $"\u2705 Принятые действия по инциденту {incident.Id}: " +
+                    $"Восстановлено сообщение",
+                    cancellationToken: cancellationToken);
+            }
             
-            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, $"\u2705 Принятые действия: Восстановлено сообщение",
-                cancellationToken: cancellationToken);
         }
         catch (Exception e)
         {
-            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, $"🤯 Ошибка восстановления сообщения",
+            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, 
+                $"🤯 Ошибка восстановления сообщения",
                 cancellationToken: cancellationToken);
         }
         

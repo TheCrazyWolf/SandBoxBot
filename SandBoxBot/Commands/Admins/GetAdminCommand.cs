@@ -1,12 +1,14 @@
 ﻿using SandBoxBot.Commands.Base;
 using SandBoxBot.Database;
+using SandBoxBot.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using File = System.IO.File;
 
 namespace SandBoxBot.Commands.Admins;
 
-public class GetAdminCommand : BlackBase, ICommand
+public class GetAdminCommand(ITelegramBotClient botClient, SandBoxRepository repository)
+    : BlackBase(botClient, repository), ICommand
 {
     public async Task Execute(Message message, CancellationToken cancellationToken)
     {
@@ -15,26 +17,15 @@ public class GetAdminCommand : BlackBase, ICommand
         if (words == null || message.From is null)
             return;
 
-        if (!File.Exists("Secret.txt"))
+        if (!CanBeChecked(out string secret))
         {
-            await BotClient.SendTextMessageAsync(message.Chat.Id, $"\u2705 Секрет пустой, настройте",
+            await BotClient.SendTextMessageAsync(message.Chat.Id,
+                $"\u2705 Ошибка с секретом. Посмотрите файл в наличие или его содержимое",
                 cancellationToken: cancellationToken);
             return;
         }
-        
-        var secret = await File.ReadAllTextAsync("Secret.txt", cancellationToken);
 
-        if (string.IsNullOrEmpty(secret))
-        {
-            await BotClient.SendTextMessageAsync(message.Chat.Id, $"\u2705 Секрет пустой, настройте",
-                cancellationToken: cancellationToken);
-            return;
-        }
-        
-        
-        var account = await Repository.Accounts.Get(message.From.Id);
-        
-        if (account is null)
+        if (!IsExistAccount(out Account? account, message.Chat.Id))
         {
             await BotClient.SendTextMessageAsync(message.Chat.Id, $"\u2705 Не удалось выдать админку",
                 cancellationToken: cancellationToken);
@@ -47,16 +38,35 @@ public class GetAdminCommand : BlackBase, ICommand
                 cancellationToken: cancellationToken);
             return;
         }
-        
-        account.IsAdmin = true;
-        await Repository.Accounts.Update(account);
-        
-        await BotClient.SendTextMessageAsync(message.Chat.Id, $"\u2705 Команда выполнена\n\nАдминка получена",
+
+        if (account is not null)
+        {
+            account.IsAdmin = true;
+            await Repository.Accounts.Update(account);
+        }
+
+        await BotClient.SendTextMessageAsync(message.Chat.Id,
+            $"\u2705 Команда выполнена\n\nАдминка получена",
             cancellationToken: cancellationToken);
-        
     }
 
-    public GetAdminCommand(ITelegramBotClient botClient, SandBoxRepository repository) : base(botClient, repository)
+    private bool CanBeChecked(out string secret)
     {
+        if (!File.Exists("Secret.txt"))
+        {
+            secret = string.Empty;
+            return false;
+        }
+
+        secret = File.ReadAllText("Secret.txt");
+
+        return !string.IsNullOrEmpty(secret);
+    }
+
+    private bool IsExistAccount(out Account? account, long idAccount)
+    {
+        account = Repository.Accounts.Get(idAccount).GetAwaiter().GetResult();
+
+        return account is not null;
     }
 }
