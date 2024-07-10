@@ -1,6 +1,5 @@
 ﻿using SandBoxBot.Commands.Base;
 using SandBoxBot.Database;
-using SandBoxBot.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using File = System.IO.File;

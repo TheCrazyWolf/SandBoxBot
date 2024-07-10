@@ -123,7 +123,7 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         if (account.IsAdmin)
             return true;
             
-        if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 4)
+        if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 2)
             return true;
 
         return false;

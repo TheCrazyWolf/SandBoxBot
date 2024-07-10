@@ -12,9 +12,11 @@ public class StartCommand(ITelegramBotClient botClient, SandBoxRepository reposi
     {
         string version = "1.1.0";
 
-        await BotClient.SendTextMessageAsync(message.Chat.Id, $"\ud83c\udfaf Анти-спам фильтр\n\nВерсия: {version}" +
-                                                              $"\n\nРазработано @kulagin_alex \n\nФильтр может излишне реагировать на обычные сообщения" +
-                                                              $"\nЕсли Ваши сообщения удаляются из беседы, мы об этом уже вкурсе. \n\nЧерез небольшое время органичение будет снято. Простите \ud83d\ude22",
+        await BotClient.SendTextMessageAsync(message.Chat.Id, 
+            $"\ud83c\udfaf Анти-спам фильтр\n\nВерсия: {version}" +
+            $"\n\nРазработано @kulagin_alex, by samgk.ru \n\nАнти-спам фильтр работает по ключевым словам и поведению пользователя в чате" +
+            $"\n\nБот может сурово реагировать на Ваши некоторые сообщения в беседе" +
+            $"\n\nЕсли Вы заметили, что Ваши сообщения удаляются из беседы, мы об этом уже вкурсе. Через небольшое время органичение будет снято. Простите \ud83d\ude22",
             cancellationToken: cancellationToken);
     }
 }

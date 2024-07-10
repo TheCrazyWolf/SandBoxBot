@@ -13,12 +13,15 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
     botClient,
     repository), ICommand
 {
+    private static DateTime _dateTimeLastSended = new DateTime();
+
     public async Task Execute(Message message, CancellationToken cancellationToken)
     {
         if (message.NewChatMembers is not null)
             await RegisterIfNewUser(message.NewChatMembers, message.Chat.Id);
-        
-        await SendWelcomeMessageIfNewUser(message.Chat.Id, message.From?.FirstName);
+
+        if ((DateTime.Now - _dateTimeLastSended).TotalMinutes >= 30)
+            await SendWelcomeMessageIfNewUser(message.Chat.Id, message.From?.FirstName);
     }
 
     private async Task RegisterIfNewUser(User[] invitedUsers, long chatId)
@@ -45,27 +48,28 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
 
     private async Task SendWelcomeMessageIfNewUser(long idChat, string? firstname)
     {
-        if(!System.IO.File.Exists("Welcome.txt"))
+        if (!System.IO.File.Exists("Welcome.txt"))
             return;
 
         var content = await System.IO.File.ReadAllTextAsync("Welcome.txt");
 
-        if (string.IsNullOrEmpty(content)) 
+        if (string.IsNullOrEmpty(content))
             return;
-        
+
         try
         {
             await BotClient.SendTextMessageAsync(idChat,
                 $"\ud83e\udd1f {GetGreeting(DateTime.Now)}, {firstname}\n\n{content}"
             );
+
+            _dateTimeLastSended = DateTime.Now;
         }
         catch (Exception e)
         {
             Console.WriteLine(e.ToString());
         }
-        
     }
-    
+
     private string GetGreeting(DateTime time)
     {
         var hour = time.Hour;
@@ -78,5 +82,4 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
             _ => "Доброй ночи"
         };
     }
-    
 }

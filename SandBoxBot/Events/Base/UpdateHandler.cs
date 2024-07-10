@@ -3,6 +3,7 @@ using SandBoxBot.Commands.Admins;
 using SandBoxBot.Commands.Black;
 using SandBoxBot.Commands.Keyboard.Black;
 using SandBoxBot.Database;
+using SandBoxBot.Services;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -48,21 +49,9 @@ public class UpdateHandler : IUpdateHandler
         if (message.Text is not { } messageText)
             return;
 
-        int atIndex = messageText.IndexOf('@');
-        if (atIndex != -1)
-        {
-            int spaceIndex = messageText.IndexOf(' ', atIndex);
-            if (spaceIndex != -1)
-            {
-                messageText = messageText.Substring(0, atIndex) + messageText.Substring(spaceIndex);
-            }
-            else
-            {
-                messageText = messageText.Substring(0, atIndex);
-            }
-        }
+        var messageTreatment = TextTreatmentService.GetTrimMessageWithOutUserNameBot(message.Text);
         
-        var action = messageText.Split(' ')[0] switch
+        var action = messageTreatment.Split(' ')[0] switch
         {
             "/start" => new StartCommand(botClient, new (SandBoxContext.Instance))
                 .Execute(message, cancellationToken),
