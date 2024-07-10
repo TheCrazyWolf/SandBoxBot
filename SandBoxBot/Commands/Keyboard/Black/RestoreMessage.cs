@@ -27,9 +27,9 @@ public class RestoreMessage(ITelegramBotClient botClient, SandBoxRepository repo
         try
         {
 
-            var incident = await Repository.Sentences.Get(Convert.ToInt64(message));
+            var incident = await Repository.Incidents.Get(Convert.ToInt64(message));
             incident.IsSpam = false;
-            await Repository.Sentences.Update(incident);
+            await Repository.Incidents.Update(incident);
             
             await BotClient.SendTextMessageAsync(chatId: Convert.ToInt64(words[0]), 
                 $"Восстановлено сообщение: {incident.Value}", cancellationToken: cancellationToken);

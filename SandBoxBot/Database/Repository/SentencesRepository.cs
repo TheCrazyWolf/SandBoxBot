@@ -7,38 +7,37 @@ public class SentencesRepository(SandBoxContext ef)
 {
     public async Task<bool> IsContainsSentence(string sentence)
         => await ef.Sentences.AnyAsync(x => x.Value == sentence.ToLower());
-    public async Task<Sentence?> GetContainsSentence(string sentence)
+    public async Task<Incident?> GetContainsSentence(string sentence)
         => await ef.Sentences.FirstOrDefaultAsync(x=> x.Value == sentence.ToLower());
     
-
-    public async Task<Sentence> Add(Sentence sentence)
+    public async Task<Incident> Add(Incident inc)
     {
-        var incident = await GetContainsSentence(sentence.Value.ToLower());
+        var incident = await GetContainsSentence(inc.Value.ToLower());
         if (incident is not null)
             return incident;
 
-        sentence.Value = sentence.Value.ToLower();
+        inc.Value = inc.Value.ToLower();
 
-        await ef.AddRangeAsync(sentence);
+        await ef.AddRangeAsync(inc);
         await ef.SaveChangesAsync();
 
-        return sentence;
+        return inc;
     }
 
-    public async Task<Sentence?> Get(long id)
+    public async Task<Incident?> Get(long id)
     {
         return await ef.Sentences.FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task Update(Sentence sentence)
+    public async Task Update(Incident inc)
     {
-        var incident = await ef.Sentences.FirstOrDefaultAsync(x => x.Id == sentence.Id);
+        var incident = await ef.Sentences.FirstOrDefaultAsync(x => x.Id == inc.Id);
 
         if (incident is null)
             return;
 
-        incident.Value = sentence.Value;
-        incident.IsSpam = sentence.IsSpam;
+        incident.Value = inc.Value;
+        incident.IsSpam = inc.IsSpam;
 
         ef.Update(incident);
         await ef.SaveChangesAsync();

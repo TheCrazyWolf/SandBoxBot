@@ -11,10 +11,12 @@ public sealed class SandBoxContext : DbContext
 
     public SandBoxContext() => Database.MigrateAsync();
     
-    public DbSet<Sentence> Sentences { get; set; }
+    public DbSet<Incident> Sentences { get; set; }
     public DbSet<Admin> Admins { get; set; }
     public DbSet<BlackWord> BlackWords { get; set; }
-
+    
+    public DbSet<Account> Accounts { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlite("Data Source = LocalStorage.db");
