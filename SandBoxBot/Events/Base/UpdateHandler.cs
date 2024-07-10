@@ -55,6 +55,7 @@ public class UpdateHandler : IUpdateHandler
         {
             "/add" => new BlackAddCommand().Execute(botClient, message, cancellationToken),
             "/del" => new BlackDeleteCommand().Execute(botClient, message, cancellationToken),
+            "/check" => new BlackCheckCommand().Execute(botClient, message, cancellationToken),
             _ => new BlackReadAndDeleteCommand().Execute(botClient, message, cancellationToken)
         };
         

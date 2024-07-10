@@ -13,20 +13,10 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
         if (message.Text is null)
             return;
 
-        string blackWord = string.Empty;
+        string blackWords = string.Empty;
 
         // преобработка текста
-        var wordArray = message.Text.Replace('.', ' ')
-            .Replace(',', ' ')
-            .Replace('!', ' ')
-            .Replace("\n", " ")
-            .Replace('?', ' ')
-            .Replace(':', ' ')
-            .Replace("  ", " ")
-            .Replace(" ", " ")
-            .Split(' ')
-            .Where(x => !string.IsNullOrEmpty(x))
-            .ToArray();
+        var wordArray = GetArrayWordsTreatmentMessage(message.Text.ToLower());
 
         bool toDelete = false;
 
@@ -35,7 +25,7 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
             if (!IsContainsWord(word.ToLower())) continue;
 
             toDelete = true;
-            blackWord += $"{word} ";
+            blackWords += $"{word} ";
         }
         
         var sentence = new Sentence
@@ -55,7 +45,7 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
             foreach (var id in await GetAdminsIds())
             {
                 await botClient.SendTextMessageAsync(id,
-                    $"[!] Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blackWord}",
+                    $"[!] Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blackWords}",
                     cancellationToken: cancellationToken);
             }
         }

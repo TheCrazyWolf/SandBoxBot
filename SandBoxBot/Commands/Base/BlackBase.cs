@@ -43,4 +43,21 @@ public class BlackBase
 
     protected async Task<IReadOnlyList<long>> GetAdminsIds() =>
         await BlackBoxContext.Instance.Admins.Select(x => x.IdTelegram).ToListAsync();
+
+
+    protected string[] GetArrayWordsTreatmentMessage(string message)
+    {
+        return message.Replace('.', ' ')
+            .Replace('-', ' ')
+            .Replace(',', ' ')
+            .Replace('!', ' ')
+            .Replace("\n", " ")
+            .Replace('?', ' ')
+            .Replace(':', ' ')
+            .Replace("  ", " ")
+            .Replace(" ", " ")
+            .Split(' ')
+            .Where(x => !string.IsNullOrEmpty(x))
+            .ToArray();
+    }
 }
