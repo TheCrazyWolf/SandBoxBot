@@ -28,7 +28,7 @@ public class BanCommand(ITelegramBotClient botClient, SandBoxRepository reposito
         }
         catch (Exception e)
         {
-            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, $"🤯 Ошибка блокировки пользователя",
+            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, $"🤯 Ошибка блокировки пользователя \n\n{e.Message}",
                 cancellationToken: cancellationToken);
         }
         

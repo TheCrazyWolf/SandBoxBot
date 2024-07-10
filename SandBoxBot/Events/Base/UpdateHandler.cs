@@ -91,7 +91,9 @@ public class UpdateHandler : IUpdateHandler
         if (array is null)
             return Task.CompletedTask;
         
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
         var action = array[0] switch
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
         {
             "ban" => new BanCommand(botClient, new (SandBoxContext.Instance))
                 .Execute(callbackQuery, cancellationToken),

@@ -43,7 +43,7 @@ public class RestoreMessage(ITelegramBotClient botClient, SandBoxRepository repo
         catch (Exception e)
         {
             await BotClient.SendTextMessageAsync(callbackQuery.From.Id, 
-                $"🤯 Ошибка восстановления сообщения",
+                $"🤯 Ошибка восстановления сообщения\n\n{e.Message}",
                 cancellationToken: cancellationToken);
         }
         
