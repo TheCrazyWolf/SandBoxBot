@@ -9,21 +9,13 @@ public class BlackBase(ITelegramBotClient botClient, SandBoxRepository repositor
 {
     protected ITelegramBotClient BotClient = botClient;
     protected readonly SandBoxRepository Repository = repository;
-    
-    protected string[] GetArrayWordsTreatmentMessage(string message)
+
+    protected async Task<bool> ValidateAdmin(long idAccount, long chatId)
     {
-        return message.Replace('.', ' ')
-            .Replace('-', ' ')
-            .Replace(',', ' ')
-            .Replace('!', ' ')
-            .Replace("\n", " ")
-            .Replace('?', ' ')
-            .Replace(':', ' ')
-            .Replace("  ", " ")
-            .Replace(" ", " ")
-            .Split(' ')
-            .Where(x => !string.IsNullOrEmpty(x))
-            .ToArray();
+        if (await Repository.Admins.IsAdmin(idAccount))
+            return true;
+
+        await botClient.SendTextMessageAsync(chatId, "\u26a0\ufe0f Недостаточно прав");
+        return false;
     }
-    
 }

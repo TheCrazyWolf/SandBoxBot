@@ -1,6 +1,7 @@
 ﻿using SandBoxBot.Commands.Base;
 using SandBoxBot.Database;
 using SandBoxBot.Models;
+using SandBoxBot.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -8,14 +9,14 @@ namespace SandBoxBot.Commands.Black;
 
 public class BlackReadAndDeleteCommand : BlackBase, ICommand
 {
-    public async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    public async Task Execute(Message message, CancellationToken cancellationToken)
     {
         if (message.Text is null)
             return;
 
         string blackWords = string.Empty;
         
-        var wordArray = GetArrayWordsTreatmentMessage(message.Text);
+        var wordArray = TextTreatmentService.GetArrayWordsTreatmentMessage(message.Text);
 
         bool toDelete = false;
 
@@ -37,12 +38,12 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
         
         if (toDelete)
         {
-            await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId,
+            await BotClient.DeleteMessageAsync(message.Chat.Id, message.MessageId,
                 cancellationToken: cancellationToken);
 
             foreach (var id in await Repository.Admins.GetAdminsIds())
             {
-                await botClient.SendTextMessageAsync(id,
+                await BotClient.SendTextMessageAsync(id,
                     $"[!] Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blackWords}",
                     cancellationToken: cancellationToken);
             }

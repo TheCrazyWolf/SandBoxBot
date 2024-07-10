@@ -1,4 +1,5 @@
 ﻿using SandBoxBot.Commands.Black;
+using SandBoxBot.Database;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -53,10 +54,14 @@ public class UpdateHandler : IUpdateHandler
         
         var action = messageText.Split(' ')[0] switch
         {
-            "/add" => new BlackAddCommand().Execute(botClient, message, cancellationToken),
-            "/del" => new BlackDeleteCommand().Execute(botClient, message, cancellationToken),
-            "/check" => new BlackCheckCommand().Execute(botClient, message, cancellationToken),
-            _ => new BlackReadAndDeleteCommand().Execute(botClient, message, cancellationToken)
+            "/add" => new BlackAddCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(message, cancellationToken),
+            "/del" => new BlackDeleteCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(message, cancellationToken),
+            "/check" => new BlackCheckCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(message, cancellationToken),
+            _ => new BlackReadAndDeleteCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(message, cancellationToken)
         };
         
         return Task.CompletedTask;

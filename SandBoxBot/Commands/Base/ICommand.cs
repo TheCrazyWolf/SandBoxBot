@@ -5,5 +5,5 @@ namespace SandBoxBot.Commands.Base;
 
 public interface ICommand
 {
-    Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken);
+    Task Execute(Message message, CancellationToken cancellationToken);
 }
