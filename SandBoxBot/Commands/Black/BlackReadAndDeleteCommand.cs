@@ -5,6 +5,7 @@ using SandBoxBot.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using File = Telegram.Bot.Types.File;
 
 namespace SandBoxBot.Commands.Black;
 
@@ -17,9 +18,6 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
     
     public async Task Execute(Message message, CancellationToken cancellationToken)
     {
-        if (message.NewChatMembers is not null)
-            await RegisterIfNewUser(message.NewChatMembers, message.Chat.Id);
-
         if (message.From is not null)
             await UpdateActivityUser(message.From, message.Chat.Id);
 
@@ -86,28 +84,6 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
                 $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со " +
                 $"следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blackWords} ",
                 replyMarkup: new InlineKeyboardMarkup(buttons));
-        }
-    }
-
-    private async Task RegisterIfNewUser(User[] invitedUsers, long chatId)
-    {
-        foreach (var user in invitedUsers)
-        {
-            if (await Repository.Accounts.ExistAccount(user.Id))
-                continue;
-
-            var newAccount = new Account()
-            {
-                IdAccountTelegram = user.Id,
-                ChatId = chatId,
-                LastActivity = DateTime.Now,
-                DateTimeJoined = DateTime.Now,
-                UserName = user.Username,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-            };
-
-            await Repository.Accounts.Add(newAccount);
         }
     }
 

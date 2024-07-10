@@ -35,11 +35,18 @@ public class UpdateHandler : IUpdateHandler
         await handler;
     }
 
-    private Task BotOnMessageReceived(ITelegramBotClient botClient, Message message,
+    private async Task BotOnMessageReceived(ITelegramBotClient botClient, Message message,
         CancellationToken cancellationToken)
     {
+
+        if (message.NewChatMembers is not null)
+        {
+            await new WelcomeMessageCommand(botClient, new(SandBoxContext.Instance))
+                .Execute(message, cancellationToken);
+        }
+
         if (message.Text is not { } messageText)
-            return Task.CompletedTask;
+            return;
 
         int atIndex = messageText.IndexOf('@');
         if (atIndex != -1)
@@ -69,11 +76,12 @@ public class UpdateHandler : IUpdateHandler
                 .Execute(message, cancellationToken),
             "/setadmin" => new GetAdminCommand(botClient, new (SandBoxContext.Instance))
                 .Execute(message, cancellationToken),
+            "/setwelcome" => new SetWelcomeMessageCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(message, cancellationToken),
             _ => new BlackReadAndDeleteCommand(botClient, new (SandBoxContext.Instance))
                 .Execute(message, cancellationToken)
         };
         
-        return Task.CompletedTask;
     }
 
     public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception,

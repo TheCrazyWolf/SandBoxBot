@@ -24,7 +24,7 @@ public class BlackCheckCommand(ITelegramBotClient botClient, SandBoxRepository r
             : "\ud83d\uded1 Вероятно сообщение является спамом";
         
         await BotClient.SendTextMessageAsync(message.Chat.Id,
-            $"[!] Команда выполнена \n\nРезультат: {verdict}" +
+            $"\u2705 Команда выполнена \n\n{verdict}" +
             $"\n\nОпознанные слова для блокировки: {blackWords}",
             cancellationToken: cancellationToken);
     }
