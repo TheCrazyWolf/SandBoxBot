@@ -1,4 +1,5 @@
 ﻿using SandBoxBot.Commands.Black;
+using SandBoxBot.Commands.Keyboard.Black;
 using SandBoxBot.Database;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -77,6 +78,19 @@ public class UpdateHandler : IUpdateHandler
     private Task BotOnCallbackQueryReceived(ITelegramBotClient botClient, CallbackQuery callbackQuery,
         CancellationToken cancellationToken)
     {
+        var array = callbackQuery.Data?.Split(' ');
+
+        if (array is null)
+            return Task.CompletedTask;
+        
+        var action = array[0] switch
+        {
+            "ban" => new BanCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(callbackQuery, cancellationToken),
+            "restore" => new RestoreMessage(botClient, new (SandBoxContext.Instance))
+                .Execute(callbackQuery, cancellationToken),
+        };
+        
         return Task.CompletedTask;
     }
 

@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using SandBoxBot.Database;
-using SandBoxBot.Models;
 using Telegram.Bot;
 
 namespace SandBoxBot.Commands.Base;
@@ -15,7 +13,7 @@ public class BlackBase(ITelegramBotClient botClient, SandBoxRepository repositor
         if (await Repository.Admins.IsAdmin(idAccount))
             return true;
 
-        await botClient.SendTextMessageAsync(chatId, "\u26a0\ufe0f Недостаточно прав");
+        await BotClient.SendTextMessageAsync(chatId, "\u26a0\ufe0f Недостаточно прав");
         return false;
     }
 }
