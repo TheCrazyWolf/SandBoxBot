@@ -8,7 +8,7 @@ using SandBoxBot.Database;
 
 namespace SandBoxBot.Migrations
 {
-    [DbContext(typeof(BlackBoxContext))]
+    [DbContext(typeof(SandBoxContext))]
     partial class BlackBoxContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

@@ -1,4 +1,5 @@
 ﻿using SandBoxBot.Commands.Base;
+using SandBoxBot.Database;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -13,12 +14,16 @@ public class BlackDeleteCommand : BlackBase, ICommand
         if (word == null || word.Length < 2)
             return; 
                 
-        if (message.From != null && IsAdmin(message.From.Id))
+        if (message.From != null && await Repository.Admins.IsAdmin(message.From.Id))
         {
-            await Delete(word[1].ToLower());
+            await Repository.Words.Delete(word[1]);
             
             await botClient.SendTextMessageAsync(message.Chat.Id, "[!] Команда выполнена",
                 cancellationToken: cancellationToken);
         }
+    }
+
+    public BlackDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository) : base(botClient, repository)
+    {
     }
 }

@@ -14,15 +14,14 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
             return;
 
         string blackWords = string.Empty;
-
-        // преобработка текста
-        var wordArray = GetArrayWordsTreatmentMessage(message.Text.ToLower());
+        
+        var wordArray = GetArrayWordsTreatmentMessage(message.Text);
 
         bool toDelete = false;
 
         foreach (var word in wordArray)
         {
-            if (!IsContainsWord(word.ToLower())) continue;
+            if (!await Repository.Words.IsContainsWord(word)) continue;
 
             toDelete = true;
             blackWords += $"{word} ";
@@ -34,20 +33,23 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
             IsSpam = toDelete
         };
 
-        await BlackBoxContext.Instance.AddAsync(sentence, cancellationToken);
-        await BlackBoxContext.Instance.SaveChangesAsync(cancellationToken);
+        await Repository.Sentences.Add(sentence);
         
         if (toDelete)
         {
             await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId,
                 cancellationToken: cancellationToken);
 
-            foreach (var id in await GetAdminsIds())
+            foreach (var id in await Repository.Admins.GetAdminsIds())
             {
                 await botClient.SendTextMessageAsync(id,
                     $"[!] Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blackWords}",
                     cancellationToken: cancellationToken);
             }
         }
+    }
+
+    public BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository) : base(botClient, repository)
+    {
     }
 }

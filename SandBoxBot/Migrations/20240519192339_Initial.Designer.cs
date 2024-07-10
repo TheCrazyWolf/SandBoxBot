@@ -9,7 +9,7 @@ using SandBoxBot.Database;
 
 namespace SandBoxBot.Migrations
 {
-    [DbContext(typeof(BlackBoxContext))]
+    [DbContext(typeof(SandBoxContext))]
     [Migration("20240519192339_Initial")]
     partial class Initial
     {

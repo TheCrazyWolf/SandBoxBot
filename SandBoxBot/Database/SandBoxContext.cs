@@ -3,13 +3,13 @@ using SandBoxBot.Models;
 
 namespace SandBoxBot.Database;
 
-public sealed class BlackBoxContext : DbContext
+public sealed class SandBoxContext : DbContext
 {
-    private static BlackBoxContext? _blackBoxContext;
+    private static SandBoxContext? _blackBoxContext;
 
-    public static BlackBoxContext Instance => _blackBoxContext ??= new BlackBoxContext();
+    public static SandBoxContext Instance => _blackBoxContext ??= new SandBoxContext();
 
-    public BlackBoxContext() => Database.MigrateAsync();
+    public SandBoxContext() => Database.MigrateAsync();
     
     public DbSet<Sentence> Sentences { get; set; }
     public DbSet<Admin> Admins { get; set; }
