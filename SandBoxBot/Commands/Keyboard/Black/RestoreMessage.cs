@@ -26,13 +26,15 @@ public class RestoreMessage(ITelegramBotClient botClient, SandBoxRepository repo
         
         try
         {
-
             var incident = await Repository.Incidents.Get(Convert.ToInt64(message));
-            incident.IsSpam = false;
+            incident!.IsSpam = false;
+            
             await Repository.Incidents.Update(incident);
+
+            var account = await Repository.Accounts.Get(incident.IdAccountTelegram ?? 0);
             
             await BotClient.SendTextMessageAsync(chatId: Convert.ToInt64(words[0]), 
-                $"Восстановлено сообщение: {incident.Value}", cancellationToken: cancellationToken);
+                $"Восстановлено сообщение от пользователя: @{account?.UserName}: {incident.Value}", cancellationToken: cancellationToken);
             
             await BotClient.SendTextMessageAsync(callbackQuery.From.Id, $"\u2705 Принятые действия: Восстановлено сообщение",
                 cancellationToken: cancellationToken);

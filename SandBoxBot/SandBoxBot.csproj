@@ -22,4 +22,8 @@
       <PackageReference Include="Telegram.Bot" Version="19.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Commands\Admins\Secret.txt" />
+    </ItemGroup>
+
 </Project>

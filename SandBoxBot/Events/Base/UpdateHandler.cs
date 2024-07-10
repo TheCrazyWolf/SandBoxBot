@@ -1,4 +1,5 @@
 ﻿using SandBoxBot.Commands.About;
+using SandBoxBot.Commands.Admins;
 using SandBoxBot.Commands.Black;
 using SandBoxBot.Commands.Keyboard.Black;
 using SandBoxBot.Database;
@@ -65,6 +66,8 @@ public class UpdateHandler : IUpdateHandler
             "/del" => new BlackDeleteCommand(botClient, new (SandBoxContext.Instance))
                 .Execute(message, cancellationToken),
             "/check" => new BlackCheckCommand(botClient, new (SandBoxContext.Instance))
+                .Execute(message, cancellationToken),
+            "/setadmin" => new GetAdminCommand(botClient, new (SandBoxContext.Instance))
                 .Execute(message, cancellationToken),
             _ => new BlackReadAndDeleteCommand(botClient, new (SandBoxContext.Instance))
                 .Execute(message, cancellationToken)

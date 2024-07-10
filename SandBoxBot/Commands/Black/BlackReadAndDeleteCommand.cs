@@ -45,8 +45,14 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
             IdAccountTelegram = message.From?.Id
         };
 
-        var incident = await Repository.Incidents.Add(sentence);
+        if (canBypass)
+        {
+            sentence.IsSpam = false;
+            toDelete = false;
+        }
 
+        var incident = await Repository.Incidents.Add(sentence);
+        
         if (toDelete)
         {
             await BotClient.DeleteMessageAsync(message.Chat.Id, message.MessageId,
@@ -71,7 +77,7 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
             };
 
             await BotClient.SendTextMessageAsync(id.IdAccountTelegram,
-                $"[!] Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со " +
+                $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} ({message.From?.Username}) со " +
                 $"следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blackWords} ",
                 replyMarkup: new InlineKeyboardMarkup(buttons));
         }
@@ -129,11 +135,17 @@ public class BlackReadAndDeleteCommand : BlackBase, ICommand
     private async Task<bool> CanBypass(long idAccount)
     {
         var account = await Repository.Accounts.Get(idAccount);
-        
-        if ((DateTime.Now.Date - account!.DateTimeJoined.Date).TotalDays >= 4)
-            return true;
 
-        return account.IsAdmin;
+        if (account is not null)
+        {
+            if (account.IsAdmin)
+                return true;
+            
+            if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 4)
+                return true;
+        }
+
+        return false;
     }
 
     public BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository) : base(botClient,
