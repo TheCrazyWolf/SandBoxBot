@@ -63,6 +63,8 @@ public class UpdateHandler : IUpdateHandler
                 .Execute(cancellationToken), cancellationToken),
             "/setadmin" => Task.Run(()=>new GetAdminCommand(botClient, new(SandBoxContext.Instance), message)
                 .Execute( cancellationToken), cancellationToken),
+            "/setlevin" => Task.Run(()=>new SetLevinshtainCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute( cancellationToken), cancellationToken),
             "/setwelcome" => new SetWelcomeMessageCommand(botClient, new(SandBoxContext.Instance), message)
                 .Execute(cancellationToken),
             _ => Task.Run(()=>new BlackReadAndDeleteCommand(botClient, new(SandBoxContext.Instance), message)

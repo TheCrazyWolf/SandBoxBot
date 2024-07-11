@@ -10,6 +10,12 @@ public class BlackWordRepository(SandBoxContext ef)
     public async Task<bool> IsContainsWord(string word)
         => await _ef.BlackWords.AnyAsync(x => x.Word == word.ToLower());
 
+
+    public async Task<ICollection<BlackWord>> GetAll()
+    {
+        return await ef.BlackWords.ToListAsync();
+    }
+
     public async Task Add(string word)
     {
         if (await IsContainsWord(word.ToLower()))

@@ -1,6 +1,7 @@
 ﻿using SandBoxBot.Commands.Base;
 using SandBoxBot.Commands.Base.Interfaces;
 using SandBoxBot.Commands.Base.Messages;
+using SandBoxBot.Configs;
 using SandBoxBot.Database;
 using SandBoxBot.Models;
 using SandBoxBot.Services;
@@ -15,6 +16,7 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
 {
     private bool _isCanBypass;
     private bool _toDelete;
+    private LevinshtainService _levinshtainService = new();
     
     public async Task Execute(CancellationToken cancellationToken)
     {
@@ -23,7 +25,7 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         
         await UpdateActivityUser();
         
-        _isCanBypass = await CanBypass(Message.From!.Id);
+        _isCanBypass = await CanBypass();
         
         string blackWords = string.Empty;
 
@@ -59,11 +61,23 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
             await BotClient.DeleteMessageAsync(Message.Chat.Id, Message.MessageId,
                 cancellationToken: cancellationToken);
 
-            await NotifyAdmin(blackWords, incident.Id);
+            await NotifyAdmin(blackWords, incident.Id, false);
+        }
+        else if (GlobalConfigs.IsWorkLevinshtain)
+        {
+            var result = await _levinshtainService.IsSpamAsync(Message.Text, GlobalConfigs.DistanceLevinsthain);
+
+            if (result)
+            {
+                await BotClient.DeleteMessageAsync(Message.Chat.Id, Message.MessageId,
+                    cancellationToken: cancellationToken);
+
+                await NotifyAdmin(blackWords, incident.Id, result);
+            }
         }
     }
 
-    private async Task NotifyAdmin(string blackWords, long idIncident)
+    private async Task NotifyAdmin(string blackWords, long idIncident, bool isLevinshtain)
     {
         foreach (var id in await Repository.Accounts.GetAdmins())
         {
@@ -77,9 +91,12 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
                 ]
             };
 
+            string isWorkLevinshtain = GlobalConfigs.IsWorkLevinshtain ? "Да" : "Нет";
+            string isDetectLevinshtain = isLevinshtain ? "Да" : "Нет";
+
             await BotClient.SendTextMessageAsync(id.IdAccountTelegram,
                 $"\ud83d\udc7e Удалено сообщение от пользователя {Message?.From?.Id} ({Message?.From?.Username}) со " +
-                $"следующем содержанием: \n\n{Message?.Text} \n\nЗапрещенные слова: {blackWords} ",
+                $"следующем содержанием: \n\n{Message?.Text} \n\nЗапрещенные слова: {blackWords} \n\nАлгоритм Левинштейна работает: {isWorkLevinshtain}\nСообщение удалено по алгоритму: {isDetectLevinshtain}",
                 replyMarkup: new InlineKeyboardMarkup(buttons));
         }
     }
@@ -114,9 +131,12 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         await Repository.Accounts.Update(account);
     }
 
-    private async Task<bool> CanBypass(long idAccount)
+    private async Task<bool> CanBypass()
     {
-        var account = await Repository.Accounts.Get(idAccount);
+        if (Message?.From is null)
+            return false;
+        
+        var account = await Repository.Accounts.Get(Message.From.Id);
 
         if (account is null) return false;
         

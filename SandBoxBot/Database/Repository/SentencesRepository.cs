@@ -42,4 +42,9 @@ public class SentencesRepository(SandBoxContext ef)
         ef.Update(incident);
         await ef.SaveChangesAsync();
     }
+
+    public async Task<ICollection<Incident>> GetAll(bool isSpam = true)
+    {
+        return await ef.Sentences.Where(x => x.IsSpam == isSpam).ToListAsync();
+    }
 }
