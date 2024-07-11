@@ -33,17 +33,20 @@ public class RestoreMessageCommand(ITelegramBotClient botClient, SandBoxReposito
 
             await BotClient.SendTextMessageAsync(chatId: incident.ChatId,
                 $"\ud83d\uddd3 @{account?.UserName} (Восстановленно): {incident.Value}",
+                disableNotification: true,
                 cancellationToken: cancellationToken);
 
             await BotClient.SendTextMessageAsync(CallbackQuery.From.Id,
                 $"\u2705 Принятые действия по инциденту № {incident.Id}: " +
                 $"Восстановлено сообщение",
+                disableNotification: true,
                 cancellationToken: cancellationToken);
         }
         catch (Exception e)
         {
             await BotClient.SendTextMessageAsync(CallbackQuery.From.Id,
                 $"🤯 Ошибка восстановления сообщения\n\n{e.Message}",
+                disableNotification: true,
                 cancellationToken: cancellationToken);
         }
     }

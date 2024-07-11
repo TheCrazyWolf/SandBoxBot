@@ -34,6 +34,7 @@ public class BlackAddCommand(ITelegramBotClient botClient, SandBoxRepository rep
         await BotClient.SendTextMessageAsync(Message.Chat.Id, 
             $"\u2705 Команда выполнена" +
             $"\n\nДобавлены следующие слова: {wordToBeBlocked}",
+            disableNotification: true,
             cancellationToken: cancellationToken);
         
     }

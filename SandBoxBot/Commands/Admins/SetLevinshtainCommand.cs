@@ -30,6 +30,7 @@ public class SetLevinshtainCommand(ITelegramBotClient botClient, SandBoxReposito
             await BotClient.SendTextMessageAsync(Message.Chat.Id, 
                 $"\u2705 Команда выполнена" +
                 $"\n\nУстановлено Алгоритму Левинштейна новое значение: {GlobalConfigs.IsWorkLevinshtain}",
+                disableNotification: true,
                 cancellationToken: cancellationToken);
         }
         catch (Exception e)
@@ -37,6 +38,7 @@ public class SetLevinshtainCommand(ITelegramBotClient botClient, SandBoxReposito
             await BotClient.SendTextMessageAsync(Message.Chat.Id, 
                 $"\u2705 Команда выполнена" +
                 $"\n\nОшибка при установке нового значения\n\n{e.Message}",
+                disableNotification: true,
                 cancellationToken: cancellationToken);
         }
         

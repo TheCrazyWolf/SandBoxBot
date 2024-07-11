@@ -42,6 +42,7 @@ public class BlackCheckCommand(ITelegramBotClient botClient, SandBoxRepository r
         await BotClient.SendTextMessageAsync(Message.Chat.Id,
             $"\u2705 Команда выполнена \n\n{verdict}" +
             $"\n\nОпознанные слова для блокировки: {blackWords}\n\nАлгоритм Левинштейна: {strBuildLevin}",
+            disableNotification: true,
             cancellationToken: cancellationToken);
     }
 }

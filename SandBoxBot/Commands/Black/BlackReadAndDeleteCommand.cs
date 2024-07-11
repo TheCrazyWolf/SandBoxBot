@@ -10,7 +10,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBoxBot.Commands.Black;
 
-public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository, Message? message) 
+public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository, Message? message)
     : EventMessageCommand(botClient, repository, message), ICommand
 {
     private bool _isCanBypass;
@@ -20,14 +20,14 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
 
     private static Message? _lastMessageWriteToWorkTime;
     private static DateTime _lastDateTimeWriteToWorkTime;
-    
+
     public async Task Execute(CancellationToken cancellationToken)
     {
         if (Message?.From is null || Message.Text is null)
             return;
-        
+
         await UpdateActivityUser();
-        
+
         _isCanBypass = await CanBypass();
         _isWorkTime = CanWriteInWorkTime();
 
@@ -36,7 +36,7 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
             await SendAndDeleteMessageIfNotWorkTime();
             return;
         }
-        
+
         string blackWords = string.Empty;
 
         var wordArray = TextTreatmentService.GetArrayWordsTreatmentMessage(Message.Text);
@@ -65,7 +65,7 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         }
 
         var incident = await Repository.Incidents.Add(sentence);
-        
+
         if (_toDelete)
         {
             await BotClient.DeleteMessageAsync(Message.Chat.Id, Message.MessageId,
@@ -77,7 +77,7 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         {
             if (Message?.Text?.Split(' ').Length <= GlobalConfigs.MinimalWordToCheckLevinshtain)
                 return;
-            
+
             var result = await _levinshtainService.IsSpamAsync(Message!.Text, GlobalConfigs.DistanceLevinsthain);
 
             if (result)
@@ -114,15 +114,15 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
             await BotClient.SendTextMessageAsync(id.IdAccountTelegram,
                 $"\ud83d\udc7e Удалено сообщение от пользователя {Message?.From?.Id} ({Message?.From?.Username}) со " +
                 $"следующем содержанием: \n\n{Message?.Text} \n\nЗапрещенные слова: {blackWords} \n\nАлгоритм Левинштейна работает: {isWorkLevinshtain}\nСообщение удалено по алгоритму: {isDetectLevinshtain}",
-                replyMarkup: new InlineKeyboardMarkup(buttons));
+                replyMarkup: new InlineKeyboardMarkup(buttons), disableNotification: true);
         }
     }
 
     private async Task UpdateActivityUser()
     {
-        if(Message?.From is null)
+        if (Message?.From is null)
             return;
-        
+
         var account = await Repository.Accounts.Get(Message.Chat.Id);
 
         if (account is null)
@@ -152,30 +152,30 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
     {
         if (Message?.From is null)
             return false;
-        
+
         var account = await Repository.Accounts.Get(Message.From.Id);
 
         if (account is null) return false;
-        
+
         if (account.IsAdmin)
             return true;
-            
+
         if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 2)
             return true;
 
         return false;
     }
-    
+
     private async Task<bool> CanBypassIsAdmin()
     {
         if (Message?.From is null)
             return false;
-        
+
         var account = await Repository.Accounts.Get(Message.From.Id);
 
         if (account is null)
             return false;
-        
+
         return account.IsAdmin;
     }
 
@@ -183,18 +183,18 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
     {
         if (DateTime.Now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             return false;
-        
+
         var start = new TimeSpan(08, 00, 00);
         var end = new TimeSpan(16, 30, 00);
         var endShort = new TimeSpan(15, 30, 00);
-        
+
         if (!(DateTime.Now.TimeOfDay >= start && DateTime.Now.TimeOfDay <= end))
             return false;
 
         if (DateTime.Now.DayOfWeek is DayOfWeek.Friday &&
             (!(DateTime.Now.TimeOfDay >= start && DateTime.Now.TimeOfDay <= endShort)))
             return false;
-        
+
         return true;
     }
 
@@ -219,7 +219,8 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
             if (_lastMessageWriteToWorkTime == null)
             {
                 _lastMessageWriteToWorkTime = await BotClient.SendTextMessageAsync(Message.Chat.Id,
-                    $"Мы хотим помогать Вам круглосуточно \u2764\ufe0f\nНо получить ответы на вопросы Вы можете в рабочее время: ПН-ЧТ С 8.00 по 16.30, ПТ до 15.30 \u2705");
+                    $"Мы хотим помогать Вам круглосуточно \u2764\ufe0f\nНо получить ответы на вопросы Вы можете в рабочее время: ПН-ЧТ С 8.00 по 16.30, ПТ до 15.30 \u2705",
+                    disableNotification: true);
                 _lastDateTimeWriteToWorkTime = currentTime;
             }
 

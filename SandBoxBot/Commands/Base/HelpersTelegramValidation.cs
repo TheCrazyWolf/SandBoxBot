@@ -13,7 +13,7 @@ public class HelpersTelegramValidation(ITelegramBotClient botClient, SandBoxRepo
         if (await Repository.Accounts.IsAdmin(idAccount))
             return true;
 
-        await BotClient.SendTextMessageAsync(chatId, "\u26a0\ufe0f Недостаточно прав");
+        await BotClient.SendTextMessageAsync(chatId, "\u26a0\ufe0f Недостаточно прав", disableNotification: true);
         return false;
     }
 }

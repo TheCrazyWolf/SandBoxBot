@@ -33,6 +33,7 @@ public class SetWelcomeMessageCommand(ITelegramBotClient botClient, SandBoxRepos
         await BotClient.SendTextMessageAsync(Message.Chat.Id, 
             $"\u2705 Команда выполнена" +
             $"\n\nУстановлено приветствие: {sentence}",
+            disableNotification: true,
             cancellationToken: cancellationToken);
     }
 }

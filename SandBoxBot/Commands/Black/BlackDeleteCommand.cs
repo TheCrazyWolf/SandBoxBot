@@ -26,6 +26,7 @@ public class BlackDeleteCommand(ITelegramBotClient botClient, SandBoxRepository 
         await Repository.Words.Delete(word[1]);
             
         await BotClient.SendTextMessageAsync(Message.Chat.Id, "\u2705 Команда выполнена",
+            disableNotification: true,
             cancellationToken: cancellationToken);
     }
 }

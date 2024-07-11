@@ -62,7 +62,8 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
         {
             
             _lastMessageSendedWelcome = await BotClient.SendTextMessageAsync(idChat,
-                $"\ud83e\udd1f {GetGreeting(DateTime.Now)}, {firstname}\n\n{content}"
+                $"\ud83e\udd1f {GetGreeting(DateTime.Now)}, {firstname}\n\n{content}",
+                disableNotification: true
             );
             
             _dateTimeLastSended = DateTime.Now;
