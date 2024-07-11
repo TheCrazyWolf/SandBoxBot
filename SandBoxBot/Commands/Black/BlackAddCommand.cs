@@ -1,21 +1,26 @@
 ﻿using SandBoxBot.Commands.Base;
+using SandBoxBot.Commands.Base.Interfaces;
+using SandBoxBot.Commands.Base.Messages;
 using SandBoxBot.Database;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBoxBot.Commands.Black;
 
-public class BlackAddCommand(ITelegramBotClient botClient, SandBoxRepository repository)
-    : BlackBase(botClient, repository), ICommand
+public class BlackAddCommand(ITelegramBotClient botClient, SandBoxRepository repository, Message? message)
+    : EventMessageCommand(botClient, repository, message), ICommand
 {
-    public async Task Execute(Message message, CancellationToken cancellationToken)
+    public async Task Execute(CancellationToken cancellationToken)
     {
-        var words = message.Text?.Split(' ').ToArray().Skip(1).ToArray();
+        if(Message is null)
+            return;
+        
+        var words = Message.Text?.Split(' ').ToArray().Skip(1).ToArray();
 
-        if (words == null || message.From is null)
+        if (words == null || Message.From is null)
             return;
 
-        if (message.From != null && !await ValidateAdmin(message.From!.Id, message.Chat.Id))
+        if (Message.From != null && !await ValidateAdmin(Message.From.Id, Message.Chat.Id))
             return;
 
         string wordToBeBlocked = string.Empty;
@@ -26,7 +31,7 @@ public class BlackAddCommand(ITelegramBotClient botClient, SandBoxRepository rep
             wordToBeBlocked += $"{word}, ";
         }
         
-        await BotClient.SendTextMessageAsync(message.Chat.Id, 
+        await BotClient.SendTextMessageAsync(Message.Chat.Id, 
             $"\u2705 Команда выполнена" +
             $"\n\nДобавлены следующие слова: {wordToBeBlocked}",
             cancellationToken: cancellationToken);

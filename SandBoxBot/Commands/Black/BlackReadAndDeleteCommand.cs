@@ -1,34 +1,33 @@
 ﻿using SandBoxBot.Commands.Base;
+using SandBoxBot.Commands.Base.Interfaces;
+using SandBoxBot.Commands.Base.Messages;
 using SandBoxBot.Database;
 using SandBoxBot.Models;
 using SandBoxBot.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using File = Telegram.Bot.Types.File;
 
 namespace SandBoxBot.Commands.Black;
 
-public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository) : BlackBase(
-    botClient,
-    repository), ICommand
+public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepository repository, Message? message) 
+    : EventMessageCommand(botClient, repository, message), ICommand
 {
     private bool _isCanBypass;
     private bool _toDelete;
     
-    public async Task Execute(Message message, CancellationToken cancellationToken)
+    public async Task Execute(CancellationToken cancellationToken)
     {
-        if (message.From is not null)
-            await UpdateActivityUser(message.From, message.Chat.Id);
-
-        if (message.Text is null)
+        if (Message?.From is null || Message.Text is null)
             return;
-
-        _isCanBypass = await CanBypass(message.From!.Id);
+        
+        await UpdateActivityUser(Message.From, Message.Chat.Id);
+        
+        _isCanBypass = await CanBypass(Message.From!.Id);
         
         string blackWords = string.Empty;
 
-        var wordArray = TextTreatmentService.GetArrayWordsTreatmentMessage(message.Text);
+        var wordArray = TextTreatmentService.GetArrayWordsTreatmentMessage(Message.Text);
 
         _toDelete = false;
 
@@ -42,11 +41,11 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
 
         var sentence = new Incident
         {
-            Value = message.Text,
+            Value = Message.Text,
             IsSpam = _toDelete,
             DateTime = DateTime.Now,
-            ChatId = message.Chat.Id,
-            IdAccountTelegram = message.From?.Id
+            ChatId = Message.Chat.Id,
+            IdAccountTelegram = Message.From?.Id
         };
 
         if (_isCanBypass)
@@ -59,10 +58,10 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         
         if (_toDelete)
         {
-            await BotClient.DeleteMessageAsync(message.Chat.Id, message.MessageId,
+            await BotClient.DeleteMessageAsync(Message.Chat.Id, Message.MessageId,
                 cancellationToken: cancellationToken);
 
-            await NotifyAdmin(message, blackWords, incident.Id);
+            await NotifyAdmin(Message, blackWords, incident.Id);
         }
     }
 

@@ -3,7 +3,7 @@ using Telegram.Bot;
 
 namespace SandBoxBot.Commands.Base;
 
-public class BlackBase(ITelegramBotClient botClient, SandBoxRepository repository)
+public class HelpersTelegramValidation(ITelegramBotClient botClient, SandBoxRepository repository)
 {
     protected readonly ITelegramBotClient BotClient = botClient;
     protected readonly SandBoxRepository Repository = repository;

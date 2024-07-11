@@ -12,7 +12,7 @@ namespace SandBoxBot.Events.Base;
 
 public class UpdateHandler : IUpdateHandler
 {
-    public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
+    public Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
     {
         var handler = update switch
@@ -32,6 +32,7 @@ public class UpdateHandler : IUpdateHandler
                 chosenInlineResult, cancellationToken),
             _ => UnknownUpdateHandlerAsync(botClient, update, cancellationToken)
         };
+        return Task.CompletedTask;
 
         //await handler;
     }
@@ -40,10 +41,8 @@ public class UpdateHandler : IUpdateHandler
         CancellationToken cancellationToken)
     {
         if (message.NewChatMembers is not null)
-        {
-            await Task.Run(()=> new WelcomeMessageCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken), cancellationToken);
-        }
+            await Task.Run(()=> new WelcomeMessageCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute(cancellationToken), cancellationToken);
 
         if (message.Text is not { } messageText)
             return;
@@ -52,22 +51,22 @@ public class UpdateHandler : IUpdateHandler
 
         var action = messageTreatment.Split(' ')[0] switch
         {
-            "/start" => Task.Run(() => new StartCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken), cancellationToken),
-            "/ver" => Task.Run(()=> new StartCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken), cancellationToken),
-            "/add" => Task.Run( ()=>new BlackAddCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken), cancellationToken),
-            "/del" => Task.Run(()=>new BlackDeleteCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken), cancellationToken),
-            "/check" => Task.Run(()=>new BlackCheckCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken), cancellationToken),
-            "/setadmin" => Task.Run(()=>new GetAdminCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken), cancellationToken),
-            "/setwelcome" => new SetWelcomeMessageCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken),
-            _ => Task.Run(()=>new BlackReadAndDeleteCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(message, cancellationToken), cancellationToken)
+            "/start" => Task.Run(() => new StartCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute(cancellationToken), cancellationToken),
+            "/ver" => Task.Run(()=> new StartCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute(cancellationToken), cancellationToken),
+            "/add" => Task.Run( ()=>new BlackAddCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute(cancellationToken), cancellationToken),
+            "/del" => Task.Run(()=>new BlackDeleteCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute(cancellationToken), cancellationToken),
+            "/check" => Task.Run(()=>new BlackCheckCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute(cancellationToken), cancellationToken),
+            "/setadmin" => Task.Run(()=>new GetAdminCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute( cancellationToken), cancellationToken),
+            "/setwelcome" => new SetWelcomeMessageCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute(cancellationToken),
+            _ => Task.Run(()=>new BlackReadAndDeleteCommand(botClient, new(SandBoxContext.Instance), message)
+                .Execute(cancellationToken), cancellationToken)
         };
     }
 
@@ -90,10 +89,10 @@ public class UpdateHandler : IUpdateHandler
         var action = array[0] switch
 #pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
         {
-            "ban" => Task.Run(()=>new BanCommand(botClient, new(SandBoxContext.Instance))
-                .Execute(callbackQuery, cancellationToken), cancellationToken),
-            "restore" => Task.Run(()=>new RestoreMessage(botClient, new(SandBoxContext.Instance))
-                .Execute(callbackQuery, cancellationToken), cancellationToken),
+            "ban" => Task.Run(()=>new BanCommand(botClient, new(SandBoxContext.Instance),callbackQuery)
+                .Execute(cancellationToken), cancellationToken),
+            "restore" => Task.Run(()=>new RestoreMessage(botClient, new(SandBoxContext.Instance), callbackQuery)
+                .Execute(cancellationToken), cancellationToken),
         };
 
         return Task.CompletedTask;

@@ -1,27 +1,26 @@
 ﻿using SandBoxBot.Commands.Base;
+using SandBoxBot.Commands.Base.Interfaces;
+using SandBoxBot.Commands.Base.Messages;
 using SandBoxBot.Database;
 using SandBoxBot.Models;
-using SandBoxBot.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
-using File = Telegram.Bot.Types.File;
-
 namespace SandBoxBot.Commands.Black;
 
-public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxRepository repository) : BlackBase(
-    botClient,
-    repository), ICommand
+public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxRepository repository, Message? message)
+    : EventMessageCommand(botClient, repository, message), ICommand
 {
     private static DateTime _dateTimeLastSended = new DateTime();
 
-    public async Task Execute(Message message, CancellationToken cancellationToken)
+    public async Task Execute(CancellationToken cancellationToken)
     {
-        if (message.NewChatMembers is not null)
-            await RegisterIfNewUser(message.NewChatMembers, message.Chat.Id);
+        if (Message?.NewChatMembers is null)
+            return;
+
+        await RegisterIfNewUser(Message.NewChatMembers, Message.Chat.Id);
 
         if ((DateTime.Now - _dateTimeLastSended).TotalMinutes >= 30)
-            await SendWelcomeMessageIfNewUser(message.Chat.Id, message.From?.FirstName);
+            await SendWelcomeMessageIfNewUser(Message.Chat.Id, Message.From?.FirstName);
     }
 
     private async Task RegisterIfNewUser(User[] invitedUsers, long chatId)

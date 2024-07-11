@@ -1,20 +1,23 @@
+using System.Windows.Input;
 using SandBoxBot.Commands.Base;
+using SandBoxBot.Commands.Base.Callback;
 using SandBoxBot.Database;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBoxBot.Commands.Keyboard.Black;
 
-public class BanCommand(ITelegramBotClient botClient, SandBoxRepository repository) : BlackBase(botClient, repository)
+public class BanCommand(ITelegramBotClient botClient, SandBoxRepository repository, CallbackQuery callbackQuery) 
+    : EventCallbackQueryCommand(botClient, repository, callbackQuery)
 {
-    public async Task Execute(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    public async Task Execute(CancellationToken cancellationToken)
     {
-        var words = callbackQuery.Data?.Split(' ').Skip(1).ToArray();
+        var words = CallbackQuery.Data?.Split(' ').Skip(1).ToArray();
 
         if (words is null)
             return;
         
-        if (!await ValidateAdmin(callbackQuery.From.Id, callbackQuery.From.Id))
+        if (!await ValidateAdmin(CallbackQuery.From.Id, CallbackQuery.From.Id))
             return;
 
         try
@@ -23,12 +26,12 @@ public class BanCommand(ITelegramBotClient botClient, SandBoxRepository reposito
                 userId: Convert.ToInt64(words[1]),
                 cancellationToken: cancellationToken);
             
-            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, $"\u2705 Принятые действия: Пользователь заблокирован",
+            await BotClient.SendTextMessageAsync(CallbackQuery.From.Id, $"\u2705 Принятые действия: Пользователь заблокирован",
                 cancellationToken: cancellationToken);
         }
         catch (Exception e)
         {
-            await BotClient.SendTextMessageAsync(callbackQuery.From.Id, $"🤯 Ошибка блокировки пользователя \n\n{e.Message}",
+            await BotClient.SendTextMessageAsync(CallbackQuery.From.Id, $"🤯 Ошибка блокировки пользователя \n\n{e.Message}",
                 cancellationToken: cancellationToken);
         }
         
