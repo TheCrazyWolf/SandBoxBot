@@ -1,5 +1,4 @@
-﻿using SandBoxBot.Commands.Base;
-using SandBoxBot.Commands.Base.Interfaces;
+﻿using SandBoxBot.Commands.Base.Interfaces;
 using SandBoxBot.Commands.Base.Messages;
 using SandBoxBot.Database;
 using SandBoxBot.Models;
@@ -10,17 +9,21 @@ namespace SandBoxBot.Commands.Black;
 public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxRepository repository, Message? message)
     : EventMessageCommand(botClient, repository, message), ICommand
 {
-    private static DateTime _dateTimeLastSended = new DateTime();
-
+    private static DateTime _dateTimeLastSended;
+    private Message? _lastMessageSendedWelcome;
+    
     public async Task Execute(CancellationToken cancellationToken)
     {
         if (Message?.NewChatMembers is null)
             return;
-
+        
         await RegisterIfNewUser(Message.NewChatMembers, Message.Chat.Id);
 
         if ((DateTime.Now - _dateTimeLastSended).TotalMinutes >= 59)
+        {
+            await DeleteLastMessageIfNewUser();
             await SendWelcomeMessageIfNewUser(Message.Chat.Id, Message.From?.FirstName);
+        }
     }
 
     private async Task RegisterIfNewUser(User[] invitedUsers, long chatId)
@@ -57,10 +60,11 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
 
         try
         {
-            await BotClient.SendTextMessageAsync(idChat,
+            
+            _lastMessageSendedWelcome = await BotClient.SendTextMessageAsync(idChat,
                 $"\ud83e\udd1f {GetGreeting(DateTime.Now)}, {firstname}\n\n{content}"
             );
-
+            
             _dateTimeLastSended = DateTime.Now;
         }
         catch (Exception e)
@@ -80,5 +84,24 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
             >= 18 and < 24 => "Добрый вечер",
             _ => "Доброй ночи"
         };
+    }
+
+    private async Task DeleteLastMessageIfNewUser()
+    {
+        if(_lastMessageSendedWelcome is null)
+            return;
+
+        try
+        {
+            await BotClient.DeleteMessageAsync(chatId:
+                _lastMessageSendedWelcome.Chat.Id,
+                _lastMessageSendedWelcome.MessageId);
+
+            _lastMessageSendedWelcome = null;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+        }
     }
 }
