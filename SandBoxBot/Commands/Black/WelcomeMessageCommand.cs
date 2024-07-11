@@ -10,7 +10,7 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
     : EventMessageCommand(botClient, repository, message), ICommand
 {
     private static DateTime _dateTimeLastSended;
-    private Message? _lastMessageSendedWelcome;
+    private static Message? _lastMessageSendedWelcome;
     
     public async Task Execute(CancellationToken cancellationToken)
     {
@@ -21,8 +21,8 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
 
         if ((DateTime.Now - _dateTimeLastSended).TotalMinutes >= 59)
         {
-            await DeleteLastMessageIfNewUser();
-            await SendWelcomeMessageIfNewUser(Message.Chat.Id, Message.From?.FirstName);
+           await DeleteLastMessageIfNewUser();
+           await SendWelcomeMessageIfNewUser(Message.Chat.Id, Message.From?.FirstName);
         }
     }
 
