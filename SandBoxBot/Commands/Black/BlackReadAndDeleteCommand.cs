@@ -1,5 +1,4 @@
-﻿using SandBoxBot.Commands.Base;
-using SandBoxBot.Commands.Base.Interfaces;
+﻿using SandBoxBot.Commands.Base.Interfaces;
 using SandBoxBot.Commands.Base.Messages;
 using SandBoxBot.Configs;
 using SandBoxBot.Database;
@@ -65,10 +64,10 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         }
         else if (GlobalConfigs.IsWorkLevinshtain)
         {
-            if (message?.Text?.Split(' ').Length <= GlobalConfigs.MinimalWordToCheckLevinshtain)
+            if (Message?.Text?.Split(' ').Length <= GlobalConfigs.MinimalWordToCheckLevinshtain)
                 return;
             
-            var result = await _levinshtainService.IsSpamAsync(Message.Text, GlobalConfigs.DistanceLevinsthain);
+            var result = await _levinshtainService.IsSpamAsync(Message!.Text, GlobalConfigs.DistanceLevinsthain);
 
             if (result)
             {
@@ -87,10 +86,14 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
             var buttons = new InlineKeyboardButton[][]
             {
                 [
-                    InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Это не спам",
+                    InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
                         $"restore {idIncident}"),
                     InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
                         $"ban {idIncident}")
+                ],
+                [
+                    InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
+                        $"nospam {idIncident}")
                 ]
             };
 

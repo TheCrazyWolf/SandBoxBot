@@ -28,8 +28,11 @@ public class LevinshtainService
     }
 
     // Метод для проверки спама на основе Левенштейна
-    public async Task<bool> IsSpamAsync(string message, int maxDistance = 2)
+    public async Task<bool> IsSpamAsync(string? message, int maxDistance = 2)
     {
+        if (message is null)
+            return false;
+        
         var blackSentences = await _repository.Incidents.GetAll(); 
 
         foreach (var blackSentence in blackSentences)

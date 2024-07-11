@@ -5,10 +5,9 @@ namespace SandBoxBot.Database.Repository;
 
 public class BlackWordRepository(SandBoxContext ef)
 {
-    private SandBoxContext _ef = ef;
-
+    
     public async Task<bool> IsContainsWord(string word)
-        => await _ef.BlackWords.AnyAsync(x => x.Word == word.ToLower());
+        => await ef.BlackWords.AnyAsync(x => x.Word == word.ToLower());
 
 
     public async Task<ICollection<BlackWord>> GetAll()
@@ -26,8 +25,8 @@ public class BlackWordRepository(SandBoxContext ef)
             Word = word.ToLower()
         };
 
-        await _ef.AddRangeAsync(blackWord);
-        await _ef.SaveChangesAsync();
+        await ef.AddRangeAsync(blackWord);
+        await ef.SaveChangesAsync();
     }
 
     public async Task Delete(string word)
@@ -38,7 +37,7 @@ public class BlackWordRepository(SandBoxContext ef)
         if(foundWord is null)
             return;
 
-        _ef.Remove(foundWord);
-        await _ef.SaveChangesAsync();
+        ef.Remove(foundWord);
+        await ef.SaveChangesAsync();
     }
 }

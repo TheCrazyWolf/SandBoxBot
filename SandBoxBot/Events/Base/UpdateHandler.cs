@@ -93,7 +93,9 @@ public class UpdateHandler : IUpdateHandler
         {
             "ban" => Task.Run(()=>new BanCommand(botClient, new(SandBoxContext.Instance),callbackQuery)
                 .Execute(cancellationToken), cancellationToken),
-            "restore" => Task.Run(()=>new RestoreMessage(botClient, new(SandBoxContext.Instance), callbackQuery)
+            "restore" => Task.Run(()=>new RestoreMessageCommand(botClient, new(SandBoxContext.Instance), callbackQuery)
+                .Execute(cancellationToken), cancellationToken),
+            "nospam" => Task.Run(()=>new NoSpamCommand(botClient, new(SandBoxContext.Instance), callbackQuery)
                 .Execute(cancellationToken), cancellationToken),
         };
 

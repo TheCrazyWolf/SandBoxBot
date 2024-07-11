@@ -36,7 +36,7 @@ public class SetLevinshtainCommand(ITelegramBotClient botClient, SandBoxReposito
         {
             await BotClient.SendTextMessageAsync(Message.Chat.Id, 
                 $"\u2705 Команда выполнена" +
-                $"\n\nОшибка при установке нового значения",
+                $"\n\nОшибка при установке нового значения\n\n{e.Message}",
                 cancellationToken: cancellationToken);
         }
         

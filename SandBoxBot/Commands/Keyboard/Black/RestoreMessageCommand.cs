@@ -7,7 +7,7 @@ using Telegram.Bot.Types;
 
 namespace SandBoxBot.Commands.Keyboard.Black;
 
-public class RestoreMessage(ITelegramBotClient botClient, SandBoxRepository repository, CallbackQuery callbackQuery)
+public class RestoreMessageCommand(ITelegramBotClient botClient, SandBoxRepository repository, CallbackQuery callbackQuery)
     : EventCallbackQueryCommand(botClient, repository, callbackQuery)
 {
     public async Task Execute(CancellationToken cancellationToken)
