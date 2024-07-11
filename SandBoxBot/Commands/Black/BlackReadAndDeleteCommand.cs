@@ -65,6 +65,9 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         }
         else if (GlobalConfigs.IsWorkLevinshtain)
         {
+            if (message?.Text?.Split(' ').Length <= GlobalConfigs.MinimalWordToCheckLevinshtain)
+                return;
+            
             var result = await _levinshtainService.IsSpamAsync(Message.Text, GlobalConfigs.DistanceLevinsthain);
 
             if (result)
