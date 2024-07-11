@@ -11,7 +11,7 @@ public sealed class SandBoxContext : DbContext
 
     public SandBoxContext() => Database.MigrateAsync();
     
-    public DbSet<Incident> Sentences { get; set; }
+    public DbSet<Incident> Incidents { get; set; }
     public DbSet<BlackWord> BlackWords { get; set; }
     
     public DbSet<Account> Accounts { get; set; }
@@ -19,5 +19,14 @@ public sealed class SandBoxContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlite("Data Source = LocalStorage.db");
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Incident>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .OnDelete(DeleteBehavior.SetNull);
+        
     }
 }

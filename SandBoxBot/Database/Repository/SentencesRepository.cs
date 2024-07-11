@@ -6,9 +6,9 @@ namespace SandBoxBot.Database.Repository;
 public class SentencesRepository(SandBoxContext ef)
 {
     public async Task<bool> IsContainsSentence(string sentence)
-        => await ef.Sentences.AnyAsync(x => x.Value == sentence.ToLower());
+        => await ef.Incidents.AnyAsync(x => x.Value == sentence.ToLower());
     public async Task<Incident?> GetContainsSentence(string sentence)
-        => await ef.Sentences.FirstOrDefaultAsync(x=> x.Value == sentence.ToLower());
+        => await ef.Incidents.FirstOrDefaultAsync(x=> x.Value == sentence.ToLower());
     
     public async Task<Incident> Add(Incident inc)
     {
@@ -26,12 +26,12 @@ public class SentencesRepository(SandBoxContext ef)
 
     public async Task<Incident?> Get(long id)
     {
-        return await ef.Sentences.FirstOrDefaultAsync(x => x.Id == id);
+        return await ef.Incidents.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task Update(Incident inc)
     {
-        var incident = await ef.Sentences.FirstOrDefaultAsync(x => x.Id == inc.Id);
+        var incident = await ef.Incidents.FirstOrDefaultAsync(x => x.Id == inc.Id);
 
         if (incident is null)
             return;
@@ -45,6 +45,6 @@ public class SentencesRepository(SandBoxContext ef)
 
     public async Task<ICollection<Incident>> GetAll(bool isSpam = true)
     {
-        return await ef.Sentences.Where(x => x.IsSpam == isSpam).ToListAsync();
+        return await ef.Incidents.Where(x => x.IsSpam == isSpam).ToListAsync();
     }
 }
