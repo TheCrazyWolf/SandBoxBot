@@ -19,7 +19,7 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
 
         await RegisterIfNewUser(Message.NewChatMembers, Message.Chat.Id);
 
-        if ((DateTime.Now - _dateTimeLastSended).TotalMinutes >= 30)
+        if ((DateTime.Now - _dateTimeLastSended).TotalMinutes >= 59)
             await SendWelcomeMessageIfNewUser(Message.Chat.Id, Message.From?.FirstName);
     }
 
