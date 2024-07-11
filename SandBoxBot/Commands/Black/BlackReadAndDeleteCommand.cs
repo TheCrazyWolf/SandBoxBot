@@ -15,7 +15,11 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
 {
     private bool _isCanBypass;
     private bool _toDelete;
+    private bool _isWorkTime;
     private LevinshtainService _levinshtainService = new();
+
+    private static Message? _lastMessageWriteToWorkTime;
+    private static DateTime _lastDateTimeWriteToWorkTime;
     
     public async Task Execute(CancellationToken cancellationToken)
     {
@@ -25,6 +29,13 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         await UpdateActivityUser();
         
         _isCanBypass = await CanBypass();
+        _isWorkTime = CanWriteInWorkTime();
+
+        if (!(_isWorkTime || await CanBypassIsAdmin()))
+        {
+            await SendAndDeleteMessageIfNotWorkTime();
+            return;
+        }
         
         string blackWords = string.Empty;
 
@@ -153,5 +164,66 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
             return true;
 
         return false;
+    }
+    
+    private async Task<bool> CanBypassIsAdmin()
+    {
+        if (Message?.From is null)
+            return false;
+        
+        var account = await Repository.Accounts.Get(Message.From.Id);
+
+        if (account is null)
+            return false;
+        
+        return account.IsAdmin;
+    }
+
+    private bool CanWriteInWorkTime()
+    {
+        if (DateTime.Now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            return false;
+        
+        var start = new TimeSpan(08, 00, 00);
+        var end = new TimeSpan(16, 30, 00);
+        
+        if (!(DateTime.Now.TimeOfDay >= start && DateTime.Now.TimeOfDay <= end))
+            return false;
+
+        return true;
+    }
+
+    private async Task SendAndDeleteMessageIfNotWorkTime()
+    {
+        if (Message is null)
+            return;
+
+        try
+        {
+            var currentTime = DateTime.Now;
+            var timeSinceLastMessage = (currentTime - _lastDateTimeWriteToWorkTime).TotalHours;
+
+            // Если прошло больше 8 часов с момента последнего сообщения о рабочем времени
+            if (_lastMessageWriteToWorkTime != null && timeSinceLastMessage >= 8)
+            {
+                await BotClient.DeleteMessageAsync(Message.Chat.Id, _lastMessageWriteToWorkTime.MessageId);
+                _lastMessageWriteToWorkTime = null;
+            }
+
+            // Отправка сообщения о рабочем времени, если оно еще не было отправлено в последние 8 часов
+            if (_lastMessageWriteToWorkTime == null)
+            {
+                _lastMessageWriteToWorkTime = await BotClient.SendTextMessageAsync(Message.Chat.Id,
+                    $"Мы хотим помогать Вам круглосуточно \u2764\ufe0f\nНо получить ответы на вопросы можете в рабочее время: С 8.00 по 16.30 \u2705");
+                _lastDateTimeWriteToWorkTime = currentTime;
+            }
+
+            // Удаление входящего сообщения пользователя
+            await BotClient.DeleteMessageAsync(Message.Chat.Id, Message.MessageId);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+        }
     }
 }
