@@ -186,10 +186,15 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         
         var start = new TimeSpan(08, 00, 00);
         var end = new TimeSpan(16, 30, 00);
+        var endShort = new TimeSpan(15, 30, 00);
         
         if (!(DateTime.Now.TimeOfDay >= start && DateTime.Now.TimeOfDay <= end))
             return false;
 
+        if (DateTime.Now.DayOfWeek is DayOfWeek.Friday &&
+            (!(DateTime.Now.TimeOfDay >= start && DateTime.Now.TimeOfDay <= endShort)))
+            return false;
+        
         return true;
     }
 
@@ -214,7 +219,7 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
             if (_lastMessageWriteToWorkTime == null)
             {
                 _lastMessageWriteToWorkTime = await BotClient.SendTextMessageAsync(Message.Chat.Id,
-                    $"Мы хотим помогать Вам круглосуточно \u2764\ufe0f\nНо получить ответы на вопросы можете в рабочее время: С 8.00 по 16.30 \u2705");
+                    $"Мы хотим помогать Вам круглосуточно \u2764\ufe0f\nНо получить ответы на вопросы Вы можете в рабочее время: ПН-ЧТ С 8.00 по 16.30, ПТ до 15.30 \u2705");
                 _lastDateTimeWriteToWorkTime = currentTime;
             }
 
