@@ -123,7 +123,7 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
         if (Message?.From is null)
             return;
 
-        var account = await Repository.Accounts.Get(Message.Chat.Id);
+        var account = await Repository.Accounts.Get(Message.From.Id);
 
         if (account is null)
         {
