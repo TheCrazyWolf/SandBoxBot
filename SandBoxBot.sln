@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SandBox.Models", "SandBox.M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SandBox.Advanced", "SandBox.Advanced\SandBox.Advanced.csproj", "{A0305EF4-0F8C-4C0C-BC3A-CD95E9C72E22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SandBox.Migrations", "SandBox.Migrations\SandBox.Migrations.csproj", "{94122290-4D1C-475D-B882-726AD3684C91}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,9 +24,5 @@ Global
 		{A0305EF4-0F8C-4C0C-BC3A-CD95E9C72E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0305EF4-0F8C-4C0C-BC3A-CD95E9C72E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0305EF4-0F8C-4C0C-BC3A-CD95E9C72E22}.Release|Any CPU.Build.0 = Release|Any CPU
-		{94122290-4D1C-475D-B882-726AD3684C91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{94122290-4D1C-475D-B882-726AD3684C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{94122290-4D1C-475D-B882-726AD3684C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{94122290-4D1C-475D-B882-726AD3684C91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
