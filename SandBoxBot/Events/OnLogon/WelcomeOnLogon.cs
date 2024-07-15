@@ -1,12 +1,12 @@
 ﻿using SandBoxBot.Commands.Base.Interfaces;
 using SandBoxBot.Commands.Base.Messages;
 using SandBoxBot.Database;
-using SandBoxBot.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-namespace SandBoxBot.Commands.Black;
 
-public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxRepository repository, Message? message)
+namespace SandBoxBot.Events.OnLogon;
+
+public class WelcomeOnLogon(ITelegramBotClient botClient, SandBoxRepository repository, Message? message)
     : EventMessageCommand(botClient, repository, message), ICommand
 {
     private static DateTime _dateTimeLastSended;
@@ -16,8 +16,8 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
     {
         if (Message?.NewChatMembers is null)
             return;
-        
-        await RegisterIfNewUser(Message.NewChatMembers, Message.Chat.Id);
+
+        await new InvitedUserActivity(BotClient, Repository, Message).Execute(cancellationToken);
 
         if ((DateTime.Now - _dateTimeLastSended).TotalMinutes >= 59)
         {
@@ -25,28 +25,7 @@ public class WelcomeMessageCommand(ITelegramBotClient botClient, SandBoxReposito
            await SendWelcomeMessageIfNewUser(Message.Chat.Id, Message.From?.FirstName);
         }
     }
-
-    private async Task RegisterIfNewUser(User[] invitedUsers, long chatId)
-    {
-        foreach (var user in invitedUsers)
-        {
-            if (await Repository.Accounts.ExistAccount(user.Id))
-                continue;
-
-            var newAccount = new Account()
-            {
-                IdAccountTelegram = user.Id,
-                ChatId = chatId,
-                LastActivity = DateTime.Now,
-                DateTimeJoined = DateTime.Now,
-                UserName = user.Username,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-            };
-
-            await Repository.Accounts.Add(newAccount);
-        }
-    }
+    
 
     private async Task SendWelcomeMessageIfNewUser(long idChat, string? firstname)
     {
