@@ -3,6 +3,7 @@ using SandBox.Advanced;
 using SandBox.Advanced.Configs;
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Services;
+using SandBox.Advanced.Services.Telegram;
 using Telegram.Bot;
 
 var builder = Host.CreateApplicationBuilder(args);

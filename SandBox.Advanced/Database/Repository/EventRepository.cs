@@ -7,7 +7,7 @@ public class EventRepository(SandBoxContext ef)
         DateTime dateTimeStart, DateTime dateTimeEnd)
     {
         return Task.FromResult<int>(ef.Events
-            .Count(x=> x.AccountIdTelegram == idTelegram 
+            .Count(x=> x.IdTelegram == idTelegram 
                        && x.ChatId == chatId
                        && x.DateTime >= dateTimeStart 
                        && x.DateTime<= dateTimeEnd));

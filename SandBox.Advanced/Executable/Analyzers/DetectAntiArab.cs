@@ -9,35 +9,15 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectFastActivity(
+public class DetectAntiArab(
     ITelegramBotClient botClient,
     Update update,
     SandBoxRepository repository) : IExecutable
 {
     private Account? _accountDb;
-    private bool _isOverride;
-    private int _countTotalLastMessages;
-    private const int ConstMaxActivityPerMinute = 10;
 
     public Task Execute(CancellationToken cancellationToken)
     {
-        if (update.Message?.From is null)
-            return Task.CompletedTask;
-
-        _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
-        _countTotalLastMessages = repository.Events
-            .GetCountEventsFromIdAccount(update.Message.From.Id,
-                update.Message.Chat.Id,
-                DateTime.Now.AddMinutes(-1), DateTime.Now).Result;
-
-        _isOverride = GetOverride();
-
-        if (_isOverride) return Task.CompletedTask;
-
-        if (_countTotalLastMessages <= ConstMaxActivityPerMinute)
-            return Task.CompletedTask;
-        
-        NotifyManagers();
         return Task.CompletedTask;
     }
 

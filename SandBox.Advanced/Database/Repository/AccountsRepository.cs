@@ -6,6 +6,10 @@ public class AccountsRepository(SandBoxContext ef)
 {
     public Task<Account> Add(Account account)
     {
+        var dbAccount = GetById(account.IdTelegram).Result;
+
+        if (dbAccount is not null)
+            return Task.FromResult(dbAccount);
         
         ef.Add(account);
         ef.SaveChanges();
@@ -14,7 +18,7 @@ public class AccountsRepository(SandBoxContext ef)
 
     public Task<Account?> GetById(long idTelegram)
     {
-        return Task.FromResult(ef.Accounts.FirstOrDefault(x => x.AccountIdTelegram == idTelegram));
+        return Task.FromResult(ef.Accounts.FirstOrDefault(x => x.IdTelegram == idTelegram));
     }
 
     public Task<List<Account>> GetManagers()
@@ -24,7 +28,7 @@ public class AccountsRepository(SandBoxContext ef)
     
     public Task<bool> Exists(long idTelegram)
     {
-        return Task.FromResult(ef.Accounts.Any(x => x.AccountIdTelegram == idTelegram));
+        return Task.FromResult(ef.Accounts.Any(x => x.IdTelegram == idTelegram));
     }
 
     public Task<Account> Update(Account blackWord)

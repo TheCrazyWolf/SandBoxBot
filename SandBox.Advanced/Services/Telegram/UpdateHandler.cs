@@ -6,7 +6,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace SandBox.Advanced.Services;
+namespace SandBox.Advanced.Services.Telegram;
 
 public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger) : IUpdateHandler
 {

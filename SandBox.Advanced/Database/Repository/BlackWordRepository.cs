@@ -6,6 +6,11 @@ public class BlackWordRepository(SandBoxContext ef)
 {
     public Task<BlackWord> Add(BlackWord blackWord)
     {
+        var dBlackWord = GetByWord(blackWord.Content.ToLower()).Result;
+        
+        if (dBlackWord is not null)
+            return Task.FromResult(dBlackWord);
+
         blackWord.Content = blackWord.Content.ToLower();
         ef.Add(blackWord);
         ef.SaveChanges();
@@ -16,7 +21,7 @@ public class BlackWordRepository(SandBoxContext ef)
     {
         return Task.FromResult(ef.BlackWords.FirstOrDefault(x => x.Content == blackWord.ToLower()));
     }
-    
+
     public Task<bool> Exists(string blackWord)
     {
         return Task.FromResult(ef.BlackWords.Any(x => x.Content == blackWord.ToLower()));
@@ -39,7 +44,7 @@ public class BlackWordRepository(SandBoxContext ef)
 
         ef.Remove(item);
         ef.SaveChanges();
-        
+
         return Task.FromResult(true);
     }
 }

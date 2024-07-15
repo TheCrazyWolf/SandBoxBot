@@ -1,4 +1,4 @@
-namespace SandBox.Advanced.Services;
+namespace SandBox.Advanced.Services.Text;
 
 public static class TextTreatment
 {

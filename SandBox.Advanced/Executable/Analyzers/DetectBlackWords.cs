@@ -1,6 +1,6 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
-using SandBox.Advanced.Services;
+using SandBox.Advanced.Services.Text;
 using SandBox.Models.Events;
 using SandBox.Models.Telegram;
 using Telegram.Bot;
@@ -47,7 +47,7 @@ public class DetectBlackWords(
             ChatId = update.Message.Chat.Id,
             DateTime = DateTime.Now,
             Content = update.Message.Text ?? string.Empty,
-            AccountIdTelegram = update.Message.From.Id
+            IdTelegram = update.Message.From.Id
         };
     }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
@@ -101,7 +101,7 @@ public class DetectBlackWords(
             var buttons = GenerateKeyboardForNotify();
             var message = BuildNotifyMessage();
 
-            botClient.SendTextMessageAsync(chatId:id.AccountIdTelegram,
+            botClient.SendTextMessageAsync(chatId:id.IdTelegram,
                 text: message,
                 replyMarkup: new InlineKeyboardMarkup(buttons), 
                 disableNotification: true);
