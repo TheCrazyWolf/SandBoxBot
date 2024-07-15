@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using SandBox.Advanced;
 using SandBox.Advanced.Configs;
+using SandBox.Advanced.Database;
 using SandBox.Advanced.Services;
 using Telegram.Bot;
 
@@ -24,6 +25,7 @@ builder.Services.AddHttpClient("telegram_bot_client").RemoveAllLoggers()
 builder.Services.AddScoped<UpdateHandler>();
 builder.Services.AddScoped<ReceiverService>();
 builder.Services.AddHostedService<PollingService>();
+builder.Services.AddDbContext<SandBoxContext>();
 
 var host = builder.Build();
 host.Run();

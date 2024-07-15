@@ -28,14 +28,14 @@ public class BlackReadAndDeleteCommand(ITelegramBotClient botClient, SandBoxRepo
 
         await UpdateActivityUser();
 
-        _isCanBypass = await CanBypass();
+        /*_isCanBypass = await CanBypass();
         _isWorkTime = CanWriteInWorkTime();
 
         if (!(_isWorkTime || await CanBypassIsAdmin()))
         {
             await SendAndDeleteMessageIfNotWorkTime();
             return;
-        }
+        }*/
 
         string blackWords = string.Empty;
 
