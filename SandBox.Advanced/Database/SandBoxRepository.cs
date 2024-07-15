@@ -5,6 +5,7 @@ public class SandBoxRepository(SandBoxContext ef)
 {
     public AccountsRepository Accounts = new(ef);
     public BlackWordRepository BlackWords = new(ef);
+    public EventRepository Events = new(ef);
     public EventContentRepository Contents = new(ef);
     public EventsJoinedRepository Joins = new(ef);
     public CaptchaRepository Captchas = new(ef);

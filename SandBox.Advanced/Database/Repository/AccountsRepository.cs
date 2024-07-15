@@ -16,6 +16,11 @@ public class AccountsRepository(SandBoxContext ef)
     {
         return Task.FromResult(ef.Accounts.FirstOrDefault(x => x.AccountIdTelegram == idTelegram));
     }
+
+    public Task<List<Account>> GetManagers()
+    {
+        return Task.FromResult(ef.Accounts.Where(x=> x.IsManagerThisBot == true).ToList());
+    }
     
     public Task<bool> Exists(long idTelegram)
     {
