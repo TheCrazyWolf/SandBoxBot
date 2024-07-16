@@ -2,6 +2,7 @@ using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Activity;
 using SandBox.Advanced.Executable.Analyzers;
 using SandBox.Advanced.Executable.Commands;
+using SandBox.Advanced.Services.Text;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -12,9 +13,10 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Services.Telegram;
 
-public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger, IServiceScopeFactory _scopeFactory) : IUpdateHandler
+public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger, IServiceScopeFactory scopeFactory) : IUpdateHandler
 {
-    
+    public static string UserNameBot = string.Empty;
+    private static bool _isFirstPool = true;
     public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
         logger.LogInformation("HandleError: {Exception}", exception);
@@ -25,6 +27,12 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
+        if (_isFirstPool)
+        {
+            UserNameBot = $"@{botClient.GetMeAsync(cancellationToken).Result.Username}";
+            _isFirstPool = false;
+        }
+        
         cancellationToken.ThrowIfCancellationRequested();
         await (update switch
         {
@@ -51,7 +59,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     private async Task OnMessage(Update update)
     {
-        using var scope = _scopeFactory.CreateScope();
+        using var scope = scopeFactory.CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<SandBoxRepository>();
         
         logger.LogInformation("Receive message type: {MessageType}", update.Type);
@@ -64,12 +72,14 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         
         await new UpdateDetailsActivityProfile(bot, update, repo).Execute();
 
-        var command = messageText.Split(' ')[0];
+        var command = TextTreatment.GetMessageWithoutUserNameBots(messageText).Split(' ')[0];
 
         if (command == "/add")
             await new AddNewBlackWord(bot, update, repo).Execute();
         if (command == "/del")
             await new RemoveBlackWord(bot, update, repo).Execute();
+        if (command == "/check")
+            await new CheckForBlackWord(bot, update, repo).Execute();
 
         await new DetectBlackWords(bot, update, repo).Execute();
         await new DetectFastActivity(bot, update, repo).Execute();

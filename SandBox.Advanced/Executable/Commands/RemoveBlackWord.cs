@@ -15,12 +15,14 @@ public class RemoveBlackWord(
 {
     private Account? _accountDb;
     private string _blackWords = string.Empty;
+    private string _message = string.Empty;
 
     public Task Execute()
     {
         if (update.Message?.From is null)
             return Task.CompletedTask;
 
+        _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(update.Message.Text!);
         _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
 
         if (IfThisUserIsManager().Result)
@@ -48,7 +50,7 @@ public class RemoveBlackWord(
     private Task Proccess()
     {
         // проверка, чтобы не добавлялись команды - SKIP 1
-        var words = TextTreatment.GetArrayWordsTreatmentMessage(update.Message.Text).Skip(1);
+        var words = TextTreatment.GetArrayWordsTreatmentMessage(_message);
 
         foreach (var word in words)
         {

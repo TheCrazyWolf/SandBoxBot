@@ -1,62 +1,46 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Services.Text;
-using SandBox.Models.Blackbox;
-using SandBox.Models.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class AddNewBlackWord(
+public class CheckForBlackWord(
     ITelegramBotClient botClient,
     Update update,
     SandBoxRepository repository) : IExecutable
 {
-    private Account? _accountDb;
+
+    private bool _isBlackKeyWord;
     private string _blackWords = string.Empty;
-    private string _message = string.Empty;
 
     public Task Execute()
     {
         if (update.Message?.From is null)
             return Task.CompletedTask;
 
-        _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(update.Message.Text!);
-
-        _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
-
-        if (IfThisUserIsManager().Result)
-        {
-            Proccess();
-            SendMessage(BuildSuccessMessage());
-            return Task.CompletedTask;
-        }
+        Proccess();
+        SendMessage(BuildSuccessMessage());
         
-        SendMessage(BuildErrorMessage());
         return Task.CompletedTask;
     }
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-    private Task<bool> IfThisUserIsManager()
-    {
-        if (_accountDb.IsManagerThisBot)
-            return Task.FromResult(_accountDb.IsManagerThisBot);
-
-        // to do проверка на администратор ли в беседе
-
-        return Task.FromResult(false);
-    }
 
     private Task Proccess()
     {
         // проверка, чтобы не добавлялись команды - SKIP 1
-        var words = TextTreatment.GetArrayWordsTreatmentMessage(_message);
+        var words = TextTreatment.GetArrayWordsTreatmentMessage(update.Message.Text).Skip(1);
 
         foreach (var word in words)
         {
-            repository.BlackWords.Add(new BlackWord { Content = word });
+            var result = repository.BlackWords.Exists(word).Result;
+
+            if (!result) continue;
+            _isBlackKeyWord = true;
             _blackWords += $"{word}, ";
+
         }
 
         return Task.CompletedTask;
@@ -72,15 +56,11 @@ public class AddNewBlackWord(
 
     private string BuildSuccessMessage()
     {
+        var resultMsgForBlackList = _isBlackKeyWord ? "Да" : "Нет";
         return
             $"\u2705 Команда выполнена" +
-            $"\n\nДобавлены следующие слова: {_blackWords}";
-    }
-    
-    private string BuildErrorMessage()
-    {
-        return
-            "\u26a0\ufe0f Недостаточно прав";
+            $"\n\nАлгоритм ключевых слов: {resultMsgForBlackList}" +
+            $": {_blackWords}\n\n";
     }
     
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
