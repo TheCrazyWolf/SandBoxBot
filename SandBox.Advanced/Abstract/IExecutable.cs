@@ -1,6 +1,6 @@
 namespace SandBox.Advanced.Abstract;
 
-public interface IExecutable
+public interface IExecutable<T>
 {
-    Task Execute();
+    Task<T> Execute();
 }

@@ -9,25 +9,25 @@ namespace SandBox.Advanced.Executable.Keyboards;
 public class BanFromEvent(
     ITelegramBotClient botClient,
     CallbackQuery callbackQuery,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) : IExecutable<bool>
 {
     private EventContent? _eventContent;
 
-    public Task Execute()
+    public Task<bool> Execute()
     {
         var words = callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         
         if(words is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         
         _eventContent = repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
 
         if (_eventContent is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
         Proccess();
         SendMessageOfExecuted();
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
     
     private Task Proccess()

@@ -13,7 +13,7 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectSpamMl(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) 
+    SandBoxRepository repository) : IExecutable<bool>
 {
     private Account? _accountDb;
     private bool _toDelete;

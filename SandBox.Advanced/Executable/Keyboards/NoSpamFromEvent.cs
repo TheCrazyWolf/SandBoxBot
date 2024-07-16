@@ -10,22 +10,22 @@ namespace SandBox.Advanced.Executable.Keyboards;
 public class NoSpamFromEvent(
     ITelegramBotClient botClient,
     CallbackQuery callbackQuery,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) : IExecutable<bool>
 {
     private EventContent? _eventContent;
     private Account? _senderOfEvent;
     
-    public Task Execute()
+    public Task<bool> Execute()
     {
         var words = callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         
         if(words is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         
         _eventContent = repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
 
         if (_eventContent is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         
         _eventContent.IsSpam = false;
         repository.Contents.Update(_eventContent);
@@ -34,7 +34,7 @@ public class NoSpamFromEvent(
         
         Proccess();
         SendMessageOfExecuted();
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
     
     private Task Proccess()

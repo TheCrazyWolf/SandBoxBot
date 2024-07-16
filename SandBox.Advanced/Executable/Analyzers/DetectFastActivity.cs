@@ -12,17 +12,17 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectFastActivity(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) : IExecutable<bool>
 {
     private Account? _accountDb;
     private bool _isOverride;
     private int _countTotalLastMessages;
     private const int ConstMaxActivityPerMinute = 10;
 
-    public Task Execute()
+    public Task<bool> Execute()
     {
         if (update.Message?.From is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
         _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
         _countTotalLastMessages = repository.Events
@@ -32,13 +32,13 @@ public class DetectFastActivity(
 
         _isOverride = GetOverride();
 
-        if (_isOverride) return Task.CompletedTask;
+        if (_isOverride) return Task.FromResult(true);
 
         if (_countTotalLastMessages <= ConstMaxActivityPerMinute)
-            return Task.CompletedTask;
-        
+            return Task.FromResult(true);
+
         NotifyManagers();
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     private bool GetOverride()
@@ -60,7 +60,7 @@ public class DetectFastActivity(
 
         return false;
     }
-    
+
     private Task NotifyManagers()
     {
         foreach (var id in repository.Accounts.GetManagers().Result)

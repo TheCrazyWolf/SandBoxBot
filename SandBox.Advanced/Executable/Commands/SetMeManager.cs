@@ -1,22 +1,20 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
-using SandBox.Advanced.Services.Text;
-using SandBox.Models.Blackbox;
-using SandBox.Models.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class StartCommand(
-    ITelegramBotClient botClient,
-    Update update,
-    SandBoxRepository repository) : IExecutable<bool>
+public class SetMeManager: IExecutable<bool>
 {
-
+    public ITelegramBotClient BotClient = default!;
+    public Update Update = default!;
+    public SandBoxRepository Repository = default!;
+    public string Secret = default!;
+    
     public Task<bool> Execute()
     {
-        if (update.Message?.From is null)
+        if (Update.Message?.From is null)
             return Task.FromResult(false);
         
         SendMessage(BuildMessage());
@@ -24,7 +22,7 @@ public class StartCommand(
     }
     private Task SendMessage(string message)
     {
-        botClient.SendTextMessageAsync(chatId:update.Message!.Chat.Id,
+        BotClient.SendTextMessageAsync(chatId:Update.Message!.Chat.Id,
             text: message,
             disableNotification: true);
         return Task.CompletedTask;

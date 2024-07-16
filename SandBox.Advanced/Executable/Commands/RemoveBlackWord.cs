@@ -11,16 +11,16 @@ namespace SandBox.Advanced.Executable.Commands;
 public class RemoveBlackWord(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) : IExecutable<bool>
 {
     private Account? _accountDb;
     private string _blackWords = string.Empty;
     private string _message = string.Empty;
 
-    public Task Execute()
+    public Task<bool> Execute()
     {
         if (update.Message?.From is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
         _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(update.Message.Text!);
         _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
@@ -29,11 +29,11 @@ public class RemoveBlackWord(
         {
             Proccess();
             SendMessage(BuildSuccessMessage());
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
         
         SendMessage(BuildErrorMessage());
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.

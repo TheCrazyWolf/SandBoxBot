@@ -20,8 +20,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 {
     public static string UserNameBot = string.Empty;
     private static bool _isFirstPool = true;
-    private SandBoxRepository? _repository;
-    private BotConfiguration? _configuration;
+    private SandBoxRepository _repository = default!;
+    private BotConfiguration _configuration = default!;
 
     public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken)
@@ -36,7 +36,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         await GetUserNameBotIfFirstPoll();
         await CreateScopeAndGetCurrentService();
-        
+
         cancellationToken.ThrowIfCancellationRequested();
         await (update switch
         {
@@ -55,7 +55,6 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     private async Task OnMessage(Update update)
     {
-        
         logger.LogInformation("Receive message type: {MessageType}", update.Type);
 
         if (update.Message?.NewChatMembers is not null)
@@ -82,6 +81,15 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             case "/check":
                 await new CheckForBlackWord(bot, update, _repository!).Execute();
                 return;
+            case "/setadmin":
+                await new SetMeManager
+                {
+                    BotClient = bot,
+                    Update = update,
+                    Repository = _repository,
+                    Secret = _configuration!.ManagerPasswordSecret,
+                }.Execute();
+                break;
         }
 
         // Analatics chats
@@ -125,7 +133,6 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     // Process Inline Keyboard callback data
     private async Task OnCallbackQuery(CallbackQuery callbackQuery)
     {
-        
         logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", callbackQuery.Id);
 
         var words = callbackQuery.Data?.Split(' ');

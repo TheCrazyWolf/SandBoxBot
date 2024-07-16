@@ -9,7 +9,7 @@ namespace SandBox.Advanced.Executable.Commands;
 public class CheckForBlackWord(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) : IExecutable<bool>
 {
 
     private bool _isBlackKeyWord;
@@ -17,16 +17,16 @@ public class CheckForBlackWord(
     private float _score;
     private string _blackWords = string.Empty;
 
-    public Task Execute()
+    public Task<bool> Execute()
     {
         if (update.Message?.From is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
         Proccess();
         _isSpamFromMl = IsSpamPredict(update.Message?.Text);
         
         SendMessage(BuildSuccessMessage());
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.

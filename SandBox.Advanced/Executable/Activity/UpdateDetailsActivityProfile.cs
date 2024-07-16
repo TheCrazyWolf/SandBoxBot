@@ -1,25 +1,23 @@
-using Microsoft.EntityFrameworkCore;
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
 using SandBox.Models.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Activity;
 
 public class UpdateDetailsActivityProfile(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) : IExecutable<bool>
 {
     protected ChatTg? _chatTg;
     protected Account? _accountDb;
     
-    public virtual Task Execute()
+    public virtual Task<bool> Execute()
     {
         if (update.Message?.From?.Id is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
         _chatTg = GetThisChatTelegram();
 
@@ -31,12 +29,12 @@ public class UpdateDetailsActivityProfile(
         if (_accountDb is not null)
         {
             UpdateDetailsAccount();
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         CreateAccountIfNull();
 
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 

@@ -12,7 +12,7 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectBlackWords(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) 
+    SandBoxRepository repository) : IExecutable<bool>
 {
     private Account? _accountDb;
     private bool _toDelete;

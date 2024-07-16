@@ -12,10 +12,10 @@ public class UpdateDetailsActivityOnJoined(
     SandBoxRepository repository)
     : UpdateDetailsActivityProfile(botClient, update, repository)
 {
-    public override Task Execute()
+    public override Task<bool> Execute()
     {
         if (update.Message?.NewChatMembers is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
         _chatTg = GetThisChatTelegram();
 
@@ -27,7 +27,7 @@ public class UpdateDetailsActivityOnJoined(
             CreateAccount(user);
             CreateEventJoin(user);
         }
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     private EventJoined CreateEventJoin(User user)

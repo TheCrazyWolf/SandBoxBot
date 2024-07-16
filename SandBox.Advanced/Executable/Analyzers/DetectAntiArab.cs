@@ -12,13 +12,13 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectAntiArab(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) : IExecutable<bool>
 {
     private Account? _accountDb;
 
-    public Task Execute()
+    public Task<bool> Execute()
     {
-        return Task.CompletedTask;
+        return Task.FromResult(false);
     }
 
     private bool GetOverride()
