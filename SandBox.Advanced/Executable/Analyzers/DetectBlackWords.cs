@@ -12,7 +12,7 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectBlackWords(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) 
 {
     private Account? _accountDb;
     private bool _toDelete;
@@ -20,10 +20,10 @@ public class DetectBlackWords(
     private string _blackWords = string.Empty;
     private EventContent _eventContent = new ();
     
-    public Task Execute()
+    public Task<bool> Execute()
     {
         if (update.Message?.From is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         
         _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
         _toDelete = IsContainsBlackWord(update.Message.Text);
@@ -31,12 +31,12 @@ public class DetectBlackWords(
         _eventContent = GenerateEvent();
         repository.Contents.Add(_eventContent);
 
-        if (!_eventContent.IsSpam) return Task.CompletedTask;
+        if (!_eventContent.IsSpam) return Task.FromResult(false);
         
         DeleteThisMessage();
         NotifyManagers();
         
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     

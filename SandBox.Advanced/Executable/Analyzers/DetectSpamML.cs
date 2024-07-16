@@ -3,6 +3,7 @@ using SandBox.Advanced.Database;
 using SandBox.Models.Events;
 using SandBox.Models.Telegram;
 using SandBox_Advanced;
+using SandBox.Advanced.Services.Text;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -12,7 +13,7 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectSpamMl(
     ITelegramBotClient botClient,
     Update update,
-    SandBoxRepository repository) : IExecutable
+    SandBoxRepository repository) 
 {
     private Account? _accountDb;
     private bool _toDelete;
@@ -20,10 +21,10 @@ public class DetectSpamMl(
     private EventContent _eventContent = new();
     private float _score = 0;
 
-    public Task Execute()
+    public Task<bool> Execute()
     {
         if (update.Message?.From is null)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
         _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
         _toDelete = IsSpamPredict(update.Message.Text);
@@ -31,12 +32,12 @@ public class DetectSpamMl(
         _eventContent = GenerateEvent();
         repository.Contents.Add(_eventContent);
 
-        if (!_eventContent.IsSpam) return Task.CompletedTask;
+        if (!_eventContent.IsSpam) return Task.FromResult(false);
 
         DeleteThisMessage();
         NotifyManagers();
 
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -92,18 +93,9 @@ public class DetectSpamMl(
 
     private bool IsSpamPredict(string? message)
     {
-        // model training  lbfgsmaximumEntropyMulti
-        var sampleData = new AntiWorkSpam.ModelInput
-        {
-            Value = message,
-        };
-        var result = AntiWorkSpam.Predict(sampleData);
-        _score = result.Score[1] * 100;
-
-        if (result.Score[1] >= 0.35f)
-            return true;
-
-        return false;
+        var result = MlPredictor.IsSpamPredict(message);
+        _score = result.Item2;
+        return result.Item1;
     }
 
     private Task NotifyManagers()

@@ -13,6 +13,8 @@ public class CheckForBlackWord(
 {
 
     private bool _isBlackKeyWord;
+    private bool _isSpamFromMl;
+    private float _score;
     private string _blackWords = string.Empty;
 
     public Task Execute()
@@ -21,8 +23,9 @@ public class CheckForBlackWord(
             return Task.CompletedTask;
 
         Proccess();
-        SendMessage(BuildSuccessMessage());
+        _isSpamFromMl = IsSpamPredict(update.Message?.Text);
         
+        SendMessage(BuildSuccessMessage());
         return Task.CompletedTask;
     }
 
@@ -56,11 +59,25 @@ public class CheckForBlackWord(
 
     private string BuildSuccessMessage()
     {
-        var resultMsgForBlackList = _isBlackKeyWord ? "Да" : "Нет";
+        var resultMsgForBlackList = _isBlackKeyWord ? "\ud83d\udeab" : "\u2705";
+        var resultFromMl = _isSpamFromMl ? "\ud83d\udeab" : "\u2705";
+        var resultMessage = _isSpamFromMl || _isBlackKeyWord
+            ? "\u26a0\ufe0f Похоже, что это является спамом и подлежит блокировке"
+            : "\u2705 Похоже, что это обычное сообщение";
         return
             $"\u2705 Команда выполнена" +
-            $"\n\nАлгоритм ключевых слов: {resultMsgForBlackList}" +
-            $": {_blackWords}\n\n";
+            $"\n\nРезультаты распознавания текста: " +
+            $"\n\n\u26a1\ufe0f Алгоритм ключевых слов: {resultMsgForBlackList}" +
+            $":\n{_blackWords}\n\n" +
+            $"\u26a1\ufe0f Модель машинного обучения: {resultFromMl}\nВероятность {_score}%" +
+            $"\n\n{resultMessage}";
+    }
+    
+    private bool IsSpamPredict(string? message)
+    {
+        var result = MlPredictor.IsSpamPredict(message);
+        _score = result.Item2;
+        return result.Item1;
     }
     
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
