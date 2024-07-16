@@ -4,8 +4,7 @@ namespace SandBox.Advanced.Services.Text;
 
 public static class MlPredictor
 {
-    private const float MaxScoreToPredictIsSpam = 0.19f;
-
+    public static float MaxScoreToPredictIsSpam = 0.19f;
     public static (bool, float) IsSpamPredict(string? message)
     {
         // model training  lbfgsmaximumEntropyMulti

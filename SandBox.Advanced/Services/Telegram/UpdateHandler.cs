@@ -58,28 +58,58 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         logger.LogInformation("Receive message type: {MessageType}", update.Type);
 
         if (update.Message?.NewChatMembers is not null)
-            await new UpdateDetailsActivityOnJoined(bot, update, _repository!).Execute();
+            await new UpdateDetailsActivityOnJoined
+            {
+                BotClient = bot,
+                Update = update,
+                Repository = _repository
+            }.Execute();
 
         if (update.Message?.Text is not { } messageText)
             return;
 
-        await new UpdateDetailsActivityProfile(bot, update, _repository!).Execute();
+        await new UpdateDetailsActivityProfile()
+        {
+            BotClient = bot,
+            Update = update,
+            Repository = _repository
+        }.Execute();
 
         var command = TextTreatment.GetMessageWithoutUserNameBots(messageText).Split(' ')[0];
 
         switch (command.ToLower())
         {
             case "/add":
-                await new AddNewBlackWord(bot, update, _repository!).Execute();
+                await new AddNewBlackWord
+                {
+                    BotClient = bot,
+                    Update = update,
+                    Repository = _repository
+                }.Execute();
                 break;
             case "/del":
-                await new RemoveBlackWord(bot, update, _repository!).Execute();
+                await new RemoveBlackWord
+                {
+                    BotClient = bot,
+                    Update = update,
+                    Repository = _repository
+                }.Execute();
                 break;
             case "/start":
-                await new StartCommand(bot, update, _repository!).Execute();
+                await new StartCommand
+                {
+                    BotClient = bot,
+                    Update = update,
+                    Repository = _repository
+                }.Execute();
                 break;
             case "/check":
-                await new CheckForBlackWord(bot, update, _repository!).Execute();
+                await new CheckForBlackWord()
+                {
+                    BotClient = bot,
+                    Update = update,
+                    Repository = _repository
+                }.Execute();
                 return;
             case "/setadmin":
                 await new SetMeManager
@@ -98,18 +128,38 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         {
             case { IsBlockByMachineLearn: true }:
             {
-                if (!await new DetectSpamMl(bot, update, _repository!).Execute())
+                if (!await new DetectSpamMl
+                    {
+                        BotClient = bot,
+                        Update = update,
+                        Repository = _repository,
+                    }.Execute())
                     if (_configuration is { IsBlockByKeywords: true })
-                        await new DetectBlackWords(bot, update, _repository!).Execute();
+                        await new DetectBlackWords
+                        {
+                            BotClient = bot,
+                            Update = update,
+                            Repository = _repository,
+                        }.Execute();
                 break;
             }
             case { IsBlockByKeywords: true }:
-                await new DetectBlackWords(bot, update, _repository!).Execute();
+                await new DetectBlackWords()
+                {
+                    BotClient = bot,
+                    Update = update,
+                    Repository = _repository,
+                }.Execute();
                 break;
         }
 
         if (_configuration is { IsBlockFastActivity: true })
-            await new DetectFastActivity(bot, update, _repository!).Execute();
+            await new DetectFastActivity()
+            {
+                BotClient = bot,
+                Update = update,
+                Repository = _repository,
+            }.Execute();
     }
 
     async Task<Message> Usage(Message msg)

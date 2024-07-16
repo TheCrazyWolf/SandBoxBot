@@ -1,20 +1,14 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
+using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Services.Text;
 using SandBox.Models.Events;
-using SandBox.Models.Telegram;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectBlackWords(
-    ITelegramBotClient botClient,
-    Update update,
-    SandBoxRepository repository) : IExecutable<bool>
+public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
 {
-    private Account? _accountDb;
     private bool _toDelete;
     private bool _isOverride;
     private string _blackWords = string.Empty;
@@ -22,14 +16,14 @@ public class DetectBlackWords(
     
     public Task<bool> Execute()
     {
-        if (update.Message?.From is null)
+        if (Update.Message?.From is null)
             return Task.FromResult(false);
         
-        _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
-        _toDelete = IsContainsBlackWord(update.Message.Text);
+        AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
+        _toDelete = IsContainsBlackWord(Update.Message.Text);
         _isOverride = GetOverride();
         _eventContent = GenerateEvent();
-        repository.Contents.Add(_eventContent);
+        Repository.Contents.Add(_eventContent);
 
         if (!_eventContent.IsSpam) return Task.FromResult(false);
         
@@ -46,10 +40,10 @@ public class DetectBlackWords(
         return new EventContent
         {
             IsSpam = GetSolutionIsSpam(),
-            ChatId = update.Message.Chat.Id,
+            ChatId = Update.Message.Chat.Id,
             DateTime = DateTime.Now,
-            Content = update.Message.Text?.ToLower() ?? string.Empty,
-            IdTelegram = update.Message.From.Id
+            Content = Update.Message.Text?.ToLower() ?? string.Empty,
+            IdTelegram = Update.Message.From.Id
         };
     }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
@@ -64,17 +58,17 @@ public class DetectBlackWords(
 
     private bool GetOverride()
     {
-        if (_accountDb is null)
+        if (AccountDb is null)
             return false;
         
-        if(_accountDb.IsManagerThisBot)
-            return _accountDb.IsManagerThisBot;
+        if(AccountDb.IsManagerThisBot)
+            return AccountDb.IsManagerThisBot;
 
-        if (_accountDb.IsAprroved) // Прошедший капчу
-            return _accountDb.IsAprroved;
+        if (AccountDb.IsAprroved) // Прошедший капчу
+            return AccountDb.IsAprroved;
 
         // Доверенный профиль, вероятность того что профиль на забанят через 4 дня после спама минимальная ?
-        if ((DateTime.Now.Date - _accountDb.DateTimeJoined.Date).TotalDays >= 4)
+        if ((DateTime.Now.Date - AccountDb.DateTimeJoined.Date).TotalDays >= 4)
             return true;
         
         // TO DO Проверка на админа в беседе
@@ -85,8 +79,8 @@ public class DetectBlackWords(
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
     private Task DeleteThisMessage()
     {
-        botClient.DeleteMessageAsync(chatId: update.Message.Chat.Id,
-            messageId: update.Message.MessageId);
+        BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id,
+            messageId: Update.Message.MessageId);
         return Task.CompletedTask;
     }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
@@ -94,7 +88,7 @@ public class DetectBlackWords(
     private bool IsContainsBlackWord(string? message)
     {
         foreach (var word in TextTreatment.GetArrayWordsTreatmentMessage(message)
-                     .Where(word => repository.BlackWords
+                     .Where(word => Repository.BlackWords
                          .Exists(word).Result))
         {
             _toDelete = true;
@@ -106,12 +100,12 @@ public class DetectBlackWords(
 
     private Task NotifyManagers()
     {
-        foreach (var id in repository.Accounts.GetManagers().Result)
+        foreach (var id in Repository.Accounts.GetManagers().Result)
         {
             var buttons = GenerateKeyboardForNotify();
             var message = BuildNotifyMessage();
 
-            botClient.SendTextMessageAsync(chatId:id.IdTelegram,
+            BotClient.SendTextMessageAsync(chatId:id.IdTelegram,
                 text: message,
                 replyMarkup: new InlineKeyboardMarkup(buttons), 
                 disableNotification: true);
@@ -123,8 +117,8 @@ public class DetectBlackWords(
     private string BuildNotifyMessage()
     {
         return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {update.Message?.From?.Id} (@{update.Message?.From?.Username}) со " +
-            $"следующем содержанием: \n\n{update.Message?.Text} \n\nЗапрещенные слова: {_blackWords} \n\n";
+            $"\ud83d\udc7e Удалено сообщение от пользователя {Update.Message?.From?.Id} (@{Update.Message?.From?.Username}) со " +
+            $"следующем содержанием: \n\n{Update.Message?.Text} \n\nЗапрещенные слова: {_blackWords} \n\n";
     }
 
     private IReadOnlyCollection<IReadOnlyCollection<InlineKeyboardButton>> GenerateKeyboardForNotify()

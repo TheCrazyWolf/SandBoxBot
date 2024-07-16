@@ -4,6 +4,7 @@ using SandBox.Advanced.Configs;
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Services;
 using SandBox.Advanced.Services.Telegram;
+using SandBox.Advanced.Services.Text;
 using Telegram.Bot;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -22,7 +23,7 @@ builder.Services.AddHttpClient("telegram_bot_client").RemoveAllLoggers()
     {
         var botConfiguration = sp.GetRequiredService<IOptions<BotConfiguration>>().Value;
         ArgumentNullException.ThrowIfNull(botConfiguration, nameof(botConfiguration));
-        
+        MlPredictor.MaxScoreToPredictIsSpam = botConfiguration.MaxPercentageMachineLearnToBlock;
         TelegramBotClientOptions options = new(botConfiguration.BotToken);
         return new TelegramBotClient(options, httpClient);
     });

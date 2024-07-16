@@ -6,27 +6,28 @@ using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Activity;
 
-public class UpdateDetailsActivityProfile(
-    ITelegramBotClient botClient,
-    Update update,
-    SandBoxRepository repository) : IExecutable<bool>
+public class UpdateDetailsActivityProfile : IExecutable<bool>
 {
-    protected ChatTg? _chatTg;
-    protected Account? _accountDb;
+    public ITelegramBotClient BotClient = default!;
+    public Update Update = default!;
+    public SandBoxRepository Repository = default!;
+    
+    protected ChatTg? ChatTg = default!;
+    protected Account? AccountDb = default!;
     
     public virtual Task<bool> Execute()
     {
-        if (update.Message?.From?.Id is null)
+        if (Update.Message?.From?.Id is null)
             return Task.FromResult(false);
 
-        _chatTg = GetThisChatTelegram();
+        ChatTg = GetThisChatTelegram();
 
-        if (_chatTg is null)
+        if (ChatTg is null)
             CreateChatIfNull();
         
-        _accountDb = GetThisAccountFromDb();
+        AccountDb = GetThisAccountFromDb();
 
-        if (_accountDb is not null)
+        if (AccountDb is not null)
         {
             UpdateDetailsAccount();
             return Task.FromResult(true);
@@ -40,38 +41,38 @@ public class UpdateDetailsActivityProfile(
 
     protected Account? GetThisAccountFromDb()
     {
-        return repository.Accounts.GetById(update.Message.From.Id).Result;
+        return Repository.Accounts.GetById(Update.Message.From.Id).Result;
     }
 
     protected Task CreateAccountIfNull()
     {
         var newAccount = new Account
         {
-            IdTelegram = update.Message.From.Id,
-            UserName = update.Message.From.Username,
-            FirstName = update.Message.From.FirstName,
-            LastName = update.Message.From.LastName,
+            IdTelegram = Update.Message.From.Id,
+            UserName = Update.Message.From.Username,
+            FirstName = Update.Message.From.FirstName,
+            LastName = Update.Message.From.LastName,
             LastActivity = DateTime.Now,
             DateTimeJoined = DateTime.Now,
         };
 
-        repository.Accounts.Add(newAccount);
+        Repository.Accounts.Add(newAccount);
         return Task.CompletedTask;
     }
 
     protected Task UpdateDetailsAccount()
     {
-        _accountDb.FirstName = update.Message.From.FirstName;
-        _accountDb.LastName = update.Message.From.LastName;
-        _accountDb.UserName = update.Message.From.Username;
-        _accountDb.LastActivity = DateTime.Now;
-        repository.Accounts.Update(_accountDb);
+        AccountDb.FirstName = Update.Message.From.FirstName;
+        AccountDb.LastName = Update.Message.From.LastName;
+        AccountDb.UserName = Update.Message.From.Username;
+        AccountDb.LastActivity = DateTime.Now;
+        Repository.Accounts.Update(AccountDb);
         return Task.CompletedTask;
     }
 
     protected ChatTg? GetThisChatTelegram()
     {
-        return repository.Chats.GetById(update.Message.Chat.Id).Result;
+        return Repository.Chats.GetById(Update.Message.Chat.Id).Result;
     }
     
 #pragma warning disable CS8601 // Possible null reference assignment.
@@ -79,11 +80,11 @@ public class UpdateDetailsActivityProfile(
     {
         var newChat = new ChatTg()
         {
-            IdChat = update.Message.Chat.Id,
-            Title = update.Message.Chat.Title ?? update.Message.Chat.FirstName
+            IdChat = Update.Message.Chat.Id,
+            Title = Update.Message.Chat.Title ?? Update.Message.Chat.FirstName
         };
 
-        repository.Chats.Add(newChat);
+        Repository.Chats.Add(newChat);
         return Task.CompletedTask;
     }
 #pragma warning restore CS8601 // Possible null reference assignment.

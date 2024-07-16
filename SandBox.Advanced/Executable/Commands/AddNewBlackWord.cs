@@ -1,30 +1,24 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
+using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Services.Text;
 using SandBox.Models.Blackbox;
-using SandBox.Models.Telegram;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class AddNewBlackWord(
-    ITelegramBotClient botClient,
-    Update update,
-    SandBoxRepository repository) : IExecutable<bool>
+public class AddNewBlackWord() : SandBoxHelpers, IExecutable<bool>
 {
-    private Account? _accountDb;
     private string _blackWords = string.Empty;
     private string _message = string.Empty;
 
     public Task<bool> Execute()
     {
-        if (update.Message?.From is null)
+        if (Update.Message?.From is null)
             return Task.FromResult(false);
 
-        _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(update.Message.Text!);
+        _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text!);
 
-        _accountDb = repository.Accounts.GetById(update.Message.From.Id).Result;
+        AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
 
         if (IfThisUserIsManager().Result)
         {
@@ -38,15 +32,6 @@ public class AddNewBlackWord(
     }
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-    private Task<bool> IfThisUserIsManager()
-    {
-        if (_accountDb.IsManagerThisBot)
-            return Task.FromResult(_accountDb.IsManagerThisBot);
-
-        // to do проверка на администратор ли в беседе
-
-        return Task.FromResult(false);
-    }
 
     private Task Proccess()
     {
@@ -55,7 +40,7 @@ public class AddNewBlackWord(
 
         foreach (var word in words)
         {
-            repository.BlackWords.Add(new BlackWord { Content = word });
+            Repository.BlackWords.Add(new BlackWord { Content = word });
             _blackWords += $"\ud83d\udd05 {word}\n";
         }
 
@@ -64,7 +49,7 @@ public class AddNewBlackWord(
 
     private Task SendMessage(string message)
     {
-        botClient.SendTextMessageAsync(chatId:update.Message.Chat.Id,
+        BotClient.SendTextMessageAsync(chatId:Update.Message.Chat.Id,
             text: message,
             disableNotification: true);
         return Task.CompletedTask;

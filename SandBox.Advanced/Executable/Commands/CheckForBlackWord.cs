@@ -1,15 +1,12 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
+using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Services.Text;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class CheckForBlackWord(
-    ITelegramBotClient botClient,
-    Update update,
-    SandBoxRepository repository) : IExecutable<bool>
+public class CheckForBlackWord() : EventSandBoxBase, IExecutable<bool>
 {
 
     private bool _isBlackKeyWord;
@@ -19,11 +16,11 @@ public class CheckForBlackWord(
 
     public Task<bool> Execute()
     {
-        if (update.Message?.From is null)
+        if (Update.Message?.From is null)
             return Task.FromResult(false);
 
         Proccess();
-        _isSpamFromMl = IsSpamPredict(update.Message?.Text);
+        _isSpamFromMl = IsSpamPredict(Update.Message?.Text);
         
         SendMessage(BuildSuccessMessage());
         return Task.FromResult(true);
@@ -34,11 +31,11 @@ public class CheckForBlackWord(
     private Task Proccess()
     {
         // проверка, чтобы не добавлялись команды - SKIP 1
-        var words = TextTreatment.GetArrayWordsTreatmentMessage(update.Message.Text).Skip(1);
+        var words = TextTreatment.GetArrayWordsTreatmentMessage(Update.Message.Text).Skip(1);
 
         foreach (var word in words)
         {
-            var result = repository.BlackWords.Exists(word).Result;
+            var result = Repository.BlackWords.Exists(word).Result;
 
             if (!result) continue;
             _isBlackKeyWord = true;
@@ -51,7 +48,7 @@ public class CheckForBlackWord(
 
     private Task SendMessage(string message)
     {
-        botClient.SendTextMessageAsync(chatId:update.Message.Chat.Id,
+        BotClient.SendTextMessageAsync(chatId:Update.Message.Chat.Id,
             text: message,
             disableNotification: true);
         return Task.CompletedTask;
