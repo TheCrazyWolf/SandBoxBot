@@ -29,11 +29,13 @@ public class DetectBlackWords(
         _toDelete = IsContainsBlackWord(update.Message.Text);
         _isOverride = GetOverride();
         _eventContent = GenerateEvent();
+        repository.Contents.Add(_eventContent);
 
         if (!_eventContent.IsSpam) return Task.CompletedTask;
         
         DeleteThisMessage();
         NotifyManagers();
+        
         return Task.CompletedTask;
     }
 
@@ -46,7 +48,7 @@ public class DetectBlackWords(
             IsSpam = GetSolutionIsSpam(),
             ChatId = update.Message.Chat.Id,
             DateTime = DateTime.Now,
-            Content = update.Message.Text ?? string.Empty,
+            Content = update.Message.Text?.ToLower() ?? string.Empty,
             IdTelegram = update.Message.From.Id
         };
     }

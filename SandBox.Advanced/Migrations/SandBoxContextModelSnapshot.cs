@@ -142,7 +142,7 @@ namespace SandBox.Advanced.Migrations
 
                     b.HasKey("IdChat");
 
-                    b.ToTable("ChatTg");
+                    b.ToTable("Chats");
                 });
 
             modelBuilder.Entity("SandBox.Models.Events.EventContent", b =>

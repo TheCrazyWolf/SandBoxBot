@@ -21,6 +21,11 @@ public class UpdateDetailsActivityProfile(
         if (update.Message?.From?.Id is null)
             return Task.CompletedTask;
 
+        _chatTg = GetThisChatTelegram();
+
+        if (_chatTg is null)
+            CreateChatIfNull();
+        
         _accountDb = GetThisAccountFromDb();
 
         if (_accountDb is not null)
@@ -66,10 +71,24 @@ public class UpdateDetailsActivityProfile(
         return Task.CompletedTask;
     }
 
-    /*private ChatTg? GetThisChatTelegram()
+    private ChatTg? GetThisChatTelegram()
     {
-        return repository.
-    }*/
+        return repository.Chats.GetById(update.Message.Chat.Id).Result;
+    }
+    
+#pragma warning disable CS8601 // Possible null reference assignment.
+    private Task CreateChatIfNull()
+    {
+        var newChat = new ChatTg()
+        {
+            IdChat = update.Message.Chat.Id,
+            Title = update.Message.Chat.Title ?? update.Message.Chat.FirstName
+        };
+
+        repository.Chats.Add(newChat);
+        return Task.CompletedTask;
+    }
+#pragma warning restore CS8601 // Possible null reference assignment.
     
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 }
