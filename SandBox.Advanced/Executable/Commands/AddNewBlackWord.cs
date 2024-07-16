@@ -56,7 +56,7 @@ public class AddNewBlackWord(
         foreach (var word in words)
         {
             repository.BlackWords.Add(new BlackWord { Content = word });
-            _blackWords += $"{word}, ";
+            _blackWords += $"\ud83d\udd05 {word}\n";
         }
 
         return Task.CompletedTask;
@@ -74,7 +74,7 @@ public class AddNewBlackWord(
     {
         return
             $"\u2705 Команда выполнена" +
-            $"\n\nДобавлены следующие слова: {_blackWords}";
+            $"\n\nВ черный список добавлены следующие слова: \n\n{_blackWords}";
     }
     
     private string BuildErrorMessage()

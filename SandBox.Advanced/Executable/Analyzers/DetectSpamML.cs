@@ -7,10 +7,9 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-
 namespace SandBox.Advanced.Executable.Analyzers;
 
-internal class DetectSpamML(
+public class DetectSpamMl(
 	ITelegramBotClient botClient,
 	Update update,
 	SandBoxRepository repository) : IExecutable
@@ -19,10 +18,8 @@ internal class DetectSpamML(
 	private Account? _accountDb;
 	private bool _toDelete;
 	private bool _isOverride;
-	private string _blackWords = string.Empty;
 	private EventContent _eventContent = new();
-
-
+	
 	public Task Execute()
 	{
 
@@ -96,16 +93,14 @@ internal class DetectSpamML(
 
 	private bool IsSpamPredict(string? message)
 	{
-		//Load sample data
-		var sampleData = new AntiWorkSpam.ModelInput()
+		// model training  lbfgsmaximumEntropyMulti
+		var sampleData = new AntiWorkSpam.ModelInput
 		{
 			Value = message,
 		};
-
-		//Load model and predict output
 		var result = AntiWorkSpam.Predict(sampleData);
-
-		if (result.IsSpam >= 0.5)
+		
+		if (result.Score[1] >= 0.5)
 			return true;
 
 		return false;
@@ -141,15 +136,15 @@ internal class DetectSpamML(
 			new()
 			{
 				InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
-					$"blackword restore {_eventContent.Id}"),
+					$"spam restore {_eventContent.Id}"),
 				InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-					$"blackword ban {_eventContent.Id}")
+					$"spam ban {_eventContent.Id}")
 			},
 
 			new()
 			{
 				InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
-					$"blackword nospam {_eventContent.Id}")
+					$"spam nospam {_eventContent.Id}")
 			},
 		};
 	}

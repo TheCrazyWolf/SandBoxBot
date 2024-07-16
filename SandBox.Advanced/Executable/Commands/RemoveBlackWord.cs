@@ -55,7 +55,7 @@ public class RemoveBlackWord(
         foreach (var word in words)
         {
             if(repository.BlackWords.Delete(word).Result)
-                _blackWords += $"{word}, ";
+                _blackWords += $"\ud83d\udd05 {word}\n";
         }
 
         return Task.CompletedTask;
@@ -73,7 +73,7 @@ public class RemoveBlackWord(
     {
         return
             $"\u2705 Команда выполнена" +
-            $"\n\nУдалены следующие слова: {_blackWords}";
+            $"\n\nИз черного списка удалены следующие слова: \n\n{_blackWords}";
     }
     
     private string BuildErrorMessage()

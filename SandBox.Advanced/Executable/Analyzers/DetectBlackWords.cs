@@ -134,15 +134,15 @@ public class DetectBlackWords(
             new()
             {
                 InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
-                    $"blackword restore {_eventContent.Id}"),
+                    $"spam restore {_eventContent.Id}"),
                 InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"blackword ban {_eventContent.Id}")
+                    $"spam ban {_eventContent.Id}")
             },
 
             new()
             {
                 InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
-                    $"blackword nospam {_eventContent.Id}")
+                    $"spam nospam {_eventContent.Id}")
             },
         };
     }

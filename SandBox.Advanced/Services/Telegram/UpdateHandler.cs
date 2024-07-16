@@ -83,7 +83,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         await new DetectBlackWords(bot, update, repo).Execute();
         await new DetectFastActivity(bot, update, repo).Execute();
-		await new DetectSpamML(bot, update, repo).Execute();
+		await new DetectSpamMl(bot, update, repo).Execute();
 
 	}
 
