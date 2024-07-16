@@ -1,3 +1,7 @@
+using SandBox.Advanced.Database;
+using SandBox.Advanced.Executable.Activity;
+using SandBox.Advanced.Executable.Analyzers;
+using SandBox.Advanced.Executable.Commands;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -8,9 +12,9 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Services.Telegram;
 
-public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger) : IUpdateHandler
+public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger, IServiceScopeFactory _scopeFactory) : IUpdateHandler
 {
-
+    
     public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
         logger.LogInformation("HandleError: {Exception}", exception);
@@ -24,8 +28,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         cancellationToken.ThrowIfCancellationRequested();
         await (update switch
         {
-            { Message: { } message }                        => OnMessage(message),
-            { EditedMessage: { } message }                  => OnMessage(message),
+            { Message: { } message }                        => OnMessage(update),
+            { EditedMessage: { } message }                  => OnMessage(update),
             { CallbackQuery: { } callbackQuery }            => OnCallbackQuery(callbackQuery),
             { InlineQuery: { } inlineQuery }                => OnInlineQuery(inlineQuery),
             { ChosenInlineResult: { } chosenInlineResult }  => OnChosenInlineResult(chosenInlineResult),
@@ -41,26 +45,29 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
+        // to DO LOG
         throw new NotImplementedException();
     }
 
-    private async Task OnMessage(Message msg)
+    private async Task OnMessage(Update update)
     {
-        logger.LogInformation("Receive message type: {MessageType}", msg.Type);
-        if (msg.Text is not { } messageText)
+        using var scope = _scopeFactory.CreateScope();
+        var repo = scope.ServiceProvider.GetRequiredService<SandBoxRepository>();
+        
+        logger.LogInformation("Receive message type: {MessageType}", update.Type);
+        if (update.Message?.Text is not { } messageText)
             return;
+        
+        await new UpdateDetailsActivityProfile(bot, update, repo).Execute();
 
-        Message sentMessage = await (messageText.Split(' ')[0] switch
-        {
-            "/inline_buttons" => SendInlineKeyboard(msg),
-            "/keyboard" => SendReplyKeyboard(msg),
-            "/remove" => RemoveKeyboard(msg),
-            "/request" => RequestContactAndLocation(msg),
-            "/inline_mode" => StartInlineQuery(msg),
-            "/throw" => FailingHandler(msg),
-            _ => Usage(msg)
-        });
-        logger.LogInformation("The message was sent with id: {SentMessageId}", sentMessage.MessageId);
+        var command = messageText.Split(' ')[0];
+
+        if (command == "/add")
+            await new AddNewBlackWord(bot, update, repo).Execute();
+
+        await new DetectBlackWords(bot, update, repo).Execute();
+        await new DetectFastActivity(bot, update, repo).Execute();
+        
     }
 
     async Task<Message> Usage(Message msg)

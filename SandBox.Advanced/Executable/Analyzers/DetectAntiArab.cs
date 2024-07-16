@@ -16,7 +16,7 @@ public class DetectAntiArab(
 {
     private Account? _accountDb;
 
-    public Task Execute(CancellationToken cancellationToken)
+    public Task Execute()
     {
         return Task.CompletedTask;
     }

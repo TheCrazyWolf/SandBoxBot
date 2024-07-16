@@ -19,7 +19,7 @@ public class DetectFastActivity(
     private int _countTotalLastMessages;
     private const int ConstMaxActivityPerMinute = 10;
 
-    public Task Execute(CancellationToken cancellationToken)
+    public Task Execute()
     {
         if (update.Message?.From is null)
             return Task.CompletedTask;

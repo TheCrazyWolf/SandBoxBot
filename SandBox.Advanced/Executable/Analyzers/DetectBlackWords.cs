@@ -20,7 +20,7 @@ public class DetectBlackWords(
     private string _blackWords = string.Empty;
     private EventContent _eventContent = new ();
     
-    public Task Execute(CancellationToken cancellationToken)
+    public Task Execute()
     {
         if (update.Message?.From is null)
             return Task.CompletedTask;
@@ -37,13 +37,13 @@ public class DetectBlackWords(
         return Task.CompletedTask;
     }
 
-
+    
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
     private EventContent GenerateEvent()
     {
         return new EventContent
         {
-            IsSpam = !(!_isOverride || _toDelete), // проверить на корректность
+            IsSpam = GetSolutionIsSpam(),
             ChatId = update.Message.Chat.Id,
             DateTime = DateTime.Now,
             Content = update.Message.Text ?? string.Empty,
@@ -51,6 +51,14 @@ public class DetectBlackWords(
         };
     }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
+
+    private bool GetSolutionIsSpam()
+    {
+        if (_isOverride)
+            return !_isOverride;
+
+        return _toDelete;
+    }
 
     private bool GetOverride()
     {
@@ -91,7 +99,7 @@ public class DetectBlackWords(
             _blackWords += $"{word} ";
         }
 
-        return false;
+        return _toDelete;
     }
 
     private Task NotifyManagers()

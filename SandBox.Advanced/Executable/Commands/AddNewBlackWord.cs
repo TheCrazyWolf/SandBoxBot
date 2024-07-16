@@ -16,7 +16,7 @@ public class AddNewBlackWord(
     private Account? _accountDb;
     private string _blackWords = string.Empty;
 
-    public Task Execute(CancellationToken cancellationToken)
+    public Task Execute()
     {
         if (update.Message?.From is null)
             return Task.CompletedTask;
@@ -47,8 +47,8 @@ public class AddNewBlackWord(
 
     private Task Proccess()
     {
-        // проверка, чтобы не добавлялись команды
-        var words = TextTreatment.GetArrayWordsTreatmentMessage(update.Message.Text);
+        // проверка, чтобы не добавлялись команды - SKIP 1
+        var words = TextTreatment.GetArrayWordsTreatmentMessage(update.Message.Text).Skip(1);
 
         foreach (var word in words)
         {
