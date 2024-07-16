@@ -13,10 +13,10 @@ public class UpdateDetailsActivityProfile(
     Update update,
     SandBoxRepository repository) : IExecutable
 {
-    private ChatTg? _chatTg;
-    private Account? _accountDb;
+    protected ChatTg? _chatTg;
+    protected Account? _accountDb;
     
-    public Task Execute()
+    public virtual Task Execute()
     {
         if (update.Message?.From?.Id is null)
             return Task.CompletedTask;
@@ -40,12 +40,12 @@ public class UpdateDetailsActivityProfile(
     }
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
-    private Account? GetThisAccountFromDb()
+    protected Account? GetThisAccountFromDb()
     {
         return repository.Accounts.GetById(update.Message.From.Id).Result;
     }
 
-    private Task CreateAccountIfNull()
+    protected Task CreateAccountIfNull()
     {
         var newAccount = new Account
         {
@@ -61,7 +61,7 @@ public class UpdateDetailsActivityProfile(
         return Task.CompletedTask;
     }
 
-    private Task UpdateDetailsAccount()
+    protected Task UpdateDetailsAccount()
     {
         _accountDb.FirstName = update.Message.From.FirstName;
         _accountDb.LastName = update.Message.From.LastName;
@@ -71,13 +71,13 @@ public class UpdateDetailsActivityProfile(
         return Task.CompletedTask;
     }
 
-    private ChatTg? GetThisChatTelegram()
+    protected ChatTg? GetThisChatTelegram()
     {
         return repository.Chats.GetById(update.Message.Chat.Id).Result;
     }
     
 #pragma warning disable CS8601 // Possible null reference assignment.
-    private Task CreateChatIfNull()
+    protected Task CreateChatIfNull()
     {
         var newChat = new ChatTg()
         {

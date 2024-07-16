@@ -55,6 +55,10 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         var repo = scope.ServiceProvider.GetRequiredService<SandBoxRepository>();
         
         logger.LogInformation("Receive message type: {MessageType}", update.Type);
+        
+        if(update.Message?.NewChatMembers is not null)
+            await new UpdateDetailsActivityOnJoined(bot, update, repo).Execute();
+        
         if (update.Message?.Text is not { } messageText)
             return;
         
@@ -64,6 +68,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         if (command == "/add")
             await new AddNewBlackWord(bot, update, repo).Execute();
+        if (command == "/del")
+            await new RemoveBlackWord(bot, update, repo).Execute();
 
         await new DetectBlackWords(bot, update, repo).Execute();
         await new DetectFastActivity(bot, update, repo).Execute();
