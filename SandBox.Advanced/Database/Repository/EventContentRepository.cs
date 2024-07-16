@@ -7,9 +7,11 @@ public class EventContentRepository(SandBoxContext ef)
 {
     public Task<EventContent> Add(EventContent @event)
     {
+        /*
         var foundContent = GetByContent(@event.Content).Result;
         if (foundContent is not null)
             return Task.FromResult(foundContent);
+            */
         
         ef.Add(@event);
         ef.SaveChanges();

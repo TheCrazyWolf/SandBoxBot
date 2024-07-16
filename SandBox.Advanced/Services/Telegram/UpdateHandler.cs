@@ -2,6 +2,7 @@ using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Activity;
 using SandBox.Advanced.Executable.Analyzers;
 using SandBox.Advanced.Executable.Commands;
+using SandBox.Advanced.Executable.Keyboards;
 using SandBox.Advanced.Services.Text;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -39,10 +40,6 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             { Message: { } message }                        => OnMessage(update),
             { EditedMessage: { } message }                  => OnMessage(update),
             { CallbackQuery: { } callbackQuery }            => OnCallbackQuery(callbackQuery),
-            { InlineQuery: { } inlineQuery }                => OnInlineQuery(inlineQuery),
-            { ChosenInlineResult: { } chosenInlineResult }  => OnChosenInlineResult(chosenInlineResult),
-            { Poll: { } poll }                              => OnPoll(poll),
-            { PollAnswer: { } pollAnswer }                  => OnPollAnswer(pollAnswer),
             // UpdateType.ChannelPost:
             // UpdateType.EditedChannelPost:
             // UpdateType.ShippingQuery:
@@ -103,62 +100,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             """;
         return await bot.SendTextMessageAsync(msg.Chat, usage, parseMode: ParseMode.Html, replyMarkup: new ReplyKeyboardRemove());
     }
-
-    /*async Task<Message> SendPhoto(Message msg)
-    {
-        await bot.SendChatActionAsync(msg.Chat, ChatAction.UploadPhoto);
-        await Task.Delay(2000); // simulate a long task
-        await using var fileStream = new FileStream("Files/bot.gif", FileMode.Open, FileAccess.Read);
-        return await bot.SendPhotoAsync(msg.Chat, fileStream, caption: "Read https://telegrambots.github.io/book/");
-    }*/
-
-    // Send inline keyboard. You can process responses in OnCallbackQuery handler
-    async Task<Message> SendInlineKeyboard(Message msg)
-    {
-        List<List<InlineKeyboardButton>> buttons =
-        [
-            ["1.1", "1.2", "1.3"],
-            [
-                InlineKeyboardButton.WithCallbackData("WithCallbackData", "CallbackData"),
-                InlineKeyboardButton.WithUrl("WithUrl", "https://github.com/TelegramBots/Telegram.Bot")
-            ],
-        ];
-        return await bot.SendTextMessageAsync(msg.Chat, "Inline buttons:", replyMarkup: new InlineKeyboardMarkup(buttons));
-    }
-
-    async Task<Message> SendReplyKeyboard(Message msg)
-    {
-        List<List<KeyboardButton>> keys =
-        [
-            ["1.1", "1.2", "1.3"],
-            ["2.1", "2.2"],
-        ];
-        return await bot.SendTextMessageAsync(msg.Chat, "Keyboard buttons:", replyMarkup: new ReplyKeyboardMarkup(keys) { ResizeKeyboard = true });
-    }
-
-    async Task<Message> RemoveKeyboard(Message msg)
-    {
-        return await bot.SendTextMessageAsync(msg.Chat, "Removing keyboard", replyMarkup: new ReplyKeyboardRemove());
-    }
-
-    async Task<Message> RequestContactAndLocation(Message msg)
-    {
-        List<KeyboardButton> buttons =
-            [
-                KeyboardButton.WithRequestLocation("Location"),
-                KeyboardButton.WithRequestContact("Contact"),
-            ];
-        return await bot.SendTextMessageAsync(msg.Chat, "Who or Where are you?", replyMarkup: new ReplyKeyboardMarkup(buttons));
-    }
-
-    async Task<Message> StartInlineQuery(Message msg)
-    {
-        var button = InlineKeyboardButton.WithSwitchInlineQueryCurrentChat("Inline Mode");
-        return await bot.SendTextMessageAsync(msg.Chat, "Press the button to start Inline Query\n\n" +
-            "(Make sure you enabled Inline Mode in @BotFather)", replyMarkup: new InlineKeyboardMarkup(button));
-    }
     
-
     static Task<Message> FailingHandler(Message msg)
     {
         throw new NotImplementedException("FailingHandler");
@@ -168,40 +110,22 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     private async Task OnCallbackQuery(CallbackQuery callbackQuery)
     {
         logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", callbackQuery.Id);
-        await bot.AnswerCallbackQueryAsync(callbackQuery.Id, $"Received {callbackQuery.Data}");
-        await bot.SendTextMessageAsync(callbackQuery.Message!.Chat, $"Received {callbackQuery.Data}");
-    }
-
-    #region Inline Mode
-
-    private async Task OnInlineQuery(InlineQuery inlineQuery)
-    {
-        logger.LogInformation("Received inline query from: {InlineQueryFromId}", inlineQuery.From.Id);
-
-        InlineQueryResult[] results = [ // displayed result
-            new InlineQueryResultArticle("1", "Telegram.Bot", new InputTextMessageContent("hello")),
-            new InlineQueryResultArticle("2", "is the best", new InputTextMessageContent("world"))
-        ];
-        await bot.AnswerInlineQueryAsync(inlineQuery.Id, results, cacheTime: 0, isPersonal: true);
-    }
-
-    private async Task OnChosenInlineResult(ChosenInlineResult chosenInlineResult)
-    {
-        logger.LogInformation("Received inline result: {ChosenInlineResultId}", chosenInlineResult.ResultId);
-        await bot.SendTextMessageAsync(chosenInlineResult.From.Id, $"You chose result with Id: {chosenInlineResult.ResultId}");
-    }
-
-    #endregion
-
-    private Task OnPoll(Poll poll)
-    {
-        logger.LogInformation("Received Poll info: {Question}", poll.Question);
-        return Task.CompletedTask;
-    }
-
-    private Task OnPollAnswer(PollAnswer pollAnswer)
-    {
-        return Task.CompletedTask;
+       
+        using var scope = scopeFactory.CreateScope();
+        var repo = scope.ServiceProvider.GetRequiredService<SandBoxRepository>();
+        
+        var words = callbackQuery.Data?.Split(' ');
+        
+        if(words is null)
+            return;
+        
+        if(words[0] == "spamrestore")
+            await new RestoreFromEvent(bot, callbackQuery, repo).Execute();
+        if(words[0] == "spamban")
+            await new BanFromEvent(bot, callbackQuery, repo).Execute();
+        if(words[0] == "spamnospam")
+            await new NoSpamFromEvent(bot, callbackQuery, repo).Execute();
+        
     }
 
     private Task UnknownUpdateHandlerAsync(Update update)

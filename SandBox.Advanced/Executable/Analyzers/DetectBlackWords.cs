@@ -123,7 +123,7 @@ public class DetectBlackWords(
     private string BuildNotifyMessage()
     {
         return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {update.Message?.From?.Id} ({update.Message?.From?.Username}) со " +
+            $"\ud83d\udc7e Удалено сообщение от пользователя {update.Message?.From?.Id} (@{update.Message?.From?.Username}) со " +
             $"следующем содержанием: \n\n{update.Message?.Text} \n\nЗапрещенные слова: {_blackWords} \n\n";
     }
 
@@ -134,15 +134,15 @@ public class DetectBlackWords(
             new()
             {
                 InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
-                    $"spam restore {_eventContent.Id}"),
+                    $"spamrestore {_eventContent.Id}"),
                 InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"spam ban {_eventContent.Id}")
+                    $"spamban {_eventContent.Id}")
             },
 
             new()
             {
                 InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
-                    $"spam nospam {_eventContent.Id}")
+                    $"spamnospam {_eventContent.Id}")
             },
         };
     }
