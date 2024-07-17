@@ -34,10 +34,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="MachineLearn\AntiWorkSpam.mlnet" />
-    <AdditionalFiles Include="MachineLearn\AntiWorkSpam.mlnet">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AdditionalFiles>
-  </ItemGroup>
 </Project>

@@ -1,48 +1,100 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Executable.Common;
 using Telegram.Bot;
-using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectAntiArab : EventSandBoxBase, IExecutable<bool>
+public class DetectAntiArab : SandBoxHelpers, IExecutable<bool>
 {
-
+    private List<char> _arabicCharacters = new ();
+    private static bool _isFirstRun = true;
+    private bool _isCanOvveride;
     public Task<bool> Execute()
     {
+        if (_isFirstRun)
+        {
+            PrepareCharacters();
+            _isFirstRun = false;
+        }
+        
+        _isCanOvveride = CanBeOverrideRestriction(Update.Message!.From!.Id, Update.Message.Chat.Id).Result;
+
+        if (_isCanOvveride)
+            return Task.FromResult(false);
+        
+        if (Update.Message?.NewChatMembers is not null)
+        {
+            
+            foreach (var item in Update.Message.NewChatMembers)
+            {
+                if (item.FirstName.Any(c => _arabicCharacters.Contains(c)))
+                    Proccess(item.Id);
+                else if (item.LastName != null && item.LastName.Any(c => _arabicCharacters.Contains(c)))
+                    Proccess(item.Id);
+                else if (item.Username != null && item.Username.Any(c => _arabicCharacters.Contains(c)))
+                    Proccess(item.Id);
+            }
+        }
+        
+
+        if(Update.Message?.From != null && Update.Message.From.FirstName.ToArray().Any(c => _arabicCharacters.Contains(c)))
+            Proccess(Update.Message.From.Id);
+        else if(Update.Message?.From?.LastName != null && Update.Message.From != null && Update.Message.From.LastName.ToArray().Any(c => _arabicCharacters.Contains(c)))
+            Proccess(Update.Message.From.Id);
+        else if(Update.Message?.From?.Username != null && Update.Message.From != null && Update.Message.From.Username.ToArray().Any(c => _arabicCharacters.Contains(c)))
+            Proccess(Update.Message.From.Id);
+
+        if(Update.Message?.Text != null && Update.Message.Text.ToArray().Any(c => _arabicCharacters.Contains(c)))
+            Proccess(Update.Message.From!.Id);
+        
         return Task.FromResult(false);
     }
 
-    private bool GetOverride()
+    private Task PrepareCharacters()
     {
-        if (AccountDb is null)
-            return false;
+        for (char c = '\u0600'; c <= '\u06FF'; c++)
+        {
+            _arabicCharacters.Add(c);
+        }
 
-        if (AccountDb.IsManagerThisBot)
-            return AccountDb.IsManagerThisBot;
+        // Дополнительные арабские символы: U+0750 - U+077F
+        for (char c = '\u0750'; c <= '\u077F'; c++)
+        {
+            _arabicCharacters.Add(c);
+        }
 
-        if (AccountDb.IsAprroved) // Прошедший капчу
-            return AccountDb.IsAprroved;
+        // Арабские символы презентационных форм A: U+FB50 - U+FDFF
+        for (char c = '\uFB50'; c <= '\uFDFF'; c++)
+        {
+            _arabicCharacters.Add(c);
+        }
 
-        // Доверенный профиль, вероятность того что профиль на забанят через 4 дня после спама минимальная ?
-        if ((DateTime.Now.Date - AccountDb.DateTimeJoined.Date).TotalDays >= 4)
-            return true;
+        // Арабские символы презентационных форм B: U+FE70 - U+FEFF
+        for (char c = '\uFE70'; c <= '\uFEFF'; c++)
+        {
+            _arabicCharacters.Add(c);
+        }
 
-        // TO DO Проверка на админа в беседе
-
-        return false;
+        return Task.CompletedTask;
     }
-    
+
+    private Task Proccess(long idUser)
+    {
+        BotClient.BanChatMemberAsync(chatId: Update.Message!.Chat.Id,
+            userId: idUser);
+        NotifyManagers();
+        return Task.CompletedTask;
+    }
+
     private Task NotifyManagers()
     {
         foreach (var id in Repository.Accounts.GetManagers().Result)
         {
-            var buttons = GenerateKeyboardForNotify();
             var message = BuildNotifyMessage();
 
             BotClient.SendTextMessageAsync(chatId: id.IdTelegram,
                 text: message,
-                replyMarkup: new InlineKeyboardMarkup(buttons),
                 disableNotification: true);
         }
 
@@ -52,26 +104,7 @@ public class DetectAntiArab : EventSandBoxBase, IExecutable<bool>
     private string BuildNotifyMessage()
     {
         return
-            $"";
-    }
-
-    private IReadOnlyCollection<IReadOnlyCollection<InlineKeyboardButton>> GenerateKeyboardForNotify()
-    {
-        return new List<List<InlineKeyboardButton>>
-        {
-            new()
-            {
-                InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
-                    $"blackword restore "),
-                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"blackword ban ")
-            },
-
-            new()
-            {
-                InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
-                    $"blackword nospam ")
-            },
-        };
+            $"\ud83d\udc7e Я забанил пользователя (@{Update.Message?.From?.Username}) # {Update.Message!.From?.Id} " +
+            $"так как в у него в никнейме или его сообщении содержались арабские символы (возможено, что он бот)";
     }
 }

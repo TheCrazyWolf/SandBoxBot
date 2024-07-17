@@ -138,6 +138,14 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
                 break;
         }
 
+
+        await new DetectQuestion()
+        {
+            BotClient = bot,
+            Update = update,
+            Repository = _repository,
+        }.Execute();
+            
         // Analatics chats
 
         switch (_configuration)
@@ -171,6 +179,14 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         if (_configuration is { IsBlockFastActivity: true })
             await new DetectFastActivity()
+            {
+                BotClient = bot,
+                Update = update,
+                Repository = _repository,
+            }.Execute();
+        
+        if (_configuration is { IsBlockAntiArab: true })
+            await new DetectAntiArab
             {
                 BotClient = bot,
                 Update = update,
