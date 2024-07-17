@@ -9,8 +9,6 @@ using Telegram.Bot;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-
-
 // Регистрируем конфигурацию из appsettings.json
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 

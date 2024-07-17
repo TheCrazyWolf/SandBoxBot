@@ -58,30 +58,15 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         logger.LogInformation("Receive message type: {MessageType}", update.Type);
 
         if (update.Message?.NewChatMembers is not null)
-            await new UpdateDetailsActivityOnJoined
-            {
-                BotClient = bot,
-                Update = update,
-                Repository = _repository
-            }.Execute();
+            await new UpdateDetailsActivityOnJoined { BotClient = bot, Update = update, Repository = _repository }.Execute();
 
         if (_configuration is { IsChatInWorkTime: true })
-            await new DetectNonWorkingTime()
-            {
-                BotClient = bot,
-                Update = update,
-                Repository = _repository,
-            }.Execute();
-        
+            await new DetectNonWorkingTime() { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+
         if (update.Message?.Text is not { } messageText)
             return;
 
-        await new UpdateDetailsActivityProfile()
-        {
-            BotClient = bot,
-            Update = update,
-            Repository = _repository
-        }.Execute();
+        await new UpdateDetailsActivityProfile() { BotClient = bot, Update = update, Repository = _repository }.Execute();
 
         var command = TextTreatment.GetMessageWithoutUserNameBots(messageText).Split(' ')[0];
 
@@ -89,109 +74,49 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         {
             case "/add":
                 await new AddNewBlackWord
-                {
-                    BotClient = bot,
-                    Update = update,
-                    Repository = _repository
-                }.Execute();
-                break;
+                { BotClient = bot, Update = update, Repository = _repository }.Execute();
+                return;
             case "/del":
-                await new RemoveBlackWord
-                {
-                    BotClient = bot,
-                    Update = update,
-                    Repository = _repository
-                }.Execute();
-                break;
+                await new RemoveBlackWord { BotClient = bot, Update = update, Repository = _repository }.Execute();
+                return;
             case "/start":
-                await new StartCommand
-                {
-                    BotClient = bot,
-                    Update = update,
-                    Repository = _repository
-                }.Execute();
-                break;
+                await new StartCommand { BotClient = bot, Update = update, Repository = _repository }.Execute();
+                return;
             case "/check":
-                await new CheckForBlackWord()
-                {
-                    BotClient = bot,
-                    Update = update,
-                    Repository = _repository
-                }.Execute();
+                await new CheckForBlackWord() { BotClient = bot, Update = update, Repository = _repository }.Execute();
                 return;
             case "/setadmin":
-                await new SetMeManager
-                {
-                    BotClient = bot,
-                    Update = update,
-                    Repository = _repository,
-                    Secret = _configuration!.ManagerPasswordSecret,
-                }.Execute();
-                break;
+                await new SetMeManager { BotClient = bot, Update = update, Repository = _repository, Secret = _configuration.ManagerPasswordSecret, }.Execute();
+                return;
             case "/question":
-                await new QuestionCommand
-                {
-                    BotClient = bot,
-                    Update = update,
-                    Repository = _repository,
-                }.Execute();
-                break;
+                await new QuestionCommand { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+                return;
         }
 
 
-        await new DetectQuestion()
-        {
-            BotClient = bot,
-            Update = update,
-            Repository = _repository,
-        }.Execute();
-            
+        await new DetectQuestion() { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+
         // Analatics chats
 
         switch (_configuration)
         {
             case { IsBlockByMachineLearn: true }:
             {
-                if (!await new DetectSpamMl
-                    {
-                        BotClient = bot,
-                        Update = update,
-                        Repository = _repository,
-                    }.Execute())
+                if (!await new DetectSpamMl { BotClient = bot, Update = update, Repository = _repository, }.Execute())
                     if (_configuration is { IsBlockByKeywords: true })
-                        await new DetectBlackWords
-                        {
-                            BotClient = bot,
-                            Update = update,
-                            Repository = _repository,
-                        }.Execute();
+                        await new DetectBlackWords { BotClient = bot, Update = update, Repository = _repository, }.Execute();
                 break;
             }
             case { IsBlockByKeywords: true }:
-                await new DetectBlackWords()
-                {
-                    BotClient = bot,
-                    Update = update,
-                    Repository = _repository,
-                }.Execute();
+                await new DetectBlackWords() { BotClient = bot, Update = update, Repository = _repository, }.Execute();
                 break;
         }
 
         if (_configuration is { IsBlockFastActivity: true })
-            await new DetectFastActivity()
-            {
-                BotClient = bot,
-                Update = update,
-                Repository = _repository,
-            }.Execute();
-        
+            await new DetectFastActivity() { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+
         if (_configuration is { IsBlockAntiArab: true })
-            await new DetectAntiArab
-            {
-                BotClient = bot,
-                Update = update,
-                Repository = _repository,
-            }.Execute();
+            await new DetectAntiArab { BotClient = bot, Update = update, Repository = _repository, }.Execute();
     }
 
     async Task<Message> Usage(Message msg)
@@ -221,35 +146,15 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         if (words is null)
             return;
-
+        
         if (words[0] == "question")
-            await new QuestionFromDb
-            {
-                BotClient = bot,
-                Repository = _repository,
-                Update = update
-            }.Execute();
+            await new QuestionFromDb { BotClient = bot, Repository = _repository, Update = update }.Execute();
         if (words[0] == "spamrestore")
-            await new RestoreFromEvent
-            {
-                BotClient = bot,
-                Repository = _repository,
-                Update = update
-            }.Execute();
+            await new RestoreFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
         if (words[0] == "spamban")
-            await new BanFromEvent
-            {
-                BotClient = bot,
-                Repository = _repository,
-                Update = update
-            }.Execute();
+            await new BanFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
         if (words[0] == "spamnospam")
-            await new NoSpamFromEvent
-            {
-                BotClient = bot,
-                Repository = _repository,
-                Update = update
-            }.Execute();
+            await new NoSpamFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
     }
 
     private Task UnknownUpdateHandlerAsync(Update update)
