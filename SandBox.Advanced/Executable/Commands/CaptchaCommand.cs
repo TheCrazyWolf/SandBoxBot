@@ -8,6 +8,13 @@ namespace SandBox.Advanced.Executable.Commands;
 
 public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
 {
+    private IDictionary<string, string> emojes = new Dictionary<string, string>()
+    {
+        { "🍏", "🍎" }, { "🤡", "💩" }, { "☠️", "👺" }, { "😛", "🍎" },
+        { "🤖", "🎃" }, { "😳️", "🤯" }, { "👾", "😇" }, { "💥", "⚡️" },
+        { "💦", "❄️" }, { "⛈", "🌤" }, { "🥥", "🥝" }
+    };
+
     private Captcha _captcha = new();
 
     public Task<bool> Execute()
@@ -19,9 +26,11 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
         if (AccountDb is null)
             return Task.FromResult(false);
 
-        if (CanBeOverrideRestriction(idTelegram: Update.Message.From.Id, idChat: Update.Message.Chat.Id).Result && !AccountDb.IsSpamer)
+        if (CanBeOverrideRestriction(idTelegram: Update.Message.From.Id, idChat: Update.Message.Chat.Id).Result &&
+            !AccountDb.IsSpamer)
         {
-            SendCaptcha(idChat: Update.Message.Chat.Id, message: BuildErrorMessage(), new LinkedList<InlineKeyboardButton>());
+            SendCaptcha(idChat: Update.Message.Chat.Id, message: BuildErrorMessage(),
+                new LinkedList<InlineKeyboardButton>());
             AccountDb.IsAprroved = true;
             Repository.Accounts.Update(AccountDb);
             return Task.FromResult(true);
@@ -52,13 +61,14 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
 
     private void ProccessingSecondCaptcha(long idTelegram, long idChat)
     {
-        var summ = "\ud83c\udf4f";
+        var rnd = new Random();
+        var emoji = emojes.Skip(rnd.Next(0,emojes.Count)).First();
 
-        CreateCaptchToDb(idTelegram: idTelegram, content: summ);
+        CreateCaptchToDb(idTelegram: idTelegram, content: emoji.Value);
 
         SendCaptcha(idChat: idChat,
             message: BuildMessesWithCaptcha($"Выберите отличающийся эмодзи"),
-            keyboardButtons: GenerateKeyboardEmoji(idChat));
+            keyboardButtons: GenerateKeyboardEmoji(idChat, emoji.Value, emoji.Key));
     }
 
     private void CreateCaptchToDb(long idTelegram, string content)
@@ -106,21 +116,22 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
         }
 
         list.Add(
-            InlineKeyboardButton.WithCallbackData($"{_captcha.Content}", $"captcha {_captcha.Id} {_captcha.Content} {chatId}"));
+            InlineKeyboardButton.WithCallbackData($"{_captcha.Content}",
+                $"captcha {_captcha.Id} {_captcha.Content} {chatId}"));
         list = list.OrderBy(_ => rnd.Next()).ToList();
         return list;
     }
 
-    private IReadOnlyCollection<InlineKeyboardButton> GenerateKeyboardEmoji(long chatId)
+    private IReadOnlyCollection<InlineKeyboardButton> GenerateKeyboardEmoji(long chatId, string right, string wrong)
     {
         var rnd = new Random();
         var list = new List<InlineKeyboardButton>();
         for (int i = 0; i < 4; i++)
         {
-            list.Add(InlineKeyboardButton.WithCallbackData($"🍎", $"captcha {_captcha.Id} 🍎 {chatId}"));
+            list.Add(InlineKeyboardButton.WithCallbackData($"{wrong}", $"captcha {_captcha.Id} {wrong} {chatId}"));
         }
 
-        list.Add(InlineKeyboardButton.WithCallbackData($"🍏", $"captcha {_captcha.Id} 🍏 {chatId}"));
+        list.Add(InlineKeyboardButton.WithCallbackData($"{right}", $"captcha {_captcha.Id} {right} {chatId}"));
         list = list.OrderBy(_ => rnd.Next()).ToList();
         return list;
     }
