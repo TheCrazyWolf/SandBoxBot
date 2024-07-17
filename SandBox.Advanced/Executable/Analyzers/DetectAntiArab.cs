@@ -5,7 +5,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectAntiArab() : EventSandBoxBase, IExecutable<bool>
+public class DetectAntiArab : EventSandBoxBase, IExecutable<bool>
 {
 
     public Task<bool> Execute()
