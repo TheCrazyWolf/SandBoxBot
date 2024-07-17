@@ -20,7 +20,7 @@ public class CheckForBlackWord() : EventSandBoxBase, IExecutable<bool>
             return Task.FromResult(false);
 
         Proccess();
-        _isSpamFromMl = IsSpamPredict(Update.Message?.Text);
+        _isSpamFromMl = IsSpamPredict(TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text ?? string.Empty));
         
         SendMessage(BuildSuccessMessage());
         return Task.FromResult(true);
