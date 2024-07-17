@@ -22,7 +22,7 @@ public class RemoveBlackWord : SandBoxHelpers, IExecutable<bool>
         _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text!);
         AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
 
-        if (IfThisUserIsManager().Result)
+        if (IfThisUserIsManager(Update.Message.From.Id, Update.Message.Chat.Id).Result)
         {
             Proccess();
             SendMessage(BuildSuccessMessage());

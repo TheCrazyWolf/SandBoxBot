@@ -21,7 +21,7 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
         
         AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
         _toDelete = IsContainsBlackWord(Update.Message.Text);
-        _isOverride = GetOverride();
+        _isOverride = CanBeOverrideRestriction(Update.Message.From.Id, Update.Message.Chat.Id).Result;
         _eventContent = GenerateEvent();
         Repository.Contents.Add(_eventContent);
 
@@ -54,26 +54,6 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
             return !_isOverride;
 
         return _toDelete;
-    }
-
-    private bool GetOverride()
-    {
-        if (AccountDb is null)
-            return false;
-        
-        if(AccountDb.IsManagerThisBot)
-            return AccountDb.IsManagerThisBot;
-
-        if (AccountDb.IsAprroved) // Прошедший капчу
-            return AccountDb.IsAprroved;
-
-        // Доверенный профиль, вероятность того что профиль на забанят через 4 дня после спама минимальная ?
-        if ((DateTime.Now.Date - AccountDb.DateTimeJoined.Date).TotalDays >= 4)
-            return true;
-        
-        // TO DO Проверка на админа в беседе
-        
-        return false;
     }
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.

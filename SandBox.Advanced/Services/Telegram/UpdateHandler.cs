@@ -65,6 +65,14 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
                 Repository = _repository
             }.Execute();
 
+        if (_configuration is { IsChatInWorkTime: true })
+            await new DetectNonWorkingTime()
+            {
+                BotClient = bot,
+                Update = update,
+                Repository = _repository,
+            }.Execute();
+        
         if (update.Message?.Text is not { } messageText)
             return;
 

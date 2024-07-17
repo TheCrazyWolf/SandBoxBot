@@ -20,7 +20,7 @@ public class AddNewBlackWord() : SandBoxHelpers, IExecutable<bool>
 
         AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
 
-        if (IfThisUserIsManager().Result)
+        if (IfThisUserIsManager(Update.Message.From.Id, Update.Message.Chat.Id).Result)
         {
             Proccess();
             SendMessage(BuildSuccessMessage());
