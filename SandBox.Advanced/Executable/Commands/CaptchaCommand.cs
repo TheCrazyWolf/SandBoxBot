@@ -19,7 +19,7 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
         if (AccountDb is null)
             return Task.FromResult(false);
 
-        if (CanBeOverrideRestriction(idTelegram: Update.Message.From.Id, idChat: Update.Message.Chat.Id).Result)
+        if (CanBeOverrideRestriction(idTelegram: Update.Message.From.Id, idChat: Update.Message.Chat.Id).Result && !AccountDb.IsSpamer)
         {
             SendCaptcha(idChat: Update.Message.Chat.Id, message: BuildErrorMessage(), new LinkedList<InlineKeyboardButton>());
             AccountDb.IsAprroved = true;
@@ -84,7 +84,7 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
     private string BuildErrorMessage()
     {
         return
-            "\u2705 Вам не требуется проходить проверка на бота, мы Вам доверяем";
+            "\u2705 Вам не требуется проходить проверку на бота, мы Вам доверяем";
     }
 
     private string BuildMessesWithCaptcha(string messageCaptcha)

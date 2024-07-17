@@ -32,12 +32,37 @@ public static class TextTreatment
 
     public static string GetMessageWithoutUserNameBots(string message)
     {
-        return message.Replace($"{UpdateHandler.UserNameBot} ", string.Empty);
+        // Если сообщение начинается с '@', то удаляем часть с '@' до пробела
+        if (message.StartsWith("@"))
+        {
+            int spaceIndex = message.IndexOf(' ');
+            if (spaceIndex != -1)
+            {
+                message = message.Substring(spaceIndex + 1);
+            }
+        }
+
+        // Если сообщение содержит команду с '@', удаляем часть с '@' до пробела
+        int atIndex = message.IndexOf('@');
+        if (atIndex != -1)
+        {
+            int spaceIndex = message.IndexOf(' ', atIndex);
+            if (spaceIndex == -1)
+            {
+                message = message.Substring(0, atIndex);
+            }
+            else
+            {
+                message = message.Substring(0, atIndex) + message.Substring(spaceIndex);
+            }
+        }
+
+        return message.Replace($"{UpdateHandler.UserNameBot} ", string.Empty).Trim();
     }
 
     public static string GetMessageWithoutUserNameBotsAndCommands(string message, int skip = 1)
     {
-         var s = message.Replace($"{UpdateHandler.UserNameBot} ", string.Empty).Split(' ').Skip(skip);
-         return s.Aggregate(String.Empty, (current, item) => current + $"{item} ");
+        var s = message.Replace($"{UpdateHandler.UserNameBot} ", string.Empty).Split(' ').Skip(skip);
+        return s.Aggregate(String.Empty, (current, item) => current + $"{item} ");
     }
 }
