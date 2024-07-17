@@ -4,6 +4,7 @@ namespace SandBox.Advanced.Executable.Common;
 
 public class SandBoxHelpers : EventSandBoxBase
 {
+    // ТОЛЬКО ДЛЯ СПАМА И ДРУГОГО АГАДИЗА
     protected Task<bool> CanBeOverrideRestriction(long idTelegram, long idChat)
     {
         if (AccountDb is null)
@@ -29,6 +30,7 @@ public class SandBoxHelpers : EventSandBoxBase
         return Task.FromResult(true);
     }
 
+    // ИМЕЕТ ЛИ ПРАВА АДМИНА В ПРИЦНИПЕы
     protected Task<bool> IfThisUserIsManager(long idTelegram, long idChat)
     {
         if (AccountDb is null)
@@ -61,5 +63,12 @@ public class SandBoxHelpers : EventSandBoxBase
         }
 
         return Task.FromResult(false);
+    }
+    
+    protected void DeleteThisMessage(long chatId, int messageId)
+    {
+        BotClient.DeleteMessageAsync(chatId: chatId,
+            messageId: messageId
+        );
     }
 }
