@@ -1,16 +1,12 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
+using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Services.Text;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class SetMeManager : IExecutable<bool>
+public class SetMeManager : EventSandBoxBase, IExecutable<bool>
 {
-    public ITelegramBotClient BotClient = default!;
-    public Update Update = default!;
-    public SandBoxRepository Repository = default!;
     public string Secret = default!;
 
     public Task<bool> Execute()

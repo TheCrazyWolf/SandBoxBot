@@ -42,7 +42,7 @@ public class DetectFastActivity : SandBoxHelpers, IExecutable<bool>
 
             BotClient.SendTextMessageAsync(chatId: id.IdTelegram,
                 text: message,
-               // replyMarkup: new InlineKeyboardMarkup(buttons),
+                replyMarkup: new InlineKeyboardMarkup(buttons),
                 disableNotification: true);
         }
     }
@@ -50,8 +50,7 @@ public class DetectFastActivity : SandBoxHelpers, IExecutable<bool>
     private string BuildNotifyMessage()
     {
         return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {Update.Message?.From?.Id} ({Update.Message?.From?.Username}) со " +
-            $"следующем содержанием: \n\n{Update.Message?.Text} \n\n";
+            $"\ud83d\udc7e Пользователь {Update.Message?.From?.Id} ({Update.Message?.From?.Username}) слишком часто пишет сообщения в чат. Подумайте об этом";
     }
 
     private IReadOnlyCollection<IReadOnlyCollection<InlineKeyboardButton>> GenerateKeyboardForNotify()
@@ -60,17 +59,10 @@ public class DetectFastActivity : SandBoxHelpers, IExecutable<bool>
         {
             new()
             {
-                InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
-                    $"blackword restore "),
                 InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"blackword ban ")
+                    $"ban {Update.Message?.From?.Id} {Update.Message?.Chat.Id}")
             },
-
-            new()
-            {
-                InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
-                    $"blackword nospam ")
-            },
+            
         };
     }
 }

@@ -73,8 +73,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         switch (command.ToLower())
         {
             case "/add":
-                await new AddNewBlackWord
-                { BotClient = bot, Update = update, Repository = _repository }.Execute();
+                await new AddNewBlackWord { BotClient = bot, Update = update, Repository = _repository }.Execute();
                 return;
             case "/del":
                 await new RemoveBlackWord { BotClient = bot, Update = update, Repository = _repository }.Execute();
@@ -83,7 +82,10 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
                 await new StartCommand { BotClient = bot, Update = update, Repository = _repository }.Execute();
                 return;
             case "/check":
-                await new CheckForBlackWord() { BotClient = bot, Update = update, Repository = _repository }.Execute();
+                await new CheckForBlackWord { BotClient = bot, Update = update, Repository = _repository }.Execute();
+                return;
+            case "/captcha":
+                await new CaptchaCommand { BotClient = bot, Update = update, Repository = _repository }.Execute();
                 return;
             case "/setadmin":
                 await new SetMeManager { BotClient = bot, Update = update, Repository = _repository, Secret = _configuration.ManagerPasswordSecret, }.Execute();

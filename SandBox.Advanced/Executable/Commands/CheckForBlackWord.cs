@@ -5,7 +5,7 @@ using Telegram.Bot;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class CheckForBlackWord() : EventSandBoxBase, IExecutable<bool>
+public class CheckForBlackWord : EventSandBoxBase, IExecutable<bool>
 {
     private bool _isBlackKeyWord;
     private bool _isSpamFromMl;
