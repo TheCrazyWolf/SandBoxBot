@@ -27,7 +27,7 @@ public class QuestionsRepository(SandBoxContext ef)
                 Question = q,
                 Score = Fuzz.Ratio(q.Quest, question)
             })
-            .Where(x => x.Score > 40) // порог схожести, можно настроить
+            .Where(x => x.Score >= 15) // порог схожести, можно настроить
             .OrderByDescending(x => x.Score)
             .Select(x => x.Question)
             .Take(5)

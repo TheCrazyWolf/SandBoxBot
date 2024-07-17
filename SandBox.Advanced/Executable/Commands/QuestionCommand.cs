@@ -36,8 +36,7 @@ public class QuestionCommand: SandBoxHelpers, IExecutable<bool>
 
     private IReadOnlyCollection<InlineKeyboardButton> GenerateKeyboardQuestions()
     {
-        return _foundedQuestion.Select(item => InlineKeyboardButton
-            .WithCallbackData($"{item.Quest}", $"question {item.Id}")).ToList();
+        return _foundedQuestion.Select(item => InlineKeyboardButton.WithCallbackData($"# {item.Id}", $"question {item.Id}")).ToList();
     }
 
     private Task SendMessage(string message)
@@ -53,9 +52,13 @@ public class QuestionCommand: SandBoxHelpers, IExecutable<bool>
 
     private string BuildSuccessMessage()
     {
+        var builderMsgQustion = _foundedQuestion
+            .Aggregate(string.Empty, (current, item) => current + $"\ud83d\udca5 #{item.Id}. {item.Quest}\n\n");
+
+
         return
             $"\u2705 Команда выполнена" +
-            $"\n\nВот, какие вопросы задавали ранее и есть на них ответ: \n";
+            $"\n\nВот, какие вопросы задавали ранее и есть на них ответ: \n\n{builderMsgQustion}\nВыберите пожалуйста вопрос, чтобы получить ответ";
     }
     
     private string BuildErrorMessage()
