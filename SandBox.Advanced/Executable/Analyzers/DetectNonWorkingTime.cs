@@ -6,7 +6,7 @@ namespace SandBox.Advanced.Executable.Analyzers;
 
 public class DetectNonWorkingTime : SandBoxHelpers, IExecutable<bool>
 {
-    private bool _isOverride;
+    private bool _isAdminOrManager;
     private bool _isWorkTime;
     private static DateTime _lastNotifyied;
 
@@ -16,7 +16,7 @@ public class DetectNonWorkingTime : SandBoxHelpers, IExecutable<bool>
             return Task.FromResult(false);
 
         AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
-        _isOverride = IfThisUserIsManager(Update.Message.From.Id, Update.Message.Chat.Id).Result;
+        _isAdminOrManager = IfThisUserIsManager(Update.Message.From.Id, Update.Message.Chat.Id).Result;
         _isWorkTime = IsWorkTime();
 
         if (IfCanBeSendedMessage()) return Task.FromResult(true);
@@ -42,8 +42,8 @@ public class DetectNonWorkingTime : SandBoxHelpers, IExecutable<bool>
         if (_isWorkTime)
             return _isWorkTime;
 
-        if (_isOverride)
-            return _isOverride;
+        if (_isAdminOrManager)
+            return _isAdminOrManager;
 
         return false;
     }
