@@ -5,17 +5,21 @@ namespace SandBox.Advanced.Executable.Analyzers;
 
 public class DetectQuestion : SandBoxHelpers, IExecutable<bool>
 {
+    //my id 208049718
+    //1946031755
     private readonly long _idTelegramTrainer = 1946031755;
 
     public Task<bool> Execute()
     {
-        if (Update.Message?.ReplyToMessage is null && Update.Message?.From?.Id != _idTelegramTrainer &&
-            Update.Message?.Text is not null)
+        if(Update.Message?.ReplyToMessage?.Text is null)
             return Task.FromResult(false);
-
-        if (Update.Message?.ReplyToMessage?.Text == null) return Task.FromResult(true);
-
-
+        
+        if(Update.Message?.Text is null)
+            return Task.FromResult(false);
+        
+        if(Update.Message?.From?.Id != _idTelegramTrainer)
+            return Task.FromResult(false);
+        
         if (Update.Message.Text != null)
             SaveAnswerForQuestion(question: Update.Message.ReplyToMessage.Text,
                 answer: Update.Message.Text);

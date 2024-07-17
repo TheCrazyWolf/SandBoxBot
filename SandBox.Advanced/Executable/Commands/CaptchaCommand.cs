@@ -8,7 +8,7 @@ namespace SandBox.Advanced.Executable.Commands;
 
 public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
 {
-    private IDictionary<string, string> emojes = new Dictionary<string, string>()
+    private IDictionary<string, string> _emojies = new Dictionary<string, string>()
     {
         { "🍏", "🍎" }, { "🤡", "💩" }, { "☠️", "👺" }, { "😛", "🍎" },
         { "🤖", "🎃" }, { "😳️", "🤯" }, { "👾", "😇" }, { "💥", "⚡️" },
@@ -62,7 +62,7 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
     private void ProccessingSecondCaptcha(long idTelegram, long idChat)
     {
         var rnd = new Random();
-        var emoji = emojes.Skip(rnd.Next(0,emojes.Count)).First();
+        var emoji = _emojies.Skip(rnd.Next(0,_emojies.Count)).First();
 
         CreateCaptchToDb(idTelegram: idTelegram, content: emoji.Value);
 
