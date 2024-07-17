@@ -35,7 +35,7 @@ public class CaptchaFromChat : SandBoxHelpers, IExecutable<bool>
             return Task.FromResult(false);
         }
 
-        ProccessRightaptcha(Convert.ToInt64(_captcha.IdTelegram));
+        ProccessRightCaptcha(Convert.ToInt64(_captcha.IdTelegram));
         SendMessageOfExecuted(idChat: Convert.ToInt64(words[2]), message: BuildSuccessCaptcha());
         return Task.FromResult(true);
     }
@@ -49,7 +49,7 @@ public class CaptchaFromChat : SandBoxHelpers, IExecutable<bool>
         Repository.Captchas.Update(_captcha);
     }
 
-    private void ProccessRightaptcha(long idTelegram)
+    private void ProccessRightCaptcha(long idTelegram)
     {
         ProccessWrongCaptcha();
         AccountDb = Repository.Accounts.GetById(idTelegram).Result;
@@ -59,6 +59,7 @@ public class CaptchaFromChat : SandBoxHelpers, IExecutable<bool>
 
         AccountDb.IsSpamer = false;
         AccountDb.IsAprroved = true;
+        AccountDb.IsNeedToVerifyByCaptcha = false;
         AccountDb = Repository.Accounts.Update(AccountDb).Result;
     }
 

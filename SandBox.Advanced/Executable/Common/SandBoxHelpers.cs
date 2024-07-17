@@ -9,10 +9,13 @@ public class SandBoxHelpers : EventSandBoxBase
     {
         if (AccountDb is null)
             return Task.FromResult(false);
-
+        
         if (AccountDb.IsManagerThisBot)
             return Task.FromResult(AccountDb.IsManagerThisBot);
 
+        if(AccountDb.IsNeedToVerifyByCaptcha)
+            return Task.FromResult(!AccountDb.IsNeedToVerifyByCaptcha);
+        
         if (AccountDb.IsAprroved) // Прошедший капчу
             return Task.FromResult(AccountDb.IsAprroved);
 
