@@ -60,13 +60,10 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         if (update.Message?.NewChatMembers is not null)
             await new UpdateDetailsActivityOnJoined { BotClient = bot, Update = update, Repository = _repository }.Execute();
 
-        if (_configuration is { IsChatInWorkTime: true })
-            await new DetectNonWorkingTime() { BotClient = bot, Update = update, Repository = _repository, }.Execute();
-
         if (update.Message?.Text is not { } messageText)
             return;
 
-        await new UpdateDetailsActivityProfile() { BotClient = bot, Update = update, Repository = _repository }.Execute();
+        await new UpdateDetailsActivityProfile { BotClient = bot, Update = update, Repository = _repository }.Execute();
 
         var command = TextTreatment.GetMessageWithoutUserNameBots(messageText).Split(' ')[0];
 
@@ -92,9 +89,14 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
                 await new QuestionCommand { BotClient = bot, Update = update, Repository = _repository, }.Execute();
                 return;
         }
-
-
-        await new DetectQuestion() { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+        
+        // Переместить выше если будут обходить путем команд
+        if (_configuration is { IsChatInWorkTime: true })
+            await new DetectNonWorkingTime { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+        // это читай выше 
+        
+        
+        await new DetectQuestion { BotClient = bot, Update = update, Repository = _repository, }.Execute();
 
         // Analatics chats
 

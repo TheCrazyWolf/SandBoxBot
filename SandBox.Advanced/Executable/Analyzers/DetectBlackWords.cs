@@ -12,38 +12,38 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
     private bool _toDelete;
     private bool _isOverride;
     private string _blackWords = string.Empty;
-    private EventContent _eventContent = new ();
-    
+    private EventContent _eventContent = new();
+
     public Task<bool> Execute()
     {
         if (Update.Message?.From is null)
             return Task.FromResult(false);
-        
+
         AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
         _toDelete = IsContainsBlackWord(Update.Message.Text);
-        _isOverride = CanBeOverrideRestriction(Update.Message.From.Id, Update.Message.Chat.Id).Result;
-        _eventContent = GenerateEvent();
+        _isOverride = CanBeOverrideRestriction(idTelegram: Update.Message.From.Id, idChat: Update.Message.Chat.Id).Result;
+        _eventContent = GenerateEvent(chatId:Update.Message.Chat.Id, content: Update.Message.Text ?? string.Empty, idTelegram: Update.Message.From.Id);
         Repository.Contents.Add(_eventContent);
 
         if (!_eventContent.IsSpam) return Task.FromResult(false);
-        
-        DeleteThisMessage();
+
+        DeleteThisMessage(chatId:Update.Message.Chat.Id, messageId: Update.Message.MessageId);
         NotifyManagers();
-        
+
         return Task.FromResult(true);
     }
 
-    
+
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-    private EventContent GenerateEvent()
+    private EventContent GenerateEvent(long chatId, string content, long idTelegram)
     {
         return new EventContent
         {
             IsSpam = GetSolutionIsSpam(),
-            ChatId = Update.Message.Chat.Id,
+            ChatId = chatId,
             DateTime = DateTime.Now,
-            Content = Update.Message.Text?.ToLower() ?? string.Empty,
-            IdTelegram = Update.Message.From.Id
+            Content = content,
+            IdTelegram = idTelegram
         };
     }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
@@ -57,14 +57,8 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
     }
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-    private Task DeleteThisMessage()
-    {
-        BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id,
-            messageId: Update.Message.MessageId);
-        return Task.CompletedTask;
-    }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
-    
+
     private bool IsContainsBlackWord(string? message)
     {
         foreach (var word in TextTreatment.GetArrayWordsTreatmentMessage(message)
@@ -78,20 +72,18 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
         return _toDelete;
     }
 
-    private Task NotifyManagers()
+    private void NotifyManagers()
     {
         foreach (var id in Repository.Accounts.GetManagers().Result)
         {
             var buttons = GenerateKeyboardForNotify();
             var message = BuildNotifyMessage();
 
-            BotClient.SendTextMessageAsync(chatId:id.IdTelegram,
+            BotClient.SendTextMessageAsync(chatId: id.IdTelegram,
                 text: message,
-                replyMarkup: new InlineKeyboardMarkup(buttons), 
+                replyMarkup: new InlineKeyboardMarkup(buttons),
                 disableNotification: true);
         }
-        
-        return Task.CompletedTask;
     }
 
     private string BuildNotifyMessage()

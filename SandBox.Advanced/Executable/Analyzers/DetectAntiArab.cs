@@ -1,7 +1,6 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Executable.Common;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 

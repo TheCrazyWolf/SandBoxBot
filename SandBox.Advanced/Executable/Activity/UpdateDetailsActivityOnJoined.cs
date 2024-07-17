@@ -11,10 +11,11 @@ public class UpdateDetailsActivityOnJoined: UpdateDetailsActivityProfile
         if (Update.Message?.NewChatMembers is null)
             return Task.FromResult(false);
 
-        ChatTg = GetThisChatTelegram();
+        ChatTg = GetThisChatTelegram(Update.Message.Chat.Id);
 
         if (ChatTg is null)
-            CreateChatIfNull();
+            CreateChatIfNull(idChat: Update.Message.Chat.Id,
+                title: Update.Message.Chat.Title ?? Update.Message.Chat.FirstName ?? string.Empty);
 
         foreach (var user in Update.Message.NewChatMembers)
         {
@@ -24,7 +25,7 @@ public class UpdateDetailsActivityOnJoined: UpdateDetailsActivityProfile
         return Task.FromResult(true);
     }
 
-    private EventJoined CreateEventJoin(User user)
+    private void CreateEventJoin(User user)
     {
         var newEvent = new EventJoined
         {
@@ -32,11 +33,10 @@ public class UpdateDetailsActivityOnJoined: UpdateDetailsActivityProfile
             ChatId = Update.Message?.Chat.Id,
             DateTime = DateTime.Now
         };
-
-        return Repository.Joins.Add(newEvent).Result;
+        Repository.Joins.Add(newEvent);
     }
     
-    protected Task CreateAccount(User user)
+    protected void CreateAccount(User user)
     {
         var newAccount = new Account
         {
@@ -49,6 +49,5 @@ public class UpdateDetailsActivityOnJoined: UpdateDetailsActivityProfile
         };
 
         Repository.Accounts.Add(newAccount);
-        return Task.CompletedTask;
     }
 }
