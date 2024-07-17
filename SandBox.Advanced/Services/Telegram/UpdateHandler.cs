@@ -57,6 +57,9 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         logger.LogInformation("Receive message type: {MessageType}", update.Type);
 
+        if (update.EditedMessage is not null)
+            update.Message = update.EditedMessage;
+
         if (update.Message?.NewChatMembers is not null)
             await new UpdateDetailsActivityOnJoined { BotClient = bot, Update = update, Repository = _repository }.Execute();
 
