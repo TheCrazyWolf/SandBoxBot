@@ -57,7 +57,7 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
         CreateCaptchToDb(idTelegram: idTelegram, content: summ);
 
         SendCaptcha(idChat: idChat,
-            message: BuildMessesWithCaptcha($"Решите математический пример: \n\nВыберите отличающийся эмодзи"),
+            message: BuildMessesWithCaptcha($"Выберите отличающийся эмодзи"),
             keyboardButtons: GenerateKeyboardEmoji(idChat));
     }
 
@@ -81,13 +81,6 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
             disableNotification: true);
     }
 
-    private string BuildSuccessMessage()
-    {
-        return
-            $"\u2705 Команда выполнена" +
-            $"\n\nВы теперь менеджер этого бота, на вас не действуют ограничения, вы можете управлять словарем и событиями";
-    }
-
     private string BuildErrorMessage()
     {
         return
@@ -107,13 +100,14 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
         var list = new List<InlineKeyboardButton>();
         for (int i = 0; i < 4; i++)
         {
-            list.Add(InlineKeyboardButton.WithCallbackData($"{rnd.Next(-15, 15)}",
-                $"captcha {_captcha.IdTelegram} {chatId}"));
+            var value = rnd.Next(-15, 15);
+            list.Add(InlineKeyboardButton.WithCallbackData($"{value}",
+                $"captcha {_captcha.Id} {value} {chatId}"));
         }
 
         list.Add(
-            InlineKeyboardButton.WithCallbackData($"{_captcha.Content}", $"captcha {_captcha.IdTelegram} {chatId}"));
-        list = list.OrderBy(x => rnd.Next()).ToList();
+            InlineKeyboardButton.WithCallbackData($"{_captcha.Content}", $"captcha {_captcha.Id} {_captcha.Content} {chatId}"));
+        list = list.OrderBy(_ => rnd.Next()).ToList();
         return list;
     }
 
@@ -123,11 +117,11 @@ public class CaptchaCommand : SandBoxHelpers, IExecutable<bool>
         var list = new List<InlineKeyboardButton>();
         for (int i = 0; i < 4; i++)
         {
-            list.Add(InlineKeyboardButton.WithCallbackData($"🍎", $"captcha {_captcha.IdTelegram} {chatId}"));
+            list.Add(InlineKeyboardButton.WithCallbackData($"🍎", $"captcha {_captcha.Id} 🍎 {chatId}"));
         }
 
-        list.Add(InlineKeyboardButton.WithCallbackData($"🍏", $"captcha {_captcha.IdTelegram} {chatId}"));
-        list = list.OrderBy(x => rnd.Next()).ToList();
+        list.Add(InlineKeyboardButton.WithCallbackData($"🍏", $"captcha {_captcha.Id} 🍏 {chatId}"));
+        list = list.OrderBy(_ => rnd.Next()).ToList();
         return list;
     }
 }

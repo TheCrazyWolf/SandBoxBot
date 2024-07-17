@@ -120,7 +120,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         }
 
         if (_configuration is { IsBlockFastActivity: true })
-            await new DetectFastActivity() { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+            await new DetectFastActivity { BotClient = bot, Update = update, Repository = _repository, }.Execute();
 
         if (_configuration is { IsBlockAntiArab: true })
             await new DetectAntiArab { BotClient = bot, Update = update, Repository = _repository, }.Execute();
@@ -162,6 +162,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             await new BanFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
         if (words[0] == "spamnospam")
             await new NoSpamFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
+        if (words[0] == "captcha")
+            await new CaptchaFromChat { BotClient = bot, Repository = _repository, Update = update }.Execute();
     }
 
     private Task UnknownUpdateHandlerAsync(Update update)
