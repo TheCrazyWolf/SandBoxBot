@@ -1,26 +1,22 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
+using SandBox.Advanced.Executable.Common;
 using SandBox.Models.Events;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Keyboards;
 
-public class BanFromEvent(
-    ITelegramBotClient botClient,
-    CallbackQuery callbackQuery,
-    SandBoxRepository repository) : IExecutable<bool>
+public class BanFromEvent : SandBoxHelpers, IExecutable<bool>
 {
     private EventContent? _eventContent;
 
     public Task<bool> Execute()
     {
-        var words = callbackQuery.Data?.Split(' ').Skip(1).ToArray();
+        var words = Update.CallbackQuery?.Data?.Split(' ').Skip(1).ToArray();
         
         if(words is null)
             return Task.FromResult(false);
         
-        _eventContent = repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
+        _eventContent = Repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
 
         if (_eventContent is null)
             return Task.FromResult(false);
@@ -32,7 +28,7 @@ public class BanFromEvent(
     
     private Task Proccess()
     {
-        botClient.BanChatMemberAsync(chatId: _eventContent!.ChatId!,
+        BotClient.BanChatMemberAsync(chatId: _eventContent!.ChatId!,
             userId: Convert.ToInt64(_eventContent.IdTelegram));
         return Task.CompletedTask;
     }
@@ -41,7 +37,7 @@ public class BanFromEvent(
     {
         var message = BuildNotifyMessage();
 
-        botClient.SendTextMessageAsync(chatId: callbackQuery.From.Id,
+        BotClient.SendTextMessageAsync(chatId: Update.CallbackQuery?.From.Id!,
             text: message,
             disableNotification: true);
         

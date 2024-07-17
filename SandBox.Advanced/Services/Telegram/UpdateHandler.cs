@@ -42,7 +42,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         {
             { Message: { } message } => OnMessage(update),
             { EditedMessage: { } message } => OnMessage(update),
-            { CallbackQuery: { } callbackQuery } => OnCallbackQuery(callbackQuery),
+            { CallbackQuery: { } callbackQuery } => OnCallbackQuery(update),
             _ => UnknownUpdateHandlerAsync(update)
         });
     }
@@ -128,6 +128,14 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
                     Secret = _configuration!.ManagerPasswordSecret,
                 }.Execute();
                 break;
+            case "/question":
+                await new QuestionCommand
+                {
+                    BotClient = bot,
+                    Update = update,
+                    Repository = _repository,
+                }.Execute();
+                break;
         }
 
         // Analatics chats
@@ -189,21 +197,43 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     }
 
     // Process Inline Keyboard callback data
-    private async Task OnCallbackQuery(CallbackQuery callbackQuery)
+    private async Task OnCallbackQuery(Update update)
     {
-        logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", callbackQuery.Id);
+        logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", update.Id);
 
-        var words = callbackQuery.Data?.Split(' ');
+        var words = update.CallbackQuery?.Data?.Split(' ');
 
         if (words is null)
             return;
 
+        if (words[0] == "question")
+            await new QuestionFromDb
+            {
+                BotClient = bot,
+                Repository = _repository,
+                Update = update
+            }.Execute();
         if (words[0] == "spamrestore")
-            await new RestoreFromEvent(bot, callbackQuery, _repository!).Execute();
+            await new RestoreFromEvent
+            {
+                BotClient = bot,
+                Repository = _repository,
+                Update = update
+            }.Execute();
         if (words[0] == "spamban")
-            await new BanFromEvent(bot, callbackQuery, _repository!).Execute();
+            await new BanFromEvent
+            {
+                BotClient = bot,
+                Repository = _repository,
+                Update = update
+            }.Execute();
         if (words[0] == "spamnospam")
-            await new NoSpamFromEvent(bot, callbackQuery, _repository!).Execute();
+            await new NoSpamFromEvent
+            {
+                BotClient = bot,
+                Repository = _repository,
+                Update = update
+            }.Execute();
     }
 
     private Task UnknownUpdateHandlerAsync(Update update)

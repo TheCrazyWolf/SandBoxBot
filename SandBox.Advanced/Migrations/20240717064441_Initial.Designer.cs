@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SandBox.Advanced.Database;
 
@@ -10,9 +11,11 @@ using SandBox.Advanced.Database;
 namespace SandBox.Advanced.Migrations
 {
     [DbContext(typeof(SandBoxContext))]
-    partial class SandBoxContextModelSnapshot : ModelSnapshot
+    [Migration("20240717064441_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
@@ -143,6 +146,25 @@ namespace SandBox.Advanced.Migrations
                     b.HasKey("IdChat");
 
                     b.ToTable("Chats");
+                });
+
+            modelBuilder.Entity("SandBox.Models.Telegram.Question", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Quest")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("SandBox.Models.Events.EventContent", b =>

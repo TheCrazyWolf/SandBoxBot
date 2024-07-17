@@ -8,6 +8,7 @@ namespace SandBox.Advanced.Database;
 
 public class SandBoxContext : DbContext
 {
+    public SandBoxContext() => Database.MigrateAsync();
     public DbSet<BlackWord> BlackWords { get; set; }
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Event> Events { get; set; }
@@ -15,6 +16,7 @@ public class SandBoxContext : DbContext
     public DbSet<EventContent> EventsContent { get; set; }
     public DbSet<Captcha> Captchas { get; set; }
     public DbSet<ChatTg> Chats { get; set; }
+    public DbSet<Question> Questions { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

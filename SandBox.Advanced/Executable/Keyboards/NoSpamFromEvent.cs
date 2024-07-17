@@ -1,5 +1,6 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
+using SandBox.Advanced.Executable.Common;
 using SandBox.Models.Events;
 using SandBox.Models.Telegram;
 using Telegram.Bot;
@@ -7,30 +8,24 @@ using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Keyboards;
 
-public class NoSpamFromEvent(
-    ITelegramBotClient botClient,
-    CallbackQuery callbackQuery,
-    SandBoxRepository repository) : IExecutable<bool>
+public class NoSpamFromEvent : SandBoxHelpers, IExecutable<bool>
 {
     private EventContent? _eventContent;
-    private Account? _senderOfEvent;
     
     public Task<bool> Execute()
     {
-        var words = callbackQuery.Data?.Split(' ').Skip(1).ToArray();
+        var words = Update.CallbackQuery?.Data?.Split(' ').Skip(1).ToArray();
         
         if(words is null)
             return Task.FromResult(false);
         
-        _eventContent = repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
+        _eventContent = Repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
 
         if (_eventContent is null)
             return Task.FromResult(false);
         
         _eventContent.IsSpam = false;
-        repository.Contents.Update(_eventContent);
-        
-        _senderOfEvent = repository.Accounts.GetById(Convert.ToInt64(_eventContent?.IdTelegram)).Result;
+        Repository.Contents.Update(_eventContent);
         
         Proccess();
         SendMessageOfExecuted();
@@ -39,7 +34,7 @@ public class NoSpamFromEvent(
     
     private Task Proccess()
     {
-        botClient.BanChatMemberAsync(chatId: _eventContent!.ChatId!,
+        BotClient.BanChatMemberAsync(chatId: _eventContent!.ChatId!,
             userId: Convert.ToInt64(_eventContent.IdTelegram));
         return Task.CompletedTask;
     }
@@ -48,7 +43,7 @@ public class NoSpamFromEvent(
     {
         var message = BuildNotifyMessage();
 
-        botClient.SendTextMessageAsync(chatId: callbackQuery.From.Id,
+        BotClient.SendTextMessageAsync(chatId: Update.CallbackQuery?.From.Id!,
             text: message,
             disableNotification: true);
         

@@ -46,7 +46,7 @@ namespace SandBox.Advanced.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ChatTg",
+                name: "Chats",
                 columns: table => new
                 {
                     IdChat = table.Column<long>(type: "INTEGER", nullable: false)
@@ -55,7 +55,21 @@ namespace SandBox.Advanced.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ChatTg", x => x.IdChat);
+                    table.PrimaryKey("PK_Chats", x => x.IdChat);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Questions",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Quest = table.Column<string>(type: "TEXT", nullable: false),
+                    Answer = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Questions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -101,9 +115,9 @@ namespace SandBox.Advanced.Migrations
                         principalTable: "Accounts",
                         principalColumn: "IdTelegram");
                     table.ForeignKey(
-                        name: "FK_Events_ChatTg_ChatId",
+                        name: "FK_Events_Chats_ChatId",
                         column: x => x.ChatId,
-                        principalTable: "ChatTg",
+                        principalTable: "Chats",
                         principalColumn: "IdChat");
                 });
 
@@ -136,10 +150,13 @@ namespace SandBox.Advanced.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
+                name: "Questions");
+
+            migrationBuilder.DropTable(
                 name: "Accounts");
 
             migrationBuilder.DropTable(
-                name: "ChatTg");
+                name: "Chats");
         }
     }
 }

@@ -5,7 +5,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectFastActivity() : SandBoxHelpers, IExecutable<bool>
+public class DetectFastActivity : SandBoxHelpers, IExecutable<bool>
 {
     private bool _isOverride;
     private int _countTotalLastMessages;
@@ -42,7 +42,7 @@ public class DetectFastActivity() : SandBoxHelpers, IExecutable<bool>
 
             BotClient.SendTextMessageAsync(chatId: id.IdTelegram,
                 text: message,
-                replyMarkup: new InlineKeyboardMarkup(buttons),
+               // replyMarkup: new InlineKeyboardMarkup(buttons),
                 disableNotification: true);
         }
 
