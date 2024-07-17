@@ -1,22 +1,18 @@
 ﻿using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
 using SandBox.Models.Events;
-using SandBox.Models.Telegram;
-using SandBox_Advanced;
 using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Services.Text;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectSpamMl() : SandBoxHelpers, IExecutable<bool>
+public class DetectSpamMl : SandBoxHelpers, IExecutable<bool>
 {
     private bool _toDelete;
     private bool _isOverride;
     private EventContent _eventContent = new();
-    private float _score = 0;
+    private float _score;
 
     public Task<bool> Execute()
     {
@@ -26,31 +22,32 @@ public class DetectSpamMl() : SandBoxHelpers, IExecutable<bool>
         AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
         _toDelete = IsSpamPredict(Update.Message.Text);
         _isOverride = CanBeOverrideRestriction(Update.Message.From.Id, Update.Message.Chat.Id).Result;
-        _eventContent = GenerateEvent();
+        _eventContent = GenerateEvent(chatId: Update.Message.Chat.Id,
+            content: Update.Message.Text?.ToLower() ?? string.Empty,
+            idTelegram: Update.Message.From.Id);
         Repository.Contents.Add(_eventContent);
 
         if (!_eventContent.IsSpam) return Task.FromResult(false);
 
-        DeleteThisMessage();
+        BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id,
+            messageId: Update.Message.MessageId);
+        
         NotifyManagers();
 
         return Task.FromResult(true);
     }
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-    private EventContent GenerateEvent()
+    private EventContent GenerateEvent(long chatId, string content, long idTelegram)
     {
         return new EventContent
         {
             IsSpam = GetSolutionIsSpam(),
-            ChatId = Update.Message.Chat.Id,
+            ChatId = chatId,
             DateTime = DateTime.Now,
-            Content = Update.Message.Text?.ToLower() ?? string.Empty,
-            IdTelegram = Update.Message.From.Id
+            Content = content,
+            IdTelegram = idTelegram
         };
     }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-
     private bool GetSolutionIsSpam()
     {
         if (_isOverride)
@@ -59,15 +56,6 @@ public class DetectSpamMl() : SandBoxHelpers, IExecutable<bool>
         return _toDelete;
     }
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-    private Task DeleteThisMessage()
-    {
-        BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id,
-            messageId: Update.Message.MessageId);
-        return Task.CompletedTask;
-    }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-
     private bool IsSpamPredict(string? message)
     {
         var result = MlPredictor.IsSpamPredict(message);
@@ -75,7 +63,7 @@ public class DetectSpamMl() : SandBoxHelpers, IExecutable<bool>
         return result.Item1;
     }
 
-    private Task NotifyManagers()
+    private void NotifyManagers()
     {
         foreach (var id in Repository.Accounts.GetManagers().Result)
         {
@@ -87,8 +75,6 @@ public class DetectSpamMl() : SandBoxHelpers, IExecutable<bool>
                 replyMarkup: new InlineKeyboardMarkup(buttons),
                 disableNotification: true);
         }
-
-        return Task.CompletedTask;
     }
 
     private string BuildNotifyMessage()

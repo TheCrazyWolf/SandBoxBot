@@ -1,10 +1,8 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Common;
 using SandBox.Models.Events;
 using SandBox.Models.Telegram;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Keyboards;
 
@@ -36,33 +34,28 @@ public class RestoreFromEvent: SandBoxHelpers, IExecutable<bool>
         return Task.FromResult(true);
     }
     
-    private Task Proccess()
+    private void Proccess()
     {
         BotClient.BanChatMemberAsync(chatId: _eventContent!.ChatId!,
             userId: Convert.ToInt64(_eventContent.IdTelegram));
-        return Task.CompletedTask;
     }
     
-    private Task SendMessageOfExecuted()
+    private void SendMessageOfExecuted()
     {
         var message = BuildNotifyMessage();
 
         BotClient.SendTextMessageAsync(chatId: Update.CallbackQuery?.From.Id!,
             text: message,
             disableNotification: true);
-        
-        return Task.CompletedTask;
     }
     
-    private Task SendMessageRestorable()
+    private void SendMessageRestorable()
     {
         var message = BuildRestoredMessage();
 
         BotClient.SendTextMessageAsync(chatId: _eventContent!.ChatId!,
             text: message,
             disableNotification: true);
-        
-        return Task.CompletedTask;
     }
 
     private string BuildNotifyMessage()

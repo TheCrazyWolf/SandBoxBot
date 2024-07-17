@@ -30,40 +30,39 @@ public class UpdateDetailsActivityProfile : IExecutable<bool>
 
         if (AccountDb is not null)
         {
-            UpdateDetailsAccount();
+            UpdateDetailsAccount(Update.Message.From);
             return Task.FromResult(true);
         }
 
-        CreateAccountIfNull();
+        CreateAccountIfNull(Update.Message.From);
 
         return Task.FromResult(true);
     }
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
-    protected Task CreateAccountIfNull()
+    protected void CreateAccountIfNull(User user)
     {
         var newAccount = new Account
         {
-            IdTelegram = Update.Message.From.Id,
-            UserName = Update.Message.From.Username,
-            FirstName = Update.Message.From.FirstName,
-            LastName = Update.Message.From.LastName,
+            IdTelegram = user.Id,
+            UserName = user.Username,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             LastActivity = DateTime.Now,
             DateTimeJoined = DateTime.Now,
         };
 
         Repository.Accounts.Add(newAccount);
-        return Task.CompletedTask;
     }
 
-    protected Task UpdateDetailsAccount()
+    protected void UpdateDetailsAccount(User user)
     {
-        AccountDb.FirstName = Update.Message.From.FirstName;
-        AccountDb.LastName = Update.Message.From.LastName;
-        AccountDb.UserName = Update.Message.From.Username;
+        if(AccountDb is null)
+            return;
+        AccountDb.FirstName = user.FirstName;
+        AccountDb.LastName = user.LastName;
+        AccountDb.UserName = user.Username;
         AccountDb.LastActivity = DateTime.Now;
         Repository.Accounts.Update(AccountDb);
-        return Task.CompletedTask;
     }
 
     protected ChatTg? GetThisChatTelegram(long idChat)
@@ -71,7 +70,6 @@ public class UpdateDetailsActivityProfile : IExecutable<bool>
         return Repository.Chats.GetById(idChat).Result;
     }
     
-#pragma warning disable CS8601 // Possible null reference assignment.
     protected void CreateChatIfNull(long idChat, string title)
     {
         var newChat = new ChatTg
@@ -82,7 +80,4 @@ public class UpdateDetailsActivityProfile : IExecutable<bool>
 
         Repository.Chats.Add(newChat);
     }
-#pragma warning restore CS8601 // Possible null reference assignment.
-    
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 }

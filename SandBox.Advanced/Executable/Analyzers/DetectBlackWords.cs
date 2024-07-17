@@ -27,14 +27,12 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
 
         if (!_eventContent.IsSpam) return Task.FromResult(false);
 
-        DeleteThisMessage(chatId:Update.Message.Chat.Id, messageId: Update.Message.MessageId);
+        BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id, messageId: Update.Message.MessageId);
         NotifyManagers();
 
         return Task.FromResult(true);
     }
-
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
+    
     private EventContent GenerateEvent(long chatId, string content, long idTelegram)
     {
         return new EventContent
@@ -46,7 +44,6 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
             IdTelegram = idTelegram
         };
     }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
     private bool GetSolutionIsSpam()
     {
@@ -55,9 +52,6 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
 
         return _toDelete;
     }
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
     private bool IsContainsBlackWord(string? message)
     {

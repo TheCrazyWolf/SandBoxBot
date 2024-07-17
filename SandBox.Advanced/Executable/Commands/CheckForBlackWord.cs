@@ -1,5 +1,4 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Services.Text;
 using Telegram.Bot;
@@ -8,7 +7,6 @@ namespace SandBox.Advanced.Executable.Commands;
 
 public class CheckForBlackWord() : EventSandBoxBase, IExecutable<bool>
 {
-
     private bool _isBlackKeyWord;
     private bool _isSpamFromMl;
     private float _score;
@@ -19,19 +17,18 @@ public class CheckForBlackWord() : EventSandBoxBase, IExecutable<bool>
         if (Update.Message?.From is null)
             return Task.FromResult(false);
 
-        Proccess();
+        Proccess(Update.Message.Text ?? string.Empty);
         _isSpamFromMl = IsSpamPredict(TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text ?? string.Empty));
-        
-        SendMessage(BuildSuccessMessage());
+
+        SendMessage(idChat: Update.Message.Chat.Id,
+            message: BuildSuccessMessage());
         return Task.FromResult(true);
     }
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-
-    private Task Proccess()
+    private void Proccess(string message)
     {
         // проверка, чтобы не добавлялись команды - SKIP 1
-        var words = TextTreatment.GetArrayWordsTreatmentMessage(Update.Message.Text).Skip(1);
+        var words = TextTreatment.GetArrayWordsTreatmentMessage(message).Skip(1);
 
         foreach (var word in words)
         {
@@ -40,18 +37,14 @@ public class CheckForBlackWord() : EventSandBoxBase, IExecutable<bool>
             if (!result) continue;
             _isBlackKeyWord = true;
             _blackWords += $"{word}, ";
-
         }
-
-        return Task.CompletedTask;
     }
 
-    private Task SendMessage(string message)
+    private void SendMessage(long idChat, string message)
     {
-        BotClient.SendTextMessageAsync(chatId:Update.Message.Chat.Id,
+        BotClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
-        return Task.CompletedTask;
     }
 
     private string BuildSuccessMessage()
@@ -69,13 +62,11 @@ public class CheckForBlackWord() : EventSandBoxBase, IExecutable<bool>
             $"\u26a1\ufe0f Модель машинного обучения: {resultFromMl}\nВероятность {_score}%" +
             $"\n\n{resultMessage}";
     }
-    
+
     private bool IsSpamPredict(string? message)
     {
         var result = MlPredictor.IsSpamPredict(message);
         _score = result.Item2;
         return result.Item1;
     }
-    
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 }

@@ -11,7 +11,6 @@ namespace SandBox.Advanced.Executable.Commands;
 
 public class StartCommand: EventSandBoxBase, IExecutable<bool>
 {
-
     public Task<bool> Execute()
     {
         if (Update.Message?.From is null)
@@ -20,12 +19,11 @@ public class StartCommand: EventSandBoxBase, IExecutable<bool>
         SendMessage(BuildMessage());
         return Task.FromResult(true);
     }
-    private Task SendMessage(string message)
+    private void SendMessage(string message)
     {
         BotClient.SendTextMessageAsync(chatId:Update.Message!.Chat.Id,
             text: message,
             disableNotification: true);
-        return Task.CompletedTask;
     }
 
     private string BuildMessage()

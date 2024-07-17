@@ -9,7 +9,6 @@ namespace SandBox.Advanced.Executable.Commands;
 
 public class QuestionCommand: SandBoxHelpers, IExecutable<bool>
 {
-    private string _blackWords = string.Empty;
     private string _message = string.Empty;
     private IList<Question> _foundedQuestion = default!;
 
@@ -24,30 +23,29 @@ public class QuestionCommand: SandBoxHelpers, IExecutable<bool>
         
         if(_foundedQuestion.Count == 0)
         {
-            SendMessage(BuildErrorMessage());
-            return Task.FromResult<bool>(true);
+            SendMessage(idChat: Update.Message.Chat.Id,
+                message: BuildErrorMessage());
+            return Task.FromResult(true);
         }
         
-        SendMessage(BuildSuccessMessage());
+        SendMessage(idChat: Update.Message.Chat.Id,
+            message: BuildSuccessMessage());
         return Task.FromResult(true);
     }
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
     private IReadOnlyCollection<InlineKeyboardButton> GenerateKeyboardQuestions()
     {
         return _foundedQuestion.Select(item => InlineKeyboardButton.WithCallbackData($"{item.Id}", $"question {item.Id} {Update.Message?.Chat.Id}")).ToList();
     }
 
-    private Task SendMessage(string message)
+    private void SendMessage(long idChat, string message)
     {
         var keyboard = GenerateKeyboardQuestions();
         
-        BotClient.SendTextMessageAsync(chatId:Update.Message.Chat.Id,
+        BotClient.SendTextMessageAsync(chatId:idChat,
             text: message,
             replyMarkup: new InlineKeyboardMarkup(keyboard), 
             disableNotification: true);
-        return Task.CompletedTask;
     }
 
     private string BuildSuccessMessage()
@@ -66,5 +64,4 @@ public class QuestionCommand: SandBoxHelpers, IExecutable<bool>
             "\u26a0\ufe0f К сожалению, мы не нашли в базе знаний ответа на ваш вопрос";
     }
     
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 }

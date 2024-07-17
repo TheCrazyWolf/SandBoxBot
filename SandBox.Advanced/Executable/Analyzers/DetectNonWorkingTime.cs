@@ -23,7 +23,7 @@ public class DetectNonWorkingTime : SandBoxHelpers, IExecutable<bool>
 
         SendMessage(Update.Message.Chat.Id);
         
-        DeleteThisMessage(chatId: Update.Message.Chat.Id, messageId: Update.Message.MessageId);
+        BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id, messageId: Update.Message.MessageId);
 
         return Task.FromResult(true);
     }

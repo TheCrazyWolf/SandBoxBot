@@ -23,53 +23,39 @@ public class SetMeManager : IExecutable<bool>
 
         if (string.IsNullOrEmpty(treatmentText))
         {
-            SendMessageUnsuccess();
+            SendMessage(idChat:Update.Message!.Chat.Id, message: BuildErrorMessage());
             return Task.FromResult(true);
         }
 
         if (treatmentText == Secret)
         {
             Proccess();
-            SendMessageSuccess();
+            SendMessage(idChat:Update.Message!.Chat.Id, message: BuildSuccessMessage());
             return Task.FromResult(true);
         }
 
-        SendMessageUnsuccess();
+        SendMessage(idChat:Update.Message!.Chat.Id, message: BuildErrorMessage());
         return Task.FromResult(false);
     }
 
-    private Task Proccess()
+    private void Proccess()
     {
         var profile = Repository.Accounts.GetById(Update.Message!.From!.Id).Result;
 
         if (profile is null)
-            return Task.CompletedTask;
+            return;
 
         profile.IsAprroved = true;
         profile.IsManagerThisBot = true;
 
         Repository.Accounts.Update(profile);
-        return Task.CompletedTask;
     }
 
-    private Task SendMessageSuccess()
+    private void SendMessage(long idChat, string message)
     {
-        var message = BuildSuccessMessage();
-
-        BotClient.SendTextMessageAsync(chatId: Update.Message!.Chat.Id,
+        BotClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
-        return Task.CompletedTask;
-    }
-
-    private Task SendMessageUnsuccess()
-    {
-        var message = BuildErrorMessage();
-
-        BotClient.SendTextMessageAsync(chatId: Update.Message!.Chat.Id,
-            text: message,
-            disableNotification: true);
-        return Task.CompletedTask;
     }
 
     private string BuildSuccessMessage()

@@ -6,7 +6,7 @@ using Telegram.Bot;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class AddNewBlackWord() : SandBoxHelpers, IExecutable<bool>
+public class AddNewBlackWord : SandBoxHelpers, IExecutable<bool>
 {
     private string _blackWords = string.Empty;
     private string _message = string.Empty;

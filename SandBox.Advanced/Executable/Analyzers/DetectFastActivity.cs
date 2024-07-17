@@ -33,7 +33,7 @@ public class DetectFastActivity : SandBoxHelpers, IExecutable<bool>
         return Task.FromResult(true);
     }
 
-    private Task NotifyManagers()
+    private void NotifyManagers()
     {
         foreach (var id in Repository.Accounts.GetManagers().Result)
         {
@@ -45,8 +45,6 @@ public class DetectFastActivity : SandBoxHelpers, IExecutable<bool>
                // replyMarkup: new InlineKeyboardMarkup(buttons),
                 disableNotification: true);
         }
-
-        return Task.CompletedTask;
     }
 
     private string BuildNotifyMessage()

@@ -26,22 +26,19 @@ public class BanFromEvent : SandBoxHelpers, IExecutable<bool>
         return Task.FromResult(true);
     }
     
-    private Task Proccess()
+    private void Proccess()
     {
         BotClient.BanChatMemberAsync(chatId: _eventContent!.ChatId!,
             userId: Convert.ToInt64(_eventContent.IdTelegram));
-        return Task.CompletedTask;
     }
     
-    private Task SendMessageOfExecuted()
+    private void SendMessageOfExecuted()
     {
         var message = BuildNotifyMessage();
 
         BotClient.SendTextMessageAsync(chatId: Update.CallbackQuery?.From.Id!,
             text: message,
             disableNotification: true);
-        
-        return Task.CompletedTask;
     }
 
     private string BuildNotifyMessage()

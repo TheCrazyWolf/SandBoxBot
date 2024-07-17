@@ -65,10 +65,4 @@ public class SandBoxHelpers : EventSandBoxBase
         return Task.FromResult(false);
     }
     
-    protected void DeleteThisMessage(long chatId, int messageId)
-    {
-        BotClient.DeleteMessageAsync(chatId: chatId,
-            messageId: messageId
-        );
-    }
 }

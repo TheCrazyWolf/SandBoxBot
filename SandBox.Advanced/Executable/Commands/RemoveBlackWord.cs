@@ -1,11 +1,7 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Services.Text;
-using SandBox.Models.Blackbox;
-using SandBox.Models.Telegram;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
@@ -25,36 +21,30 @@ public class RemoveBlackWord : SandBoxHelpers, IExecutable<bool>
         if (IfThisUserIsManager(Update.Message.From.Id, Update.Message.Chat.Id).Result)
         {
             Proccess();
-            SendMessage(BuildSuccessMessage());
+            SendMessage(idChat: Update.Message.Chat.Id, message: BuildSuccessMessage());
             return Task.FromResult(true);
         }
-        
-        SendMessage(BuildErrorMessage());
+
+        SendMessage(idChat: Update.Message.Chat.Id, message: BuildErrorMessage());
         return Task.FromResult(true);
     }
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-
-    private Task Proccess()
+    private void Proccess()
     {
         // проверка, чтобы не добавлялись команды - SKIP 1
         var words = TextTreatment.GetArrayWordsTreatmentMessage(_message);
 
-        foreach (var word in words)
+        foreach (var word in words.Where(word => Repository.BlackWords.Delete(word).Result))
         {
-            if(Repository.BlackWords.Delete(word).Result)
-                _blackWords += $"\ud83d\udd05 {word}\n";
+            _blackWords += $"\ud83d\udd05 {word}\n";
         }
-
-        return Task.CompletedTask;
     }
 
-    private Task SendMessage(string message)
+    private void SendMessage(long idChat, string message)
     {
-        BotClient.SendTextMessageAsync(chatId:Update.Message.Chat.Id,
+        BotClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
-        return Task.CompletedTask;
     }
 
     private string BuildSuccessMessage()
@@ -63,12 +53,10 @@ public class RemoveBlackWord : SandBoxHelpers, IExecutable<bool>
             $"\u2705 Команда выполнена" +
             $"\n\nИз черного списка удалены следующие слова: \n\n{_blackWords}";
     }
-    
+
     private string BuildErrorMessage()
     {
         return
             "\u26a0\ufe0f Недостаточно прав";
     }
-    
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 }
