@@ -97,7 +97,11 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         
         // Переместить выше если будут обходить путем команд
         if (_configuration is { IsChatInWorkTime: true })
+        {
             await new DetectNonWorkingTime { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+            WorkTimeChatTimer.BotClient = bot;
+            WorkTimeChatTimer.Rune();
+        }
         // это читай выше 
         
         
