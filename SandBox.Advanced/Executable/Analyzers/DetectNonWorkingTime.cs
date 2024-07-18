@@ -50,7 +50,7 @@ public class DetectNonWorkingTime : SandBoxHelpers, IExecutable<bool>
     
     private string BuildMessageAsyncTime(DateTime serverTime, DateTime currentTime)
     {
-        return $"⚠️ Внимание! Обнаружено расинхронизация по времени:\n\n" +
+        return $"⚠️ Внимание! Обнаружено расcинхронизация по времени:\n\n" +
                $"\u23f0 Текущее время на сервере: {currentTime:yyyy-MM-dd HH:mm}\n\n" +
                $"\u23f0 Фактическое время по интернету: {serverTime:yyyy-MM-dd HH:mm}\n\n" +
                $"⚠️Это очень сильно может повлиять на работу бота";
