@@ -46,7 +46,7 @@ public class DetectQuestion : SandBoxHelpers, IExecutable<bool>
             .Replace("добрый вечер", string.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace("доброй ночи", string.Empty, StringComparison.OrdinalIgnoreCase);
 
-        while (newMessage.StartsWith("!") || newMessage.StartsWith(".") || newMessage.StartsWith(",") || newMessage.StartsWith(" "))
+        while (newMessage.StartsWith("!") || newMessage.StartsWith(".") || newMessage.StartsWith(",") || newMessage.StartsWith(" ") || newMessage.StartsWith("\n"))
         {
             newMessage = newMessage.Substring(1);
         }

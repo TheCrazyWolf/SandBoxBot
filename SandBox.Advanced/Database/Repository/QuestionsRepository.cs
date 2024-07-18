@@ -17,7 +17,7 @@ public class QuestionsRepository(SandBoxContext ef)
         return Task.FromResult(ef.Questions.FirstOrDefault(x => x.Id == question));
     }
     
-    public Task<IList<Question>> GetByContentQuestion(string searchText)
+    /*public Task<IList<Question>> GetByContentQuestion(string searchText)
     {
         var questions = ef.Questions.ToList();
 
@@ -33,16 +33,16 @@ public class QuestionsRepository(SandBoxContext ef)
                 x.Question,
                 CombinedScore = Math.Max(x.QuestionScore, x.AnswerScore)
             })
-            .Where(x => x.CombinedScore >= 15) // порог схожести, можно настроить
+            .Where(x => x.CombinedScore >= 10) // порог схожести, можно настроить
             .OrderByDescending(x => x.CombinedScore)
             .Select(x => x.Question)
             .Take(5)
             .ToList();
 
         return Task.FromResult<IList<Question>>(results);
-    }
+    }*/
     
-    /*public Task<IList<Question>> GetByContentQuestion(string question)
+    public Task<IList<Question>> GetByContentQuestion(string question)
     {
         var questions = ef.Questions.ToList();
 
@@ -59,7 +59,7 @@ public class QuestionsRepository(SandBoxContext ef)
             .ToList();
 
         return Task.FromResult<IList<Question>>(results);
-    }*/
+    }
 
     public Task<Question> Update(Question question)
     {
