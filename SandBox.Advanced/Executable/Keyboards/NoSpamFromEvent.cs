@@ -23,6 +23,14 @@ public class NoSpamFromEvent : SandBoxHelpers, IExecutable<bool>
 
         if (_eventContent is null)
             return Task.FromResult(false);
+
+        AccountDb = Repository.Accounts.GetById(Convert.ToInt64(_eventContent.IdTelegram)).Result;
+        
+        if (AccountDb is not null)
+        {
+            AccountDb.IsSpamer = false;
+            Repository.Accounts.Update(AccountDb);
+        }
         
         _eventContent.IsSpam = false;
         Repository.Contents.Update(_eventContent);

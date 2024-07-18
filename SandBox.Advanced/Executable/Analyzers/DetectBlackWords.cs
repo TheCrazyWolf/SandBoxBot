@@ -27,6 +27,12 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
 
         if (!_eventContent.IsSpam) return Task.FromResult(false);
 
+        if (AccountDb is not null)
+        {
+            AccountDb.IsSpamer = true;
+            Repository.Accounts.Update(AccountDb);
+        }
+        
         BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id, messageId: Update.Message.MessageId);
         NotifyManagers();
 

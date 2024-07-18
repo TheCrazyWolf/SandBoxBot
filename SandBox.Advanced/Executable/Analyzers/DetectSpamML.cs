@@ -28,6 +28,12 @@ public class DetectSpamMl : SandBoxHelpers, IExecutable<bool>
         Repository.Contents.Add(_eventContent);
 
         if (!_eventContent.IsSpam) return Task.FromResult(false);
+        
+        if (AccountDb is not null)
+        {
+            AccountDb.IsSpamer = true;
+            Repository.Accounts.Update(AccountDb);
+        }
 
         BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id,
             messageId: Update.Message.MessageId);

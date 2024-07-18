@@ -34,6 +34,14 @@ public class CaptchaFromChat : SandBoxHelpers, IExecutable<bool>
             SendMessageOfExecuted(idChat: Convert.ToInt64(words[2]), message: BuildWrongCaptcha());
             return Task.FromResult(false);
         }
+        
+        AccountDb = Repository.Accounts.GetById(Convert.ToInt64(_captcha.IdTelegram)).Result;
+        
+        if (AccountDb is not null)
+        {
+            AccountDb.IsSpamer = false;
+            Repository.Accounts.Update(AccountDb);
+        }
 
         ProccessRightCaptcha(Convert.ToInt64(_captcha.IdTelegram));
         SendMessageOfExecuted(idChat: Convert.ToInt64(words[2]), message: BuildSuccessCaptcha());
