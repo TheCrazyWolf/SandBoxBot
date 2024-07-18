@@ -14,7 +14,7 @@ public static class WorkTimeChatTimer
     
     // CHAT приемки -1001941895047
     // -4286170959
-    private static readonly long ChatId = -4286170959;
+    private static readonly long ChatId = -1001941895047;
 
     private static DateTime _lastSendStartMessageDay;
     private static DateTime _lastSendEndMessageDay;
