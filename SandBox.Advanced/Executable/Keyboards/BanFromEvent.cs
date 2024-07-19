@@ -20,6 +20,14 @@ public class BanFromEvent : SandBoxHelpers, IExecutable<bool>
 
         if (_eventContent is null)
             return Task.FromResult(false);
+        
+        AccountDb = Repository.Accounts.GetById(Convert.ToInt64(_eventContent.IdTelegram)).Result;
+        
+        if (AccountDb is not null)
+        {
+            AccountDb.IsSpamer = true;
+            Repository.Accounts.Update(AccountDb);
+        }
 
         Proccess();
         SendMessageOfExecuted();
