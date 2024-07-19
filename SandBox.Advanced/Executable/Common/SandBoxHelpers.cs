@@ -19,6 +19,9 @@ public class SandBoxHelpers : EventSandBoxBase
         if (AccountDb.IsAprroved) // Прошедший капчу
             return Task.FromResult(AccountDb.IsAprroved);
 
+        if (AccountDb.IsSpamer)
+            return Task.FromResult(!AccountDb.IsSpamer);
+
         // Доверенный профиль, вероятность того что профиль на забанят через 4 дня после спама минимальная ?
         if ((DateTime.Now.Date - AccountDb.DateTimeJoined.Date).TotalDays >= 4)
             return Task.FromResult(true);

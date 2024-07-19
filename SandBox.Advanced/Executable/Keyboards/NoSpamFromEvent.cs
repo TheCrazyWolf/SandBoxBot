@@ -29,6 +29,7 @@ public class NoSpamFromEvent : SandBoxHelpers, IExecutable<bool>
         if (AccountDb is not null)
         {
             AccountDb.IsSpamer = false;
+            AccountDb.IsAprroved = true;
             Repository.Accounts.Update(AccountDb);
         }
         

@@ -30,6 +30,7 @@ public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
         if (AccountDb is not null)
         {
             AccountDb.IsSpamer = true;
+            AccountDb.IsNeedToVerifyByCaptcha = true;
             Repository.Accounts.Update(AccountDb);
         }
         
