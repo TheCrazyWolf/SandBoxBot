@@ -21,8 +21,8 @@ public class RemoveBlackWord(SandBoxRepository repository, ITelegramBotClient bo
         if (account != null && account.IfUserManager())
         {
             repository.Accounts.UpdateApproved(account);
-            var blockedWords = DoUnBlockWords(message.Text ?? string.Empty);
-            SendMessage(message.From.Id, BuildSuccessMessage(blockedWords));
+            var unBlockWords = DoUnBlockWords(message.Text ?? string.Empty);
+            SendMessage(message.From.Id, BuildSuccessMessage(unBlockWords));
             return;
         }
 
@@ -33,7 +33,7 @@ public class RemoveBlackWord(SandBoxRepository repository, ITelegramBotClient bo
     private string DoUnBlockWords(string message)
     {
         var list = string.Empty;
-        foreach (var word in message.GetArrayWordsTreatmentMessage(skip: 1)
+        foreach (var word in message.GetArrayWordsTreatmentMessage(0)
                      .Where(word => repository.BlackWords.Exists(word).Result))
         {
             repository.BlackWords.Delete(word);

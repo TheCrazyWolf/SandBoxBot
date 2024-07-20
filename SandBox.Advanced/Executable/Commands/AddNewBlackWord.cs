@@ -34,7 +34,7 @@ public class AddNewBlackWord(SandBoxRepository repository, ITelegramBotClient bo
     private string DoBlockWords(string message)
     {
         var list = string.Empty;
-        foreach (var word in message.GetArrayWordsTreatmentMessage(skip: 1))
+        foreach (var word in message.GetArrayWordsTreatmentMessage(0))
         {
             repository.BlackWords.Add(new BlackWord { Content = word });
             list += $"\ud83d\udd05 {word}\n";
