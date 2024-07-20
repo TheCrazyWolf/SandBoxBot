@@ -50,4 +50,12 @@ public class AccountsRepository(SandBoxContext ef)
         
         return Task.FromResult(true);
     }
+
+    public void UpdateApproved(Account account)
+    {
+        account.IsAprroved = true;
+        account.IsNeedToVerifyByCaptcha = false;
+        account.IsSpamer = false;
+        Update(account);
+    }
 }

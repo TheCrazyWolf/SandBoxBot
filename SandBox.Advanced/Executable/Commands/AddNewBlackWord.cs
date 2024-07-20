@@ -1,72 +1,65 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Executable.Common;
-using SandBox.Advanced.Services.Text;
+using SandBox.Advanced.Database;
+using SandBox.Advanced.Utils;
 using SandBox.Models.Blackbox;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class AddNewBlackWord : SandBoxHelpers, IExecutable<bool>
+public class AddNewBlackWord(SandBoxRepository repository, ITelegramBotClient botClient) : Command
 {
-    private string _blackWords = string.Empty;
-    private string _message = string.Empty;
+    public override string Name { get; set; } = "/add";
 
-    public Task<bool> Execute()
+    public override void Execute(Message message)
     {
-        if (Update.Message?.From is null)
-            return Task.FromResult(false);
+        if (message.From is null)
+            return;
 
-        _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text!);
+        message.Text?.GetMessageWithoutUserNameBotsAndCommands();
 
-        AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
+        var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if (IfThisUserIsManager(Update.Message.From.Id, Update.Message.Chat.Id).Result)
+        if (account != null && account.IfUserManager())
         {
-            Proccess();
-            SendMessage(BuildSuccessMessage());
-            return Task.FromResult(true);
-        }
-        
-        SendMessage(BuildErrorMessage());
-        return Task.FromResult(true);
-    }
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-
-    private Task Proccess()
-    {
-        // проверка, чтобы не добавлялись команды - SKIP 1
-        var words = TextTreatment.GetArrayWordsTreatmentMessage(_message);
-
-        foreach (var word in words)
-        {
-            Repository.BlackWords.Add(new BlackWord { Content = word });
-            _blackWords += $"\ud83d\udd05 {word}\n";
+            repository.Accounts.UpdateApproved(account);
+            var blockedWords = DoBlockWords(message.Text ?? string.Empty);
+            SendMessage(message.From.Id, BuildSuccessMessage(blockedWords));
+            return;
         }
 
-        return Task.CompletedTask;
+        SendMessage(message.From.Id, BuildErrorMessage());
     }
 
-    private Task SendMessage(string message)
+    private string DoBlockWords(string message)
     {
-        BotClient.SendTextMessageAsync(chatId:Update.Message.Chat.Id,
+        var list = string.Empty;
+        foreach (var word in message.GetArrayWordsTreatmentMessage(skip:1))
+        {
+            repository.BlackWords.Add(new BlackWord { Content = word });
+            list += $"\ud83d\udd05 {word}\n";
+        }
+
+        return list;
+    }
+
+    private void SendMessage(long idChat, string message)
+    {
+        botClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
-        return Task.CompletedTask;
     }
 
-    private string BuildSuccessMessage()
+    private string BuildSuccessMessage(string blockedWords)
     {
         return
             $"\u2705 Команда выполнена" +
-            $"\n\nВ черный список добавлены следующие слова: \n\n{_blackWords}";
+            $"\n\nВ черный список добавлены следующие слова: \n\n{blockedWords}";
     }
-    
+
     private string BuildErrorMessage()
     {
         return
             "\u26a0\ufe0f Недостаточно прав";
     }
-    
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 }
