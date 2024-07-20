@@ -1,4 +1,4 @@
-namespace SandBox.Advanced.Abstract;
+namespace SandBox.Advanced.Interfaces;
 
 public interface IExecutable<T>
 {

@@ -1,10 +1,10 @@
-using Telegram.Bot;
+using SandBox.Advanced.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace SandBox.Advanced.Abstract;
 
-public abstract class Command
+public abstract class Command : ICommand
 {
     public abstract string Name { get; set; }
 

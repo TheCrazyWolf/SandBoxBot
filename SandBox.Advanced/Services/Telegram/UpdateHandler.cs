@@ -6,6 +6,7 @@ using SandBox.Advanced.Executable.Activity;
 using SandBox.Advanced.Executable.Analyzers;
 using SandBox.Advanced.Executable.Commands;
 using SandBox.Advanced.Executable.Keyboards;
+using SandBox.Advanced.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -20,7 +21,9 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 {
     public static BotConfiguration Configuration { get; set; } = new ();
     
-    private IList<Command> _commands = new List<Command>();
+    private IList<ICommand> _commands = new List<ICommand>();
+    
+    private IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
     
     private static bool _isFirstPool = true;
     private SandBoxRepository _repository = default!;
@@ -81,6 +84,13 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             return;
         }
 
+        
+        // ANALIZ
+        foreach (var analyzer in _analyzers)
+        {
+            analyzer.Execute(update.Message);
+        }
+        
         // Переместить выше если будут обходить путем команд
         if (Configuration is { IsChatInWorkTime: true })
         {
@@ -113,8 +123,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         if (Configuration is { IsBlockFastActivity: true })
             await new DetectFastActivity { BotClient = bot, Update = update, Repository = _repository, }.Execute();
 
-        if (Configuration is { IsBlockAntiArab: true })
-            await new DetectAntiArab { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+        /*if (Configuration is { IsBlockAntiArab: true })
+            await new DetectAntiArab { BotClient = bot, Update = update, Repository = _repository, }.Execute12();*/
     }
 
     async Task<Message> Usage(Message msg)
@@ -181,7 +191,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     private void ConfiguringCommands()
     {
-        _commands = new List<Command>()
+        _commands = new List<ICommand>()
         {
             new AddNewBlackWord(_repository, bot),
             new CaptchaCommand(_repository, bot),
@@ -190,6 +200,15 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new RemoveBlackWord(_repository, bot),
             new SetMeManager(_repository, bot),
             new StartCommand(_repository, bot)
+            // ETC
+        };
+    }
+    
+    private void ConfiguringAnalyzers()
+    {
+        _analyzers = new List<IAnalyzer>()
+        {
+            new DetectAntiArab(_repository, bot),
             // ETC
         };
     }
