@@ -1,55 +1,45 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Executable.Common;
-using SandBox.Advanced.Services.Text;
+using SandBox.Advanced.Database;
+using SandBox.Advanced.Services.Telegram;
+using SandBox.Advanced.Utils;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class SetMeManager : EventSandBoxBase, IExecutable<bool>
+public class SetMeManager(SandBoxRepository repository, ITelegramBotClient botClient) : Command
 {
-    public string Secret = default!;
+    public override string Name { get; set; } = "/setadmin";
 
-    public Task<bool> Execute()
+    public override void Execute(Message message)
     {
-        if (Update.Message?.From is null)
-            return Task.FromResult(false);
-
-        var treatmentText = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text!).Split(' ')
-            .First();
-
-        if (string.IsNullOrEmpty(treatmentText))
-        {
-            SendMessage(idChat:Update.Message!.Chat.Id, message: BuildErrorMessage());
-            return Task.FromResult(true);
-        }
-
-        if (treatmentText == Secret)
-        {
-            Proccess();
-            SendMessage(idChat:Update.Message!.Chat.Id, message: BuildSuccessMessage());
-            return Task.FromResult(true);
-        }
-
-        SendMessage(idChat:Update.Message!.Chat.Id, message: BuildErrorMessage());
-        return Task.FromResult(false);
-    }
-
-    private void Proccess()
-    {
-        var profile = Repository.Accounts.GetById(Update.Message!.From!.Id).Result;
-
-        if (profile is null)
+        if (message.From is null)
             return;
 
-        profile.IsAprroved = true;
-        profile.IsManagerThisBot = true;
+        message.Text = message.Text?.GetMessageWithoutUserNameBotsAndCommands().Split(' ').First();
 
-        Repository.Accounts.Update(profile);
+        var account = repository.Accounts.GetById(message.From.Id).Result;
+        
+        if (string.IsNullOrEmpty(message.Text))
+        {
+            SendMessage(idChat: message.Chat.Id, message: BuildErrorMessage());
+            return;
+        }
+
+        if (message.Text == UpdateHandler.Configuration.ManagerPasswordSecret && account != null)
+        {
+            repository.Accounts.UpdateAdmin(account);
+            SendMessage(idChat: message.Chat.Id, message: BuildSuccessMessage());
+            return;
+        }
+
+        SendMessage(idChat: message.Chat.Id, message: BuildErrorMessage());
     }
+    
 
     private void SendMessage(long idChat, string message)
     {
-        BotClient.SendTextMessageAsync(chatId: idChat,
+        botClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
     }

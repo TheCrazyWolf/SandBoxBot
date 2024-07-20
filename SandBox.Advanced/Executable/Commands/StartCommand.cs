@@ -1,42 +1,39 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
-using SandBox.Advanced.Executable.Common;
-using SandBox.Advanced.Services.Text;
-using SandBox.Models.Blackbox;
-using SandBox.Models.Telegram;
+using SandBox.Advanced.Utils;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class StartCommand : SandBoxHelpers, IExecutable<bool>
+public class StartCommand(SandBoxRepository repository, ITelegramBotClient botClient) : Command
 {
-    private bool _canByPassRestrict;
-    public Task<bool> Execute()
+    public override string Name { get; set; } = "/start";
+
+    public override void Execute(Message message)
     {
-        if (Update.Message?.From is null)
-            return Task.FromResult(false);
+        if (message.From is null)
+            return;
 
-        _canByPassRestrict =
-            CanBeOverrideRestriction(idTelegram: Update.Message.From.Id, idChat: Update.Message.Chat.Id).Result;
+        var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
+        if (account is null)
+            return;
 
-        SendMessage(idChat: Update.Message.Chat.Id, message: BuildMessage());
-        return Task.FromResult(true);
+        SendMessage(idChat: message.Chat.Id, message: BuildMessage(!account.IsTrustedProfile()));
     }
-
+    
     private void SendMessage(long idChat, string message)
     {
-        BotClient.SendTextMessageAsync(chatId: idChat,
+        botClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
     }
 
-    private string BuildMessage()
+    private string BuildMessage(bool isTrusted)
     {
         string version = "1.5.0";
-        string msg = IsRestrictedUser()
+        string msg = isTrusted
             ? "\n\n\ud83e\udd2f Очень жаль, что Вам пришлось столкнутся с ограничениями нашим суровым анти-спамом. Предлагаю это исправить - наберите команду /captcha мне личные сообщения"
             : "\n\n\u2705 На текущий момент на Вашем аккаунте нет ограничений на антиспам фильтре";
         return
@@ -44,19 +41,5 @@ public class StartCommand : SandBoxHelpers, IExecutable<bool>
             $"\n\nРазработано @kulagin_alex, by samgk.ru \n\nАнтиспам реагирует на контекст сообщений на основе машинного обучения, " +
             $"поведению пользователей в чате. Возможны ошибочные распознавания." +
             $"{msg}";
-    }
-
-    private bool IsRestrictedUser()
-    {
-        if (AccountDb is null)
-            return true;
-
-        if (AccountDb.IsSpamer)
-            return AccountDb.IsSpamer;
-
-        if (_canByPassRestrict)
-            return !_canByPassRestrict;
-
-        return false;
     }
 }

@@ -1,67 +1,63 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Executable.Common;
-using SandBox.Advanced.Services.Text;
+using SandBox.Advanced.Database;
+using SandBox.Advanced.Utils;
 using SandBox.Models.Telegram;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class QuestionCommand: SandBoxHelpers, IExecutable<bool>
+public class QuestionCommand(SandBoxRepository repository, ITelegramBotClient botClient) : Command
 {
-    private string _message = string.Empty;
-    private IList<Question> _foundedQuestion = default!;
+    public override string Name { get; set; } = "/question";
 
-    public Task<bool> Execute()
+    public override void Execute(Message message)
     {
-        if (Update.Message?.From is null)
-            return Task.FromResult(false);
+        if (message.From is null || message.Text is null) return;
 
-        _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text!);
+        var questions = repository.Questions.GetByContentQuestion(message.Text.GetMessageWithoutUserNameBotsAndCommands())
+            .Result;
 
-        _foundedQuestion = Repository.Questions.GetByContentQuestion(_message).Result;
-        
-        if(_foundedQuestion.Count == 0)
+        if (questions.Count is 0)
         {
-            SendMessage(idChat: Update.Message.Chat.Id,
-                message: BuildErrorMessage());
-            return Task.FromResult(true);
+            SendMessage(idChat: message.Chat.Id,
+                message: BuildErrorMessage(),
+                keyboardButtons: new List<InlineKeyboardButton>());
         }
-        
-        SendMessage(idChat: Update.Message.Chat.Id,
-            message: BuildSuccessMessage());
-        return Task.FromResult(true);
+
+        SendMessage(idChat: message.Chat.Id,
+            message: BuildSuccessMessage(questions),
+            keyboardButtons: GenerateKeyboardQuestions(questions, message.Chat.Id));
     }
 
-    private IReadOnlyCollection<InlineKeyboardButton> GenerateKeyboardQuestions()
+    private IReadOnlyCollection<InlineKeyboardButton> GenerateKeyboardQuestions(IList<Question> questions, long chatId)
     {
-        return _foundedQuestion.Select(item => InlineKeyboardButton.WithCallbackData($"{item.Id}", $"question {item.Id} {Update.Message?.Chat.Id}")).ToList();
+        return questions.Select(item => InlineKeyboardButton
+            .WithCallbackData($"{item.Id}", $"question {item.Id} {chatId}")).ToList();
     }
 
-    private void SendMessage(long idChat, string message)
+    private void SendMessage(long idChat, string message, IReadOnlyCollection<InlineKeyboardButton> keyboardButtons)
     {
-        var keyboard = GenerateKeyboardQuestions();
-        
-        BotClient.SendTextMessageAsync(chatId:idChat,
+        botClient.SendTextMessageAsync(chatId: idChat,
             text: message,
-            replyMarkup: new InlineKeyboardMarkup(keyboard), 
+            replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
             disableNotification: true);
     }
 
-    private string BuildSuccessMessage()
+    private string BuildSuccessMessage(IList<Question> questions)
     {
-        var builderMsgQustion = _foundedQuestion
+        var builderMsgQustion = questions
             .Aggregate(string.Empty, (current, item) => current + $"\ud83d\udca5 #{item.Id}. {item.Quest}\n\n");
 
         return
             $"\u2705 Команда выполнена" +
             $"\n\nВот, какие похожие вопросы задавали ранее и есть на них ответ: \n\n{builderMsgQustion}\nВыберите пожалуйста вопрос, чтобы получить ответ";
     }
-    
+
     private string BuildErrorMessage()
     {
         return
             "\u26a0\ufe0f К сожалению, мы не нашли в базе знаний ответа на ваш вопрос";
     }
-    
 }

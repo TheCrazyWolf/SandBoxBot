@@ -18,12 +18,12 @@ namespace SandBox.Advanced.Services.Telegram;
 public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger, IServiceScopeFactory scopeFactory)
     : IUpdateHandler
 {
+    public static BotConfiguration Configuration { get; set; } = new ();
+    
     private IList<Command> _commands = new List<Command>();
-
-    public static string UserNameBot = string.Empty;
+    
     private static bool _isFirstPool = true;
     private SandBoxRepository _repository = default!;
-    private BotConfiguration _configuration = default!;
 
     public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken)
@@ -82,7 +82,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         }
 
         // Переместить выше если будут обходить путем команд
-        if (_configuration is { IsChatInWorkTime: true })
+        if (Configuration is { IsChatInWorkTime: true })
         {
             await new DetectNonWorkingTime { BotClient = bot, Update = update, Repository = _repository, }.Execute();
             WorkTimeChatTimer.BotClient = bot;
@@ -95,12 +95,12 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         // Analatics chats
 
-        switch (_configuration)
+        switch (Configuration)
         {
             case { IsBlockByMachineLearn: true }:
             {
                 if (!await new DetectSpamMl { BotClient = bot, Update = update, Repository = _repository, }.Execute())
-                    if (_configuration is { IsBlockByKeywords: true })
+                    if (Configuration is { IsBlockByKeywords: true })
                         await new DetectBlackWords { BotClient = bot, Update = update, Repository = _repository, }
                             .Execute();
                 break;
@@ -110,10 +110,10 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
                 break;
         }
 
-        if (_configuration is { IsBlockFastActivity: true })
+        if (Configuration is { IsBlockFastActivity: true })
             await new DetectFastActivity { BotClient = bot, Update = update, Repository = _repository, }.Execute();
 
-        if (_configuration is { IsBlockAntiArab: true })
+        if (Configuration is { IsBlockAntiArab: true })
             await new DetectAntiArab { BotClient = bot, Update = update, Repository = _repository, }.Execute();
     }
 
@@ -167,7 +167,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         if (!_isFirstPool) return Task.CompletedTask;
 
-        UserNameBot = $"@{bot.GetMeAsync().Result.Username}";
+        BotConfiguration.UserNameBot = $"@{bot.GetMeAsync().Result.Username}";
         _isFirstPool = false;
         return Task.CompletedTask;
     }
@@ -176,7 +176,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         var scope = scopeFactory.CreateScope();
         _repository = scope.ServiceProvider.GetRequiredService<SandBoxRepository>();
-        _configuration = scope.ServiceProvider.GetRequiredService<IOptions<BotConfiguration>>().Value;
+        Configuration = scope.ServiceProvider.GetRequiredService<IOptions<BotConfiguration>>().Value;
     }
 
     private void ConfiguringCommands()
@@ -184,7 +184,12 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         _commands = new List<Command>()
         {
             new AddNewBlackWord(_repository, bot),
-            new CaptchaCommand(_repository, bot)
+            new CaptchaCommand(_repository, bot),
+            new CheckForBlackWord(_repository, bot),
+            new QuestionCommand(_repository, bot),
+            new RemoveBlackWord(_repository, bot),
+            new SetMeManager(_repository, bot),
+            new StartCommand(_repository, bot)
             // ETC
         };
     }

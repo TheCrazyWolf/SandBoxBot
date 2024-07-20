@@ -13,7 +13,7 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
 {
     public override string Name { get; set; } = "/captcha";
 
-    private IList<CaptchaBase> _captchas = new List<CaptchaBase>
+    private readonly IList<CaptchaBase> _captchas = new List<CaptchaBase>
     {
         new CaptchaMath(), new CaptchaEmoji()
     };

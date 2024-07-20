@@ -1,57 +1,60 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Executable.Common;
-using SandBox.Advanced.Services.Text;
+using SandBox.Advanced.Database;
+using SandBox.Advanced.Utils;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class RemoveBlackWord : SandBoxHelpers, IExecutable<bool>
+public class RemoveBlackWord(SandBoxRepository repository, ITelegramBotClient botClient) : Command
 {
-    private string _blackWords = string.Empty;
-    private string _message = string.Empty;
-
-    public Task<bool> Execute()
+    public override string Name { get; set; } = "/del";
+    public override void Execute(Message message)
     {
-        if (Update.Message?.From is null)
-            return Task.FromResult(false);
+        if (message.From is null)
+            return;
 
-        _message = TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text!);
-        AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
+        message.Text = message.Text?.GetMessageWithoutUserNameBotsAndCommands();
 
-        if (IfThisUserIsManager(Update.Message.From.Id, Update.Message.Chat.Id).Result)
+        var account = repository.Accounts.GetById(message.From.Id).Result;
+
+        if (account != null && account.IfUserManager())
         {
-            Proccess();
-            SendMessage(idChat: Update.Message.Chat.Id, message: BuildSuccessMessage());
-            return Task.FromResult(true);
+            repository.Accounts.UpdateApproved(account);
+            var blockedWords = DoUnBlockWords(message.Text ?? string.Empty);
+            SendMessage(message.From.Id, BuildSuccessMessage(blockedWords));
+            return;
         }
 
-        SendMessage(idChat: Update.Message.Chat.Id, message: BuildErrorMessage());
-        return Task.FromResult(true);
+        SendMessage(message.From.Id, BuildErrorMessage());
     }
-
-    private void Proccess()
+    
+    
+    private string DoUnBlockWords(string message)
     {
-        // проверка, чтобы не добавлялись команды - SKIP 1
-        var words = TextTreatment.GetArrayWordsTreatmentMessage(_message);
-
-        foreach (var word in words.Where(word => Repository.BlackWords.Delete(word).Result))
+        var list = string.Empty;
+        foreach (var word in message.GetArrayWordsTreatmentMessage(skip: 1)
+                     .Where(word => repository.BlackWords.Exists(word).Result))
         {
-            _blackWords += $"\ud83d\udd05 {word}\n";
+            repository.BlackWords.Delete(word);
+            list += $"\ud83d\udd05 {word}\n";
         }
+
+        return list;
     }
 
     private void SendMessage(long idChat, string message)
     {
-        BotClient.SendTextMessageAsync(chatId: idChat,
+        botClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
     }
 
-    private string BuildSuccessMessage()
+    private string BuildSuccessMessage(string unBlockedWords)
     {
         return
             $"\u2705 Команда выполнена" +
-            $"\n\nИз черного списка удалены следующие слова: \n\n{_blackWords}";
+            $"\n\nИз черного списка удалены следующие слова: \n\n{unBlockedWords}";
     }
 
     private string BuildErrorMessage()

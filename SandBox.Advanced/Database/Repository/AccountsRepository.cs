@@ -58,4 +58,13 @@ public class AccountsRepository(SandBoxContext ef)
         account.IsSpamer = false;
         Update(account);
     }
+
+    public void UpdateAdmin(Account account)
+    {
+        account.IsAprroved = true;
+        account.IsNeedToVerifyByCaptcha = false;
+        account.IsSpamer = false;
+        account.IsManagerThisBot = true;
+        Update(account);
+    }
 }

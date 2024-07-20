@@ -1,72 +1,69 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Executable.Common;
+using SandBox.Advanced.Database;
 using SandBox.Advanced.Services.Text;
+using SandBox.Advanced.Utils;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class CheckForBlackWord : EventSandBoxBase, IExecutable<bool>
+public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient botClient) : Command
 {
-    private bool _isBlackKeyWord;
-    private bool _isSpamFromMl;
-    private float _score;
-    private string _blackWords = string.Empty;
+    public override string Name { get; set; } = "/check";
 
-    public Task<bool> Execute()
+    public override void Execute(Message message)
     {
-        if (Update.Message?.From is null)
-            return Task.FromResult(false);
+        if (message.From is null) return;
 
-        Proccess(Update.Message.Text ?? string.Empty);
-        _isSpamFromMl = IsSpamPredict(TextTreatment.GetMessageWithoutUserNameBotsAndCommands(Update.Message.Text ?? string.Empty));
+        var forBlackWords = CheckForBlackWords(message.Text);
+        var isBlackWords = string.IsNullOrEmpty(forBlackWords);
+        var isMlNet = PredictFromMlNet(message.Text);
 
-        SendMessage(idChat: Update.Message.Chat.Id,
-            message: BuildSuccessMessage());
-        return Task.FromResult(true);
+        var buildMessage = BuildMessage(isBlackWord : isBlackWords,  
+            isSpamMl : isMlNet.Item1, 
+            score: isMlNet.Item2, blackWords: forBlackWords);
+        
+        SendMessage(message.Chat.Id, buildMessage);
     }
-
-    private void Proccess(string message)
+    
+    private string CheckForBlackWords(string? message)
     {
-        // проверка, чтобы не добавлялись команды - SKIP 1
-        var words = TextTreatment.GetArrayWordsTreatmentMessage(message).Skip(1);
+        var words = message?.GetArrayWordsTreatmentMessage(1);
+        string blackWords = (from word in words
+                let result =
+                    repository.BlackWords.Exists(word).Result
+                where result
+                select word)
+            .Aggregate(string.Empty, (current, word) => current + $"{word}, ");
 
-        foreach (var word in words)
-        {
-            var result = Repository.BlackWords.Exists(word).Result;
-
-            if (!result) continue;
-            _isBlackKeyWord = true;
-            _blackWords += $"{word}, ";
-        }
+        return blackWords;
     }
 
     private void SendMessage(long idChat, string message)
     {
-        BotClient.SendTextMessageAsync(chatId: idChat,
+        botClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
     }
 
-    private string BuildSuccessMessage()
+    private string BuildMessage(bool isBlackWord, bool isSpamMl, float score, string? blackWords)
     {
-        var resultMsgForBlackList = _isBlackKeyWord ? "\ud83d\udeab" : "\u2705";
-        var resultFromMl = _isSpamFromMl ? "\ud83d\udeab" : "\u2705";
-        var resultMessage = _isSpamFromMl || _isBlackKeyWord
+        var resultMsgForBlackList = isBlackWord ? "\ud83d\udeab" : "\u2705";
+        var resultFromMl = isSpamMl ? "\ud83d\udeab" : "\u2705";
+        var resultMessage = isSpamMl || isBlackWord
             ? "\u26a0\ufe0f Похоже, что это является спамом и подлежит блокировке"
             : "\u2705 Похоже, что это обычное сообщение";
         return
             $"\u2705 Команда выполнена" +
             $"\n\nРезультаты распознавания текста: " +
             $"\n\n\u26a1\ufe0f Алгоритм ключевых слов: {resultMsgForBlackList}" +
-            $":\n{_blackWords}\n\n" +
-            $"\u26a1\ufe0f Модель машинного обучения: {resultFromMl}\nВероятность {_score}%" +
+            $":\n{blackWords}\n\n" +
+            $"\u26a1\ufe0f Модель машинного обучения: {resultFromMl}\nВероятность {score}%" +
             $"\n\n{resultMessage}";
     }
 
-    private bool IsSpamPredict(string? message)
+    private (bool, float) PredictFromMlNet(string? message)
     {
-        var result = MlPredictor.IsSpamPredict(message);
-        _score = result.Item2;
-        return result.Item1;
+        return MlPredictor.IsSpamPredict(message);
     }
 }

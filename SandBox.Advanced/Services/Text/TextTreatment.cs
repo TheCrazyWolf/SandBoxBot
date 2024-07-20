@@ -1,3 +1,4 @@
+using SandBox.Advanced.Configs;
 using SandBox.Advanced.Services.Telegram;
 
 namespace SandBox.Advanced.Services.Text;
@@ -57,12 +58,12 @@ public static class TextTreatment
             }
         }
 
-        return message.Replace($"{UpdateHandler.UserNameBot} ", string.Empty).Trim();
+        return message.Replace($"{BotConfiguration.UserNameBot} ", string.Empty).Trim();
     }
 
     public static string GetMessageWithoutUserNameBotsAndCommands(string message, int skip = 1)
     {
-        var s = message.Replace($"{UpdateHandler.UserNameBot} ", string.Empty).Split(' ').Skip(skip);
+        var s = message.Replace($"{BotConfiguration.UserNameBot} ", string.Empty).Split(' ').Skip(skip);
         return s.Aggregate(String.Empty, (current, item) => current + $"{item} ");
     }
 }
