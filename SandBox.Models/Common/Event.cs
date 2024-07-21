@@ -10,4 +10,5 @@ public class Event : Entity
     public DateTime DateTime { get; set; }
     public long? IdTelegram { get; set; }
     [ForeignKey("IdTelegram")] public Account? Account { get; set; }
+    public long MessageId { get; set; }
 }

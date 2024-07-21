@@ -13,7 +13,8 @@ public static class EventUtils
             ChatId = message.Chat.Id,
             DateTime = DateTime.Now,
             Content = message.Text ?? string.Empty,
-            IdTelegram = message.From?.Id
+            IdTelegram = message.From?.Id,
+            MessageId = message.MessageId
         };
     }
 }
