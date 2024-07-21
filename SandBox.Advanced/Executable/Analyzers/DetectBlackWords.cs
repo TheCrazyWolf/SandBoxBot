@@ -22,8 +22,7 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
         
         var blockedWords = IsContainsBlackWord(message.Text);
         var isToBlock = !string.IsNullOrEmpty(blockedWords);
-        var @event = GenerateEvent(chatId: message.Chat.Id, idTelegram: message.From.Id, content:
-            message.Text, isSpam:isToBlock);
+        var @event = message.GenereateEventFromContent(isToBlock);
 
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id))
@@ -42,18 +41,6 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
         var keyboards = GenerateKeyboardForNotify(@event);
         NotifyManagers(message, blockedWords, keyboards);
         return true;
-    }
-    
-    private EventContent GenerateEvent(long chatId, string? content, long idTelegram, bool isSpam)
-    {
-        return new EventContent
-        {
-            IsSpam = isSpam,
-            ChatId = chatId,
-            DateTime = DateTime.Now,
-            Content = content ?? string.Empty,
-            IdTelegram = idTelegram
-        };
     }
     
 
