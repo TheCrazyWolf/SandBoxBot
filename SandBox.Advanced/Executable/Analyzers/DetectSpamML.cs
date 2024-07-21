@@ -13,7 +13,7 @@ public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botCl
 {
     public bool Execute(Message message)
     {
-        if (message.From is null)
+        if (message.From is null || string.IsNullOrEmpty(message.Text))
             return false;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
@@ -22,7 +22,12 @@ public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botCl
             return false;
 
         var isToBlock = message.Text.IsSpamMl();
-        var @event = message.GenerateEventFromContent(isToBlock.Item1);
+        //var @event = message.GenerateEventFromContent(isToBlock.Item1);
+        var @event =
+            repository.Contents.GetByContent(message.Text, message.From.Id, message.Chat.Id, message.MessageId)
+                .Result ?? message.GenerateEventFromContent(isToBlock.Item1);
+        if (isToBlock.Item1)
+            @event.IsSpam = isToBlock.Item1;
 
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id))
@@ -30,8 +35,11 @@ public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botCl
             // выдать trusted??
             @event.IsSpam = false;
         }
-
-        repository.Contents.Add(@event);
+        
+        if (@event.Id is 0)
+            repository.Contents.Add(@event);
+        else
+            repository.Contents.Update(@event);
 
         if (!@event.IsSpam)
             return false;
@@ -40,7 +48,7 @@ public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botCl
             messageId: message.MessageId);
 
         NotifyManagers(message, isToBlock.Item2, GenerateKeyboardForNotify(@event));
-
+        message.Text = string.Empty;
         return true;
     }
 
@@ -92,5 +100,4 @@ public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botCl
             $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Это сообщение удалено по решению модели машинного обучения. Вероятность спама составила {score}%" +
             $"\n\nЕсли эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
     }
-    
 }

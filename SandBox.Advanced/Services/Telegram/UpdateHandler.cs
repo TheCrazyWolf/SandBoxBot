@@ -64,7 +64,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         if (update.EditedMessage is not null)
             update.Message = update.EditedMessage;
         
-        if (update.Message?.Text is not { } messageText)
+        if (update.Message is null)
             return Task.CompletedTask;
         
         // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
@@ -188,6 +188,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         _analyzers = new List<IAnalyzer>()
         {
             new DetectEventsFromAccountSpammer(_repository, bot),
+            new DetectMediaInMessageNonTrusted(_repository, bot),
+            new DetectUrlsInMsgNonTrusted(_repository, bot),
             new DetectSpamMl(_repository, bot),
             new DetectAsyncServerTime(_repository, bot),
             new DetectBlackWords(_repository, bot),

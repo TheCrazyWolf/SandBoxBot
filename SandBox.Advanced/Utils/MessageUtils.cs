@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using SandBox_Advanced;
 using SandBox.Advanced.Configs;
 using SandBox.Advanced.Services.Telegram;
@@ -46,6 +47,13 @@ public static class MessageUtils
         }
 
         return newMessage;
+    }
+    
+    
+    public static bool IsContaintsUrls(this string message)
+    {
+        string linkPattern = @"(https?://\S+|http?://\S+|www\.\S+|\b\S+\.\S+\b|@\S+)";
+        return Regex.IsMatch(message, linkPattern);
     }
     
     public static (bool, float) IsSpamMl(this string? message)

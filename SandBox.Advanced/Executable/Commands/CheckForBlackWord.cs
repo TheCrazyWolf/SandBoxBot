@@ -15,11 +15,13 @@ public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient 
         if (message.From is null) return;
 
         var forBlackWords = CheckForBlackWords(message.Text);
-        var isBlackWords = string.IsNullOrEmpty(forBlackWords);
+        var isBlackWords = !string.IsNullOrEmpty(forBlackWords);
+        var isContainsUrls = message.Text != null && message.Text.IsContaintsUrls();
         var isMlNet = message.Text.IsSpamMl();
 
         var buildMessage = BuildMessage(isBlackWord : isBlackWords,  
             isSpamMl : isMlNet.Item1, 
+            isContainsUrls: isContainsUrls,
             score: isMlNet.Item2, blackWords: forBlackWords);
         
         SendMessage(message.Chat.Id, buildMessage);
@@ -45,19 +47,22 @@ public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient 
             disableNotification: true);
     }
 
-    private string BuildMessage(bool isBlackWord, bool isSpamMl, float score, string? blackWords)
+    private string BuildMessage(bool isBlackWord, bool isContainsUrls, bool isSpamMl, float score, string? blackWords)
     {
         var resultMsgForBlackList = isBlackWord ? "\ud83d\udeab" : "\u2705";
         var resultFromMl = isSpamMl ? "\ud83d\udeab" : "\u2705";
-        var resultMessage = isSpamMl || isBlackWord
+        var resultFromUrls = isContainsUrls ? "\u2705" : "\u2705\ud83d\udeab";
+        
+        var resultMessage = isSpamMl || isBlackWord || isContainsUrls
             ? "\u26a0\ufe0f Похоже, что это является спамом и подлежит блокировке"
             : "\u2705 Похоже, что это обычное сообщение";
         return
             $"\u2705 Команда выполнена" +
             $"\n\nРезультаты распознавания текста: " +
+            $"\n\n\u26a1\ufe0f Не содержит ссылки на сайты:  {resultFromUrls}" +
             $"\n\n\u26a1\ufe0f Алгоритм ключевых слов: {resultMsgForBlackList}" +
-            $":\n{blackWords}\n\n" +
-            $"\u26a1\ufe0f Модель машинного обучения: {resultFromMl}\nВероятность {score}%" +
-            $"\n\n{resultMessage}";
+            $"\n{blackWords}\n\n" +
+            $"\u26a1\ufe0f Модель машинного обучения:  {resultFromMl}\nВероятность {score}%" +
+            $"\n\n{resultMessage}" ;
     }
 }
