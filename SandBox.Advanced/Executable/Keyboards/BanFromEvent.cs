@@ -1,51 +1,41 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Executable.Common;
-using SandBox.Advanced.Interfaces;
-using SandBox.Models.Events;
+using SandBox.Advanced.Database;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Keyboards;
 
-public class BanFromEvent : SandBoxHelpers, IExecutable<bool>
+public class BanFromEvent(SandBoxRepository repository, ITelegramBotClient botClient) : CallQuery
 {
-    private EventContent? _eventContent;
-
-    public Task<bool> Execute()
+    public override string Name { get; set; } = "spamban";
+    public override void Execute(CallbackQuery callbackQuery)
     {
-        var words = Update.CallbackQuery?.Data?.Split(' ').Skip(1).ToArray();
+        var words = callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         
-        if(words is null)
-            return Task.FromResult(false);
-        
-        _eventContent = Repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
+        if (words is null)
+            return;
 
-        if (_eventContent is null)
-            return Task.FromResult(false);
+        var @event = repository.Events.GetById(Convert.ToInt64(words[0])).Result;
         
-        AccountDb = Repository.Accounts.GetById(Convert.ToInt64(_eventContent.IdTelegram)).Result;
+        if (@event is null)
+            return;
         
-        if (AccountDb is not null)
-        {
-            AccountDb.IsSpamer = true;
-            Repository.Accounts.Update(AccountDb);
-        }
+        var account = repository.Accounts.GetById(Convert.ToInt64(@event.IdTelegram)).Result;
 
-        Proccess();
-        SendMessageOfExecuted();
-        return Task.FromResult(true);
+        if (account is null) return;
+        
+        repository.Accounts.UpdateToSpamer(account);
+
+        if (@event.ChatId != null)
+            botClient.BanChatMemberAsync(chatId: @event.ChatId,
+                userId: Convert.ToInt64(@event.IdTelegram));
+            
+        SendMessageOfExecuted(idChat: callbackQuery.From.Id, message: BuildNotifyMessage());
     }
-    
-    private void Proccess()
-    {
-        BotClient.BanChatMemberAsync(chatId: _eventContent!.ChatId!,
-            userId: Convert.ToInt64(_eventContent.IdTelegram));
-    }
-    
-    private void SendMessageOfExecuted()
-    {
-        var message = BuildNotifyMessage();
 
-        BotClient.SendTextMessageAsync(chatId: Update.CallbackQuery?.From.Id!,
+    private void SendMessageOfExecuted(long idChat, string message)
+    {
+        botClient.SendTextMessageAsync(chatId: idChat,
             text: message,
             disableNotification: true);
     }
@@ -53,7 +43,7 @@ public class BanFromEvent : SandBoxHelpers, IExecutable<bool>
     private string BuildNotifyMessage()
     {
         return
-            $"\u2705 Принятые действия по событию № {_eventContent?.Id}: Пользователь заблокирован";
+            $"\u2705 Принятые действия: Пользователь заблокирован";
     }
     
 }

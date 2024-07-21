@@ -1,67 +1,35 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
-using SandBox.Advanced.Executable.Common;
-using SandBox.Advanced.Interfaces;
-using SandBox.Models.Events;
-using SandBox.Models.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Keyboards;
 
-public class NoSpamFromEvent : SandBoxHelpers, IExecutable<bool>
+public class NoSpamFromEvent(SandBoxRepository repository, ITelegramBotClient botClient) : CallQuery
 {
-    private EventContent? _eventContent;
-    
-    public Task<bool> Execute()
+    public override string Name { get; set; } = "spamnospam";
+    public override void Execute(CallbackQuery callbackQuery)
     {
-        var words = Update.CallbackQuery?.Data?.Split(' ').Skip(1).ToArray();
+        var words = callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         
-        if(words is null)
-            return Task.FromResult(false);
+        if (words is null) return;
+        var @event = repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
         
-        _eventContent = Repository.Contents.GetById(Convert.ToInt64(words[0])).Result;
+        if (@event is null) return;
 
-        if (_eventContent is null)
-            return Task.FromResult(false);
+        var account = repository.Accounts.GetById(Convert.ToInt64(@event.IdTelegram)).Result;
+        if (account is null) return;
 
-        AccountDb = Repository.Accounts.GetById(Convert.ToInt64(_eventContent.IdTelegram)).Result;
-        
-        if (AccountDb is not null)
-        {
-            AccountDb.IsSpamer = false;
-            AccountDb.IsAprroved = true;
-            Repository.Accounts.Update(AccountDb);
-        }
-        
-        _eventContent.IsSpam = false;
-        Repository.Contents.Update(_eventContent);
-        
-        Proccess();
-        SendMessageOfExecuted();
-        return Task.FromResult(true);
+        repository.Accounts.UpdateApproved(account);
+        repository.Contents.UpdateNoSpam(@event);
+
+        botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildNotifyMessage(@event.Id), true);
     }
     
-    private void Proccess()
-    {
-        BotClient.BanChatMemberAsync(chatId: _eventContent!.ChatId!,
-            userId: Convert.ToInt64(_eventContent.IdTelegram));
-    }
-    
-    private void SendMessageOfExecuted()
-    {
-        var message = BuildNotifyMessage();
-
-        BotClient.SendTextMessageAsync(chatId: Update.CallbackQuery?.From.Id!,
-            text: message,
-            disableNotification: true);
-    }
-    
-
-    private string BuildNotifyMessage()
+    private string BuildNotifyMessage(long id)
     {
         return
-            $"\u2705 Принятые действия по событию № {_eventContent?.Id}: Сообщение отмечено как не спам";
+            $"\u2705 Принятые действия по событию № {id}: Сообщение отмечено как не спам";
     }
     
 }

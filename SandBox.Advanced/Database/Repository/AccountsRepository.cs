@@ -77,4 +77,11 @@ public class AccountsRepository(SandBoxContext ef)
         account.LastActivity = DateTime.Now;
         Update(account);
     }
+
+    public void UpdateToSpamer(Account account)
+    {
+        account.IsSpamer = true;
+        account.IsNeedToVerifyByCaptcha = true;
+        Update(account);
+    }
 }

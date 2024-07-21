@@ -5,7 +5,7 @@ namespace SandBox.Advanced.Abstract;
 
 public abstract class CallQuery : ICallQuery
 {
-    public string Name { get; set; } = string.Empty;
+    public abstract string Name { get; set; }
 
     public abstract void Execute(CallbackQuery callbackQuery);
 

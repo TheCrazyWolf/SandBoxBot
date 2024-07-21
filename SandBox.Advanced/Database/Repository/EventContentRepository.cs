@@ -52,4 +52,10 @@ public class EventContentRepository(SandBoxContext ef)
         
         return Task.FromResult(true);
     }
+
+    public void UpdateNoSpam(EventContent @event)
+    {
+        @event.IsSpam = false;
+        Update(@event);
+    }
 }

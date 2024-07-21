@@ -1,94 +1,62 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Executable.Common;
-using SandBox.Advanced.Interfaces;
-using SandBox.Models.Blackbox;
+using SandBox.Advanced.Database;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Keyboards;
 
-public class CaptchaFromChat : SandBoxHelpers, IExecutable<bool>
+public class CaptchaFromChat(SandBoxRepository repository, ITelegramBotClient botClient) : CallQuery
 {
-    private Captcha? _captcha;
-
-    public Task<bool> Execute()
+    public override string Name { get; set; } = "captcha";
+    public override void Execute(CallbackQuery callbackQuery)
     {
-        if (Update.CallbackQuery is null)
-            return Task.FromResult(false);
-
-        var words = Update.CallbackQuery.Data?.Split(' ').Skip(1).ToArray();
-
+        var words = callbackQuery.Data?.Split(' ').Skip(1).ToArray();
+        
         if (words is null)
-            return Task.FromResult(false);
-
-        _captcha = Repository.Captchas.GetById(Convert.ToInt64(words[0])).Result;
-
-        if (_captcha is null || _captcha.AttemptsRemain == 0 || _captcha.DateTimeExpired <= DateTime.Now ||
-            _captcha.IdTelegram != Update.CallbackQuery?.From.Id)
-        {
-            SendMessageOfExecuted(idChat: Convert.ToInt64(words[2]), message: BuildErrorCaptcha());
-            return Task.FromResult(false);
-        }
-
-        if (words[1] != _captcha.Content)
-        {
-            ProccessWrongCaptcha();
-            SendMessageOfExecuted(idChat: Convert.ToInt64(words[2]), message: BuildWrongCaptcha());
-            return Task.FromResult(false);
-        }
-        
-        AccountDb = Repository.Accounts.GetById(Convert.ToInt64(_captcha.IdTelegram)).Result;
-        
-        if (AccountDb is not null)
-        {
-            AccountDb.IsSpamer = false;
-            Repository.Accounts.Update(AccountDb);
-        }
-
-        ProccessRightCaptcha(Convert.ToInt64(_captcha.IdTelegram));
-        SendMessageOfExecuted(idChat: Convert.ToInt64(words[2]), message: BuildSuccessCaptcha());
-        return Task.FromResult(true);
-    }
-
-    private void ProccessWrongCaptcha()
-    {
-        if (_captcha is null)
             return;
 
-        _captcha.AttemptsRemain--;
-        Repository.Captchas.Update(_captcha);
-    }
+        var captha = repository.Captchas.GetById(Convert.ToInt64(words[0])).Result;
 
-    private void ProccessRightCaptcha(long idTelegram)
-    {
-        ProccessWrongCaptcha();
-        AccountDb = Repository.Accounts.GetById(idTelegram).Result;
-
-        if (AccountDb is null)
+        if (captha is null)
             return;
 
-        AccountDb.IsSpamer = false;
-        AccountDb.IsAprroved = true;
-        AccountDb.IsNeedToVerifyByCaptcha = false;
-        AccountDb = Repository.Accounts.Update(AccountDb).Result;
-    }
+        repository.Captchas.UpdateDecrementAttemp(captha);
+            
+        if (captha.AttemptsRemain == 0 || captha.DateTimeExpired <= DateTime.Now ||
+            captha.IdTelegram != callbackQuery.From.Id)
+        {
+            botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildErrorCaptcha(), true);
+            return;
+        }
 
-    private void SendMessageOfExecuted(long idChat, string message)
-    {
-        BotClient.SendTextMessageAsync(chatId: idChat,
-            text: message,
-            disableNotification: true);
+        if (words[1] != captha.Content)
+        {
+            botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildWrongCaptcha(), true);
+        }
+
+        var account = repository.Accounts.GetById(Convert.ToInt64(captha.IdTelegram)).Result;
+        
+        if(account is null)
+            return;
+        
+        repository.Accounts.UpdateApproved(account);
+        botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildSuccessCaptcha(), true);
+        
+        if (callbackQuery.Message != null)
+            botClient.DeleteMessageAsync(chatId: callbackQuery.Message.Chat.Id,
+                messageId: callbackQuery.Message.MessageId);
     }
 
     private string BuildErrorCaptcha()
     {
         return
-            $"\u26a0\ufe0f Ошибка поиска каптчи или срок действия истек";
+            $"\u26a0\ufe0f Ошибка во время прохождения капчи. Возможно: ваши попытки закончились, срок её прохождения закончился или проходите сгенерированную капчу не для Вас";
     }
 
     private string BuildWrongCaptcha()
     {
         return
-            $"\u26a0\ufe0f Ответ неправильный";
+            $"\u26a0\ufe0f Ответ неправильный. Количество попыток ограничено";
     }
     
     private string BuildSuccessCaptcha()
@@ -96,4 +64,5 @@ public class CaptchaFromChat : SandBoxHelpers, IExecutable<bool>
         return
             "\u2705 Вы подтвердили, что вы не бот. Спасибо";
     }
+    
 }

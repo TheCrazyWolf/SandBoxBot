@@ -40,4 +40,10 @@ public class CaptchaRepository(SandBoxContext ef)
         
         return Task.FromResult(true);
     }
+
+    public void UpdateDecrementAttemp(Captcha captha)
+    {
+        captha.AttemptsRemain--;
+        Update(captha);
+    }
 }
