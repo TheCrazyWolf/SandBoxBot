@@ -22,7 +22,7 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
         
         var blockedWords = IsContainsBlackWord(message.Text);
         var isToBlock = !string.IsNullOrEmpty(blockedWords);
-        var @event = message.GenereateEventFromContent(isToBlock);
+        var @event = message.GenerateEventFromContent(isToBlock);
 
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id))

@@ -5,7 +5,7 @@ namespace SandBox.Advanced.Utils;
 
 public static class EventUtils
 {
-    public static EventContent GenereateEventFromContent(this Message message, bool isSpam = default)
+    public static EventContent GenerateEventFromContent(this Message message, bool isSpam = default)
     {
         return new EventContent
         {
