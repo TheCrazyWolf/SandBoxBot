@@ -23,7 +23,7 @@ public class CaptchaMath : CaptchaBase
         return captchaResult;
     }
 
-    private Captcha CreateEntity(long idTelegram, int lifeTimeMinutes = 1, byte maxAttempts = 1)
+    private Captcha CreateEntity(long idTelegram, int lifeTimeMinutes = 1, byte maxAttempts = 2)
     {
         return new Captcha
         {

@@ -21,13 +21,13 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 {
     public static BotConfiguration Configuration { get; set; } = new ();
     
-    private IList<ICommand> _commands = new List<ICommand>();
-    private IList<IAnalyzer> _analyzerActivity = new List<IAnalyzer>();
-    private IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
-    private IList<ICallQuery> _callBackQueryies = new List<ICallQuery>();
+    private static IList<ICommand> _commands = new List<ICommand>();
+    private static IList<IAnalyzer> _analyzerActivity = new List<IAnalyzer>();
+    private static IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
+    private static IList<ICallQuery> _callBackQueryies = new List<ICallQuery>();
     
     private static bool _isFirstPool = true;
-    private SandBoxRepository _repository = default!;
+    private static SandBoxRepository _repository = default!;
 
     public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken)
@@ -40,11 +40,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
     {
-        await GetUserNameBotIfFirstPoll();
-        CreateScopeAndGetCurrentService();
-        ConfiguringCommands();
-        ConfiguringAnalyzers();
-        ConfiguringActivityAnalyzers();
+        await ConfiguringIfFirstPoll();
 
         cancellationToken.ThrowIfCancellationRequested();
         await (update switch
@@ -62,7 +58,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         throw new NotImplementedException();
     }
 
-    private async Task OnMessage(Update update)
+    private Task OnMessage(Update update)
     {
         logger.LogInformation("Receive message type: {MessageType}", update.Type);
 
@@ -70,7 +66,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             update.Message = update.EditedMessage;
         
         if (update.Message?.Text is not { } messageText)
-            return;
+            return Task.CompletedTask;
         
         // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
         foreach (var command in _analyzerActivity)
@@ -84,7 +80,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             if (!command.Contains(update.Message))
                 continue;
             command.Execute(update.Message);
-            return;
+            return Task.CompletedTask;
         }
         
         // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
@@ -92,6 +88,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         {
             command.Execute(update.Message);
         }
+
+        return Task.CompletedTask;
     }
 
     async Task<Message> Usage(Message msg)
@@ -113,33 +111,24 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     }
 
     // Process Inline Keyboard callback data
-    private async Task OnCallbackQuery(CallbackQuery callbackQuery)
+    private Task OnCallbackQuery(CallbackQuery callbackQuery)
     {
         logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", callbackQuery.Id);
 
         var words = callbackQuery.Data?.Split(' ');
 
         if (words is null)
-            return;
+            return Task.CompletedTask;
 
         foreach (var callBack in _callBackQueryies)
         {
             if (!callBack.Contains(callbackQuery))
                 continue;
             callBack.Execute(callbackQuery);
-            return;
+            return Task.CompletedTask;
         }
 
-        /*if (words[0] == "question")
-            await new QuestionFromDb { BotClient = bot, Repository = _repository, Update = update }.Execute();
-        if (words[0] == "spamrestore")
-            await new RestoreFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
-        if (words[0] == "spamban")
-            await new BanFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
-        if (words[0] == "spamnospam")
-            await new NoSpamFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
-        if (words[0] == "captcha")
-            await new CaptchaFromChat { BotClient = bot, Repository = _repository, Update = update }.Execute();*/
+        return Task.CompletedTask;
     }
 
     private Task UnknownUpdateHandlerAsync(Update update)
@@ -148,12 +137,17 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         return Task.CompletedTask;
     }
 
-    private Task GetUserNameBotIfFirstPoll()
+    private Task ConfiguringIfFirstPoll()
     {
         if (!_isFirstPool) return Task.CompletedTask;
 
-        BotConfiguration.UserNameBot = $"@{bot.GetMeAsync().Result.Username}";
         _isFirstPool = false;
+        BotConfiguration.UserNameBot = $"@{bot.GetMeAsync().Result.Username}";
+        CreateScopeAndGetCurrentService();
+        ConfiguringCommands();
+        ConfiguringAnalyzers();
+        ConfiguringActivityAnalyzers();
+        ConfiguringCallBackQueryies();
         return Task.CompletedTask;
     }
 
@@ -193,8 +187,27 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _analyzers = new List<IAnalyzer>()
         {
-            new DetectBlackWords(_repository, bot)
-            // ETC
+            new DetectBlackWords(_repository, bot),
+            new DetectSpamMl(_repository, bot),
+            new DetectAsyncServerTime(_repository, bot),
+            new DetectBlackWords(_repository, bot),
+            new DetectFastActivityFromUser(_repository, bot),
+            new DetectQuestion(_repository, bot, 1946031755, 0),
+            new DetectAsyncServerTime(_repository, bot),
+            new DetectAsyncServerTime(_repository, bot),
+        };
+    }
+    
+    private void ConfiguringCallBackQueryies()
+    {
+        _callBackQueryies = new List<ICallQuery>()
+        {
+            new BanFromChat(_repository, bot),
+            new BanFromEvent(_repository, bot),
+            new CaptchaFromChat(_repository, bot),
+            new NoSpamFromEvent(_repository, bot),
+            new QuestionFromDb(_repository, bot),
+            new RestoreFromEvent(_repository, bot),
         };
     }
 }

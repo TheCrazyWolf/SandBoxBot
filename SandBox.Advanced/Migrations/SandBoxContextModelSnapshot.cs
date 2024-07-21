@@ -78,6 +78,9 @@ namespace SandBox.Advanced.Migrations
                     b.Property<long?>("IdTelegram")
                         .HasColumnType("INTEGER");
 
+                    b.Property<long>("MessageId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ChatId");

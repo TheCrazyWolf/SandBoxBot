@@ -19,19 +19,23 @@ public class CaptchaFromChat(SandBoxRepository repository, ITelegramBotClient bo
 
         if (captha is null)
             return;
-
-        repository.Captchas.UpdateDecrementAttemp(captha);
             
-        if (captha.AttemptsRemain == 0 || captha.DateTimeExpired <= DateTime.Now ||
+        if (captha.AttemptsRemain <= 0 || captha.DateTimeExpired <= DateTime.Now ||
             captha.IdTelegram != callbackQuery.From.Id)
         {
             botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildErrorCaptcha(), true);
+            repository.Captchas.UpdateDecrementAttemp(captha);
+            if (callbackQuery.Message != null)
+                botClient.DeleteMessageAsync(chatId: callbackQuery.Message.Chat.Id,
+                    messageId: callbackQuery.Message.MessageId);
             return;
         }
 
         if (words[1] != captha.Content)
         {
             botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildWrongCaptcha(), true);
+            repository.Captchas.UpdateDecrementAttemp(captha);
+            return;
         }
 
         var account = repository.Accounts.GetById(Convert.ToInt64(captha.IdTelegram)).Result;

@@ -25,13 +25,14 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if ((account != null) && (account.IfUserManager() || account.IsTrustedProfile()))
+        if ((account != null) && account.IsTrustedProfile())
         {
             SendMessage(idChat: message.Chat.Id,
                 message: BuildMessageIfNoNeedCaptcha(),
                 new LinkedList<InlineKeyboardButton>());
 
             repository.Accounts.UpdateApproved(account);
+            return;
         }
 
         var captchaResult = _captchas.OrderBy(_ => new Random().Next())
@@ -40,7 +41,7 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
         repository.Captchas.Add(captchaResult.CatchaToDb);
         
         SendMessage(idChat: message.Chat.Id,
-            message: BuildMessesWithCaptcha(captchaResult),
+            message: BuildMsgWithCaptcha(captchaResult),
             GenerateKeyboard(captchaResult));
     }
     
@@ -59,7 +60,7 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
             "\u2705 Вам не требуется проходить проверку на бота, мы Вам доверяем";
     }
 
-    private string BuildMessesWithCaptcha(CaptchaResult captchaResult)
+    private string BuildMsgWithCaptcha(CaptchaResult captchaResult)
     {
         return
             $"\u2734\ufe0f Подтвердите проверку, что ваша учетная запись используется действительно живым человеком " +
@@ -71,6 +72,6 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
     {
         return captchaResult.Answers.Select(answer =>
             InlineKeyboardButton.WithCallbackData($"{answer}", 
-                $"captcha {captchaResult.CatchaToDb.Id} {answer} {captchaResult}")).ToList();
+                $"captcha {captchaResult.CatchaToDb.Id} {answer} ")).ToList();
     }
 }

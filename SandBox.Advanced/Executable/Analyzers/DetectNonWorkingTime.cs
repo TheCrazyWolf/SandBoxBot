@@ -1,7 +1,6 @@
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Interfaces;
-using SandBox.Advanced.Utils;
 using SandBox.Advanced.Utils.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -17,7 +16,7 @@ public class DetectNonWorkingTime(SandBoxRepository repository, ITelegramBotClie
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
         
-        if (account != null && (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
+        if (account != null && (account.IsManagerThisBot || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id)))
         {
             return false;
