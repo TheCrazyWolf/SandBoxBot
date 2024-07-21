@@ -5,6 +5,7 @@ using SandBox.Advanced.Executable.Activity;
 using SandBox.Advanced.Executable.Analyzers;
 using SandBox.Advanced.Executable.Commands;
 using SandBox.Advanced.Executable.Keyboards;
+using SandBox.Advanced.Executable.Services;
 using SandBox.Advanced.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -24,6 +25,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     private static IList<IAnalyzer> _analyzerActivity = new List<IAnalyzer>();
     private static IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
     private static IList<ICallQuery> _callBackQueryies = new List<ICallQuery>();
+    private static IList<IService> _services = new List<IService>();
     
     private static bool _isFirstPool = true;
     private static SandBoxRepository _repository = default!;
@@ -147,6 +149,13 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         ConfiguringAnalyzers();
         ConfiguringActivityAnalyzers();
         ConfiguringCallBackQueryies();
+        ConfiguringServices();
+
+        foreach (var service in _services)
+        {
+            Task.Run(() => service.Execute());
+        }
+        
         return Task.CompletedTask;
     }
 
@@ -194,7 +203,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new DetectAsyncServerTime(_repository, bot),
             new DetectBlackWords(_repository, bot),
             new DetectFastActivityFromUser(_repository, bot),
-            new DetectQuestion(_repository,1946031755, 0),
+            new DetectQuestion(_repository,1946031755, 1001941895047), // -1001941895047 приемка, -4286170959 test
             new DetectAsyncServerTime(_repository, bot),
         };
     }
@@ -209,6 +218,14 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new NoSpamFromEvent(_repository, bot),
             new QuestionFromDb(_repository, bot),
             new RestoreFromEvent(_repository, bot),
+        };
+    }
+    
+    private void ConfiguringServices()
+    {
+        _services = new List<IService>()
+        {
+            new WorkTimeChatTimer(_repository, bot,-1001941895047 ) // -1001941895047 приемка, -4286170959 test
         };
     }
 }

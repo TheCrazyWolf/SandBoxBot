@@ -1,56 +1,92 @@
-using Newtonsoft.Json.Linq;
+using SandBox.Advanced.Database;
+using SandBox.Advanced.Interfaces;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
-namespace SandBox.Advanced.Executable.Analyzers;
+namespace SandBox.Advanced.Executable.Services;
 
-public static class WorkTimeChatTimer
+public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IService
 {
-    private static bool IsRun { get; set; }
-    public static ITelegramBotClient BotClient { get; set; } = default!;
-
     private static readonly TimeOnly StartWorkTime = new(08, 00, 00);
     private static readonly TimeOnly EndWorkTimeMonday = new(19, 00, 00);
     private static readonly TimeOnly EndWorkTimeDefault = new(16, 00, 00);
-    
+
     // CHAT приемки -1001941895047
     // -4286170959
-    private static readonly long ChatId = -1001941895047;
+    // private static readonly long ChatId = -1001941895047;
 
     private static DateTime _lastSendStartMessageDay;
     private static DateTime _lastSendEndMessageDay;
 
-    public static void Rune()
-    {
-        if (IsRun)
-            return;
 
-        IsRun = true;
-
-        Task.Run(CheckIn);
-    }
-
-    private static async Task CheckIn()
+    public async Task Execute()
     {
         while (true)
         {
+            if (botClient is null)
+                throw new Exception("botClient is null");
+
             var now = DateTime.Now;
-            //var now = new DateTime(2024, 07, 18, 08, 00, 54);
-            if (ShouldSendStartMessage(now) == true)
+            if (ShouldSendStartMessage(now))
             {
-                await BotClient.SendTextMessageAsync(chatId: ChatId,
+                await botClient.SendTextMessageAsync(chatId: idChat,
                     text: BuildMessageIfTimeWorkStarted());
                 _lastSendStartMessageDay = now;
+                await botClient.SetChatPermissionsAsync(chatId: idChat, GetPermissions(true));
+                NotifyManagers(BuildNotifyMessage(true));
             }
 
             if (ShouldSendEndMessage(now))
             {
-                await BotClient.SendTextMessageAsync(chatId: ChatId,
+                await botClient.SendTextMessageAsync(chatId: idChat,
                     text: BuildMessageIfTimeWorkEnd());
                 _lastSendEndMessageDay = now;
+                await botClient.SetChatPermissionsAsync(chatId: idChat, GetPermissions(false));
+                NotifyManagers(BuildNotifyMessage(false));
             }
 
             await Task.Delay(1000); // Проверка каждую секунду
         }
+    }
+
+    private string BuildNotifyMessage(bool allowToSendMsg)
+    {
+        string allowed = allowToSendMsg ? "\u2705" : "\u26d4\ufe0f";
+        return
+            $"\ud83d\udc7e Настройки чата: {idChat} обновлены в связи с началом/конца рабочего дня: \n\nПользователи могут писать сообщения: {allowed}";
+    }
+
+    private void NotifyManagers(string message)
+    {
+        foreach (var id in repository.Accounts.GetManagers().Result)
+        {
+            try
+            {
+                botClient.SendTextMessageAsync(chatId: id.IdTelegram,
+                    text: message,
+                    disableNotification: true);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+    }
+
+    private ChatPermissions GetPermissions(bool isActive)
+    {
+        return new ChatPermissions()
+        {
+            CanSendAudios = isActive,
+            CanSendDocuments = isActive,
+            CanSendPhotos = isActive,
+            CanSendPolls = isActive,
+            CanSendVoiceNotes = isActive,
+            CanSendMessages = isActive,
+            CanSendVideoNotes = isActive,
+            CanSendVideos = isActive,
+            CanSendOtherMessages = isActive,
+        };
     }
 
     private static bool ShouldSendStartMessage(DateTime now)
@@ -112,5 +148,4 @@ public static class WorkTimeChatTimer
         return
             "\n\u2705 Доброе утро! Чат открыт, готовы ответить на ваши вопросы \u2764\ufe0f";
     }
-    
 }
