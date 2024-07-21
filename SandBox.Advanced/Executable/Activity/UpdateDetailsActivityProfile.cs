@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Activity;
 
-public sealed class UpdateDetailsActivityProfile(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
+public sealed class UpdateDetailsActivityProfile(SandBoxRepository repository) : IAnalyzer
 {
     public bool Execute(Message message)
     {

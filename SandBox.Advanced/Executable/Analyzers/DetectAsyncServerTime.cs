@@ -37,7 +37,7 @@ public class DetectAsyncServerTime(SandBoxRepository repository, ITelegramBotCli
             var resultTime = await GetServerTime();
             return (resultTime, true);
         }
-        catch (Exception e)
+        catch
         {
             return (DateTime.Now, false);
         }

@@ -7,7 +7,7 @@ using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectQuestion(SandBoxRepository repository, ITelegramBotClient botClient, 
+public class DetectQuestion(SandBoxRepository repository, 
     long idTrainer, long idChat) : IAnalyzer
 {
     //my id 208049718

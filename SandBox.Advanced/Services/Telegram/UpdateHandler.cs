@@ -177,8 +177,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _analyzerActivity = new List<IAnalyzer>
         {
-            new UpdateDetailsActivityProfile(_repository, bot),
-            new UpdateDetailsActivityOnJoined(_repository, bot),
+            new UpdateDetailsActivityProfile(_repository),
+            new UpdateDetailsActivityOnJoined(_repository),
         };
     }
     
@@ -194,7 +194,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new DetectAsyncServerTime(_repository, bot),
             new DetectBlackWords(_repository, bot),
             new DetectFastActivityFromUser(_repository, bot),
-            new DetectQuestion(_repository, bot, 1946031755, 0),
+            new DetectQuestion(_repository,1946031755, 0),
             new DetectAsyncServerTime(_repository, bot),
         };
     }

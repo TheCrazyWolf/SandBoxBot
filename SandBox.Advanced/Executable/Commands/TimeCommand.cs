@@ -49,7 +49,7 @@ public class TimeCommand(ITelegramBotClient botClient) : Command
             var resultTime = await _timeServer.GetServerTime();
             return (resultTime, true);
         }
-        catch (Exception e)
+        catch
         {
             return (DateTime.Now, false);
         }

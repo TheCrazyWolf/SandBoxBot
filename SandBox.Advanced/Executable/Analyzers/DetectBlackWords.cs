@@ -59,7 +59,7 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
 
     private string IsContainsBlackWord(string? message)
     {
-        return message.GetArrayWordsTreatmentMessage(0)
+        return message.GetArrayWordsTreatmentMessage()
             .Where(word => repository.BlackWords.Exists(word).Result)
             .Aggregate(string.Empty, (current, word) => current + $"{word} ");
     }
@@ -89,7 +89,7 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
     {
         return
             $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) со " +
-            $"следующем содержанием: \n\n{message?.Text} \n\nЗапрещенные слова: {blockedWords} \n\n";
+            $"следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blockedWords} \n\n";
     }
 
     private IList<IList<InlineKeyboardButton>> GenerateKeyboardForNotify(EventContent eventContent)
