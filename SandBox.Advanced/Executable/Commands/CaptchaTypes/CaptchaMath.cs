@@ -7,11 +7,14 @@ public class CaptchaMath : CaptchaBase
 {
     public override string Message { get; set; } = "Решите математическую задачку: ";
 
-    private readonly int _firstValue = new Random().Next(0, 20);
-    private readonly int _secondValue = new Random().Next(0, 20);
+    private int _firstValue;
+    private int _secondValue;
 
     public override CaptchaResult Generate(long idTelegram, int lifeTimeMinutes = 1, byte maxAttempts = 1)
     {
+        Random rnd = new Random();
+        _firstValue = rnd.Next(0, 20);
+        _secondValue = rnd.Next(0, 20);
         var captchaResult = new CaptchaResult
         {
             CatchaToDb = CreateEntity(idTelegram, lifeTimeMinutes, maxAttempts),
