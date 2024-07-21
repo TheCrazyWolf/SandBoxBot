@@ -105,7 +105,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         // Analatics chats
 
-        switch (Configuration)
+        /*switch (Configuration)
         {
             case { IsBlockByMachineLearn: true }:
             {
@@ -121,7 +121,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         }
 
         if (Configuration is { IsBlockFastActivity: true })
-            await new DetectFastActivity { BotClient = bot, Update = update, Repository = _repository, }.Execute();
+            await new DetectFastActivity { BotClient = bot, Update = update, Repository = _repository, }.Execute();*/
 
         /*if (Configuration is { IsBlockAntiArab: true })
             await new DetectAntiArab { BotClient = bot, Update = update, Repository = _repository, }.Execute12();*/
@@ -208,7 +208,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _analyzers = new List<IAnalyzer>()
         {
-            new DetectAntiArab(_repository, bot),
+            new DetectBlackWords(_repository, bot)
             // ETC
         };
     }

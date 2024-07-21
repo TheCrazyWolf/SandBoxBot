@@ -1,117 +1,114 @@
-using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Executable.Common;
+using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
-using SandBox.Advanced.Services.Text;
+using SandBox.Advanced.Utils;
 using SandBox.Models.Events;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectBlackWords : SandBoxHelpers, IExecutable<bool>
+public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
 {
-    private bool _toDelete;
-    private bool _isOverride;
-    private string _blackWords = string.Empty;
-    private EventContent _eventContent = new();
-
-    public Task<bool> Execute()
+    public bool Execute(Message message)
     {
-        if (Update.Message?.From is null)
-            return Task.FromResult(false);
+        if (message.From is null)
+            return false;
 
-        AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
-        _toDelete = IsContainsBlackWord(Update.Message.Text);
-        _isOverride = CanBeOverrideRestriction(idTelegram: Update.Message.From.Id, idChat: Update.Message.Chat.Id).Result;
-        _eventContent = GenerateEvent(chatId:Update.Message.Chat.Id, content: Update.Message.Text ?? string.Empty, idTelegram: Update.Message.From.Id);
-        Repository.Contents.Add(_eventContent);
+        var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if (!_eventContent.IsSpam) return Task.FromResult(false);
-
-        if (AccountDb is not null)
-        {
-            AccountDb.IsSpamer = true;
-            AccountDb.IsNeedToVerifyByCaptcha = true;
-            Repository.Accounts.Update(AccountDb);
-        }
+        if (account is null)
+            return false;
         
-        BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id, messageId: Update.Message.MessageId);
-        NotifyManagers();
+        var blockedWords = IsContainsBlackWord(message.Text);
+        var isToBlock = !string.IsNullOrEmpty(blockedWords);
+        var @event = GenerateEvent(chatId: message.Chat.Id, idTelegram: message.From.Id, content:
+            message.Text, isSpam:isToBlock);
 
-        return Task.FromResult(true);
+        if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
+                chatId: message.Chat.Id))
+        {
+            // выдать trusted??
+            @event.IsSpam = false;
+        }
+        else
+            @event.IsSpam = isToBlock;
+
+        repository.Contents.Add(@event);
+
+        if (!@event.IsSpam) return false;
+        
+        botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
+        var keyboards = GenerateKeyboardForNotify(@event);
+        NotifyManagers(message, blockedWords, keyboards);
+        return true;
     }
     
-    private EventContent GenerateEvent(long chatId, string content, long idTelegram)
+    private EventContent GenerateEvent(long chatId, string? content, long idTelegram, bool isSpam)
     {
         return new EventContent
         {
-            IsSpam = GetSolutionIsSpam(),
+            IsSpam = isSpam,
             ChatId = chatId,
             DateTime = DateTime.Now,
-            Content = content,
+            Content = content ?? string.Empty,
             IdTelegram = idTelegram
         };
     }
+    
 
-    private bool GetSolutionIsSpam()
+    private string IsContainsBlackWord(string? message)
     {
-        if (_isOverride)
-            return !_isOverride;
-
-        return _toDelete;
+        return message.GetArrayWordsTreatmentMessage(0)
+            .Where(word => repository.BlackWords.Exists(word).Result)
+            .Aggregate(string.Empty, (current, word) => current + $"{word} ");
     }
 
-    private bool IsContainsBlackWord(string? message)
+    private void NotifyManagers(Message originalMessage, string blockedWords, IList<IList<InlineKeyboardButton>> keyboardButtons)
     {
-        foreach (var word in TextTreatment.GetArrayWordsTreatmentMessage(message)
-                     .Where(word => Repository.BlackWords
-                         .Exists(word).Result))
+        foreach (var id in repository.Accounts.GetManagers().Result)
         {
-            _toDelete = true;
-            _blackWords += $"{word} ";
-        }
+            try
+            {
+                var message = BuildNotifyMessage(originalMessage, blockedWords);
 
-        return _toDelete;
-    }
-
-    private void NotifyManagers()
-    {
-        foreach (var id in Repository.Accounts.GetManagers().Result)
-        {
-            var buttons = GenerateKeyboardForNotify();
-            var message = BuildNotifyMessage();
-
-            BotClient.SendTextMessageAsync(chatId: id.IdTelegram,
-                text: message,
-                replyMarkup: new InlineKeyboardMarkup(buttons),
-                disableNotification: true);
+                botClient.SendTextMessageAsync(chatId: id.IdTelegram,
+                    text: message,
+                    replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
+                    disableNotification: true);
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 
-    private string BuildNotifyMessage()
+    private string BuildNotifyMessage(Message message, string blockedWords)
     {
         return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {Update.Message?.From?.Id} (@{Update.Message?.From?.Username}) со " +
-            $"следующем содержанием: \n\n{Update.Message?.Text} \n\nЗапрещенные слова: {_blackWords} \n\n";
+            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) со " +
+            $"следующем содержанием: \n\n{message?.Text} \n\nЗапрещенные слова: {blockedWords} \n\n";
     }
 
-    private IReadOnlyCollection<IReadOnlyCollection<InlineKeyboardButton>> GenerateKeyboardForNotify()
+    private IList<IList<InlineKeyboardButton>> GenerateKeyboardForNotify(EventContent eventContent)
     {
-        return new List<List<InlineKeyboardButton>>
+        return new List<IList<InlineKeyboardButton>>
         {
-            new()
+            new List<InlineKeyboardButton>()
             {
                 InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
-                    $"spamrestore {_eventContent.Id}"),
+                    $"spamrestore {eventContent.Id}"),
                 InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"spamban {_eventContent.Id}")
+                    $"spamban {eventContent.Id}")
             },
 
-            new()
+            new List<InlineKeyboardButton>()
             {
                 InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
-                    $"spamnospam {_eventContent.Id}")
+                    $"spamnospam {eventContent.Id}")
             },
         };
     }
+    
 }
