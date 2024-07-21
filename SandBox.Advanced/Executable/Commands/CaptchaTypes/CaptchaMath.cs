@@ -7,15 +7,15 @@ public class CaptchaMath : CaptchaBase
 {
     public override string Message { get; set; } = "Решите математическую задачку: ";
 
-    private int FirstValue { get; set; } 
-    private int SecondValue { get; set; } 
+    private readonly int _firstValue = new Random().Next(0, 20);
+    private readonly int _secondValue = new Random().Next(0, 20);
 
     public override CaptchaResult Generate(long idTelegram, int lifeTimeMinutes = 1, byte maxAttempts = 1)
     {
         var captchaResult = new CaptchaResult
         {
             CatchaToDb = CreateEntity(idTelegram, lifeTimeMinutes, maxAttempts),
-            Message = $"{Message} {FirstValue} сложить {SecondValue} ?" ,
+            Message = $"{Message} {_firstValue} сложить {_secondValue} ?" ,
             Answers = (List<string>)GetRandom(out var rightAnswer)
         };
         captchaResult.CatchaToDb.Content = rightAnswer;
@@ -36,13 +36,11 @@ public class CaptchaMath : CaptchaBase
     private IList<string> GetRandom(out string rightAnswer)
     {
         var listAnswers = new List<string>();
-        FirstValue = Random.Next(-15, 20);
-        SecondValue = Random.Next(-15, 20);
-        rightAnswer = (FirstValue + SecondValue).ToString();
+        rightAnswer = (_firstValue + _secondValue).ToString();
         
         for (int i = 0; i < 4; i++)
         {
-            listAnswers.Add(Random.Next(FirstValue - 10, FirstValue + 10).ToString());
+            listAnswers.Add(Random.Next(_firstValue - 10, _firstValue + 10).ToString());
         }
 
         listAnswers.Add(rightAnswer);
