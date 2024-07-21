@@ -23,9 +23,14 @@ public class EventContentRepository(SandBoxContext ef)
         return Task.FromResult(ef.EventsContent.FirstOrDefault(x => x.Id == idEvent));
     }
     
-    public Task<EventContent?> GetByContent(string content)
+    public Task<EventContent?> GetByContent(string? content)
     {
-        return Task.FromResult(ef.EventsContent.FirstOrDefault(x => x.Content == content.ToLower()));
+        return Task.FromResult(ef.EventsContent.FirstOrDefault(x => x.Content == content));
+    }
+    
+    public Task<EventContent?> GetByContent(string? content, long userId, long chaId, long messageId)
+    {
+        return Task.FromResult(ef.EventsContent.FirstOrDefault(x => x.Content == content && x.IdTelegram == userId && x.ChatId == chaId && x.MessageId == messageId));
     }
     
     public Task<bool> Exists(long idEvent)

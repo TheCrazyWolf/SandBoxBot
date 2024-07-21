@@ -187,7 +187,6 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _analyzers = new List<IAnalyzer>()
         {
-            new DetectBlackWords(_repository, bot),
             new DetectSpamMl(_repository, bot),
             new DetectAsyncServerTime(_repository, bot),
             new DetectBlackWords(_repository, bot),

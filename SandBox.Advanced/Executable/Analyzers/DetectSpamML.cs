@@ -34,12 +34,7 @@ public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botCl
         repository.Contents.Add(@event);
 
         if (!@event.IsSpam)
-        {
-            // Так надо для такого чтобы следующий анализатор не схватил текст
-            // если на этом этапе текст прошел проверку и вынесен вердикт что спам, то дальше чекать нет смысла
-            message.Text = string.Empty;
             return false;
-        }
 
         botClient.DeleteMessageAsync(chatId: message.Chat.Id,
             messageId: message.MessageId);

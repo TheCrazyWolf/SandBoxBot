@@ -8,7 +8,7 @@ namespace SandBox.Advanced.Executable.Analyzers;
 
 public class DetectAsyncServerTime(SandBoxRepository repository, ITelegramBotClient botClient) : TimeServer, IAnalyzer
 {
-    private static bool _isFirstExecute;
+    private static bool _isFirstExecute = true;
     public bool Execute(Message message)
     {
         if (!_isFirstExecute)
@@ -17,11 +17,11 @@ public class DetectAsyncServerTime(SandBoxRepository repository, ITelegramBotCli
         var result = GetServerTimeNow().Result;
         var localTime = DateTime.Now;
 
-        if (result.Item2 && IsSyncTime(result.Item1, localTime))
+        if (result.Item2 && !IsSyncTime(result.Item1, localTime))
         {
             NotifyManagers(BuildMessageAsyncTime(result.Item1, localTime));
         }
-        else if(result.Item2 || IsSyncTime(result.Item1, localTime))
+        else if(!result.Item2)
         {
             NotifyManagers(BuildMessageUnsuccessCheck(localTime));
         }
@@ -48,10 +48,7 @@ public class DetectAsyncServerTime(SandBoxRepository repository, ITelegramBotCli
         var serverTime = new TimeOnly(serverDateTime.Hour, serverDateTime.Minute);
         var localTime = new TimeOnly(localDateTime.Hour, localDateTime.Minute);
 
-        if (serverDateTime.Date != localDateTime.Date)
-            return false;
-        
-        return serverTime == localTime;
+        return (serverDateTime.Date == localDateTime.Date) && serverTime == localTime;
     }
     
     private void NotifyManagers(string message)

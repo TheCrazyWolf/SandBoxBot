@@ -32,11 +32,11 @@ public class AccountsRepository(SandBoxContext ef)
         return Task.FromResult(ef.Accounts.Any(x => x.IdTelegram == idTelegram));
     }
 
-    public Task<Account> Update(Account blackWord)
+    public Task<Account> Update(Account account)
     {
-        ef.Update(blackWord);
+        ef.Update(account);
         ef.SaveChanges();
-        return Task.FromResult(blackWord);
+        return Task.FromResult(account);
     }
 
     public Task<bool> Delete(long idTelegram)

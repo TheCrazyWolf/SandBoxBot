@@ -18,12 +18,22 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if (account is null)
+        if (account is null || string.IsNullOrEmpty(message.Text))
             return false;
-        
+
         var blockedWords = IsContainsBlackWord(message.Text);
         var isToBlock = !string.IsNullOrEmpty(blockedWords);
-        var @event = message.GenerateEventFromContent(isToBlock);
+        //var @event = message.GenerateEventFromContent(isToBlock);
+        // Костыль для того, чтобы пройти по второму кругу одно и тоже сообщение после Машинного обучения
+        var @event = repository.Contents.GetByContent(message.Text, message.From.Id, message.Chat.Id, message.MessageId).Result ?? message.GenerateEventFromContent(isToBlock);
+        @event.IsSpam = isToBlock;
+        
+        if (@event.IsSpam && @event.Id is not 0)
+        {
+            botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
+            NotifyManagers(message, blockedWords, GenerateKeyboardForNotify(@event));
+            return true;
+        }
 
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id))
@@ -31,18 +41,19 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
             // выдать trusted??
             @event.IsSpam = false;
         }
-
-        repository.Contents.Add(@event);
-
-        if (!@event.IsSpam) return false;
         
-        botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
-        var keyboards = GenerateKeyboardForNotify(@event);
-        NotifyManagers(message, blockedWords, keyboards);
-        return true;
+        if(@event.Id is 0)
+            repository.Contents.Add(@event);
+        else
+            repository.Contents.Update(@event);
+        
+        if (!@event.IsSpam) return false;
 
+        botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
+        NotifyManagers(message, blockedWords, GenerateKeyboardForNotify(@event));
+        return true;
     }
-    
+
     private string IsContainsBlackWord(string? message)
     {
         return message.GetArrayWordsTreatmentMessage(0)
@@ -50,7 +61,8 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
             .Aggregate(string.Empty, (current, word) => current + $"{word} ");
     }
 
-    private void NotifyManagers(Message originalMessage, string blockedWords, IList<IList<InlineKeyboardButton>> keyboardButtons)
+    private void NotifyManagers(Message originalMessage, string blockedWords,
+        IList<IList<InlineKeyboardButton>> keyboardButtons)
     {
         foreach (var id in repository.Accounts.GetManagers().Result)
         {
@@ -96,5 +108,4 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
             },
         };
     }
-    
 }
