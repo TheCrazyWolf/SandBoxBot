@@ -40,6 +40,7 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
         var keyboards = GenerateKeyboardForNotify(@event);
         NotifyManagers(message, blockedWords, keyboards);
         return true;
+
     }
     
     private string IsContainsBlackWord(string? message)

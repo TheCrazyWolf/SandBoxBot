@@ -30,7 +30,7 @@ public class BanFromEvent(SandBoxRepository repository, ITelegramBotClient botCl
             botClient.BanChatMemberAsync(chatId: @event.ChatId,
                 userId: Convert.ToInt64(@event.IdTelegram));
             
-        SendMessageOfExecuted(idChat: callbackQuery.From.Id, message: BuildNotifyMessage());
+        botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildNotifyMessage(@event.Id), true);
     }
 
     private void SendMessageOfExecuted(long idChat, string message)
@@ -40,10 +40,10 @@ public class BanFromEvent(SandBoxRepository repository, ITelegramBotClient botCl
             disableNotification: true);
     }
 
-    private string BuildNotifyMessage()
+    private string BuildNotifyMessage(long id)
     {
         return
-            $"\u2705 Принятые действия: Пользователь заблокирован";
+            $"\u2705 Принятые действия по событию № {id}: Сообщение отмечено как не спам, восстановлено сообщение в беседу";
     }
     
 }

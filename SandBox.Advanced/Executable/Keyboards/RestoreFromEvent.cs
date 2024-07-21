@@ -43,7 +43,7 @@ public class RestoreFromEvent(SandBoxRepository repository, ITelegramBotClient b
     private string BuildRestoredMessage(Account sender, EventContent content)
     {
         return
-            $"\ud83d\uddd3 (Восстановлено) @{sender.UserName}: {content.Content}";
+            $"@{sender.UserName}: {content.Content}";
     }
     
 }
