@@ -168,7 +168,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new QuestionCommand(_repository, bot),
             new RemoveBlackWord(_repository, bot),
             new SetMeManager(_repository, bot),
-            new StartCommand(_repository, bot)
+            new StartCommand(_repository, bot),
+            new TimeCommand(bot)
             // ETC
         };
     }
@@ -192,7 +193,6 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new DetectBlackWords(_repository, bot),
             new DetectFastActivityFromUser(_repository, bot),
             new DetectQuestion(_repository, bot, 1946031755, 0),
-            new DetectAsyncServerTime(_repository, bot),
             new DetectAsyncServerTime(_repository, bot),
         };
     }
