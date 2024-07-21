@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using SandBox.Advanced.Abstract;
+using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Interfaces;
 using Telegram.Bot;
@@ -7,7 +8,7 @@ using Telegram.Bot.Exceptions;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectNonWorkingTime : SandBoxHelpers, IExecutable<bool>
+public class DetectNonWorkingTime(SandBoxRepository repository, ITelegramBotClient botClient) : SandBoxHelpers, IExecutable<bool>
 {
     private bool _isAdminOrManager;
     private bool _isWorkTime;

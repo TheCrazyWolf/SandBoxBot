@@ -30,8 +30,6 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
             // выдать trusted??
             @event.IsSpam = false;
         }
-        else
-            @event.IsSpam = isToBlock;
 
         repository.Contents.Add(@event);
 
@@ -43,7 +41,6 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
         return true;
     }
     
-
     private string IsContainsBlackWord(string? message)
     {
         return message.GetArrayWordsTreatmentMessage(0)

@@ -17,7 +17,7 @@ public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient 
 
         var forBlackWords = CheckForBlackWords(message.Text);
         var isBlackWords = string.IsNullOrEmpty(forBlackWords);
-        var isMlNet = PredictFromMlNet(message.Text);
+        var isMlNet = message.Text.IsSpamMl();
 
         var buildMessage = BuildMessage(isBlackWord : isBlackWords,  
             isSpamMl : isMlNet.Item1, 
@@ -60,10 +60,5 @@ public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient 
             $":\n{blackWords}\n\n" +
             $"\u26a1\ufe0f Модель машинного обучения: {resultFromMl}\nВероятность {score}%" +
             $"\n\n{resultMessage}";
-    }
-
-    private (bool, float) PredictFromMlNet(string? message)
-    {
-        return MlPredictor.IsSpamPredict(message);
     }
 }

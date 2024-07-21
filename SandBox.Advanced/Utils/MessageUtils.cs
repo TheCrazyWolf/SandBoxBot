@@ -1,3 +1,4 @@
+using SandBox_Advanced;
 using SandBox.Advanced.Configs;
 using SandBox.Advanced.Services.Telegram;
 
@@ -45,5 +46,18 @@ public static class MessageUtils
         }
 
         return newMessage;
+    }
+    
+    public static (bool, float) IsSpamMl(this string? message)
+    {
+        // model training  lbfgsmaximumEntropyMulti
+        
+        var sampleData = new AntiWorkSpam.ModelInput
+        {
+            Value = message ?? string.Empty,
+        };
+        var result = AntiWorkSpam.Predict(sampleData);
+
+        return result.Score[1] >= UpdateHandler.Configuration.MaxPercentageMachineLearnToBlock ? (true, result.Score[1] * 100) : (false, result.Score[1] * 100);
     }
 }

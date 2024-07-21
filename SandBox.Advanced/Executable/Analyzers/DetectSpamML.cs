@@ -1,115 +1,100 @@
-﻿using SandBox.Advanced.Abstract;
-using SandBox.Models.Events;
-using SandBox.Advanced.Executable.Common;
+﻿using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
-using SandBox.Advanced.Services.Text;
+using SandBox.Advanced.Utils;
+using SandBox.Models.Events;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectSpamMl : SandBoxHelpers, IExecutable<bool>
+public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
 {
-    private bool _toDelete;
-    private bool _isOverride;
-    private EventContent _eventContent = new();
-    private float _score;
-
-    public Task<bool> Execute()
+    public bool Execute(Message message)
     {
-        if (Update.Message?.From is null)
-            return Task.FromResult(false);
+        if (message.From is null)
+            return false;
 
-        AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
-        _toDelete = IsSpamPredict(Update.Message.Text);
-        _isOverride = CanBeOverrideRestriction(Update.Message.From.Id, Update.Message.Chat.Id).Result;
-        _eventContent = GenerateEvent(chatId: Update.Message.Chat.Id,
-            content: Update.Message.Text?.ToLower() ?? string.Empty,
-            idTelegram: Update.Message.From.Id);
-        Repository.Contents.Add(_eventContent);
+        var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if (!_eventContent.IsSpam) return Task.FromResult(false);
-        
-        if (AccountDb is not null)
+        if (account is null)
+            return false;
+
+        var isToBlock = message.Text.IsSpamMl();
+        var @event = message.GenerateEventFromContent(isToBlock.Item1);
+
+        if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
+                chatId: message.Chat.Id))
         {
-            AccountDb.IsSpamer = true;
-            AccountDb.IsNeedToVerifyByCaptcha = true;
-            Repository.Accounts.Update(AccountDb);
+            // выдать trusted??
+            @event.IsSpam = false;
         }
 
-        BotClient.DeleteMessageAsync(chatId: Update.Message.Chat.Id,
-            messageId: Update.Message.MessageId);
-        
-        NotifyManagers();
+        repository.Contents.Add(@event);
 
-        return Task.FromResult(true);
-    }
-
-    private EventContent GenerateEvent(long chatId, string content, long idTelegram)
-    {
-        return new EventContent
+        if (!@event.IsSpam)
         {
-            IsSpam = GetSolutionIsSpam(),
-            ChatId = chatId,
-            DateTime = DateTime.Now,
-            Content = content,
-            IdTelegram = idTelegram
-        };
-    }
-    private bool GetSolutionIsSpam()
-    {
-        if (_isOverride)
-            return !_isOverride;
+            // Так надо для такого чтобы следующий анализатор не схватил текст
+            // если на этом этапе текст прошел проверку и вынесен вердикт что спам, то дальше чекать нет смысла
+            message.Text = string.Empty;
+            return false;
+        }
 
-        return _toDelete;
-    }
+        botClient.DeleteMessageAsync(chatId: message.Chat.Id,
+            messageId: message.MessageId);
 
-    private bool IsSpamPredict(string? message)
-    {
-        var result = MlPredictor.IsSpamPredict(message);
-        _score = result.Item2;
-        return result.Item1;
+        NotifyManagers(message, isToBlock.Item2, GenerateKeyboardForNotify(@event));
+
+        return true;
     }
 
-    private void NotifyManagers()
+    private void NotifyManagers(Message originalMessage, float score,
+        IList<IList<InlineKeyboardButton>> keyboardButtons)
     {
-        foreach (var id in Repository.Accounts.GetManagers().Result)
+        foreach (var id in repository.Accounts.GetManagers().Result)
         {
-            var buttons = GenerateKeyboardForNotify();
-            var message = BuildNotifyMessage();
+            try
+            {
+                var message = BuildNotifyMessage(originalMessage, score);
 
-            BotClient.SendTextMessageAsync(chatId: id.IdTelegram,
-                text: message,
-                replyMarkup: new InlineKeyboardMarkup(buttons),
-                disableNotification: true);
+                botClient.SendTextMessageAsync(chatId: id.IdTelegram,
+                    text: message,
+                    replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
+                    disableNotification: true);
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 
-    private string BuildNotifyMessage()
+    private IList<IList<InlineKeyboardButton>> GenerateKeyboardForNotify(EventContent eventContent)
     {
-        return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {Update.Message?.From?.Id} (@{Update.Message?.From?.Username}) со " +
-            $"следующем содержанием: \n\n{Update.Message?.Text} \n\nℹ️ Это сообщение удалено по решению модели машинного обучения. Вероятность спама составила {_score}%" +
-            $"\n\nЕсли эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
-    }
-
-    private IReadOnlyCollection<IReadOnlyCollection<InlineKeyboardButton>> GenerateKeyboardForNotify()
-    {
-        return new List<List<InlineKeyboardButton>>
+        return new List<IList<InlineKeyboardButton>>
         {
-            new()
+            new List<InlineKeyboardButton>()
             {
                 InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
-                    $"spamrestore {_eventContent.Id}"),
+                    $"spamrestore {eventContent.Id}"),
                 InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"spamban {_eventContent.Id}")
+                    $"spamban {eventContent.Id}")
             },
 
-            new()
+            new List<InlineKeyboardButton>()
             {
                 InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
-                    $"spamnospam {_eventContent.Id}")
+                    $"spamnospam {eventContent.Id}")
             },
         };
     }
+
+    private string BuildNotifyMessage(Message message, float score)
+    {
+        return
+            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) со " +
+            $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Это сообщение удалено по решению модели машинного обучения. Вероятность спама составила {score}%" +
+            $"\n\nЕсли эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
+    }
+    
 }
