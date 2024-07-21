@@ -1,57 +1,52 @@
-using SandBox.Advanced.Executable.Common;
+using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
+using SandBox.Advanced.Utils;
 using SandBox.Models.Telegram;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectQuestion : SandBoxHelpers, IExecutable<bool>
+public class DetectQuestion(SandBoxRepository repository, ITelegramBotClient botClient, 
+    long idTrainer, long idChat) : IAnalyzer
 {
     //my id 208049718
-    //1946031755
-    private readonly long _idTelegramTrainer = 1946031755;
+    //1946031755 - prodAction
+    
+    //private readonly long _idTelegramTrainer = 1946031755;
 
-    public Task<bool> Execute()
+    public bool Execute(Message message)
     {
-        if(Update.Message?.ReplyToMessage?.Text is null)
-            return Task.FromResult(false);
+        if(message.ReplyToMessage?.Text is null)
+            return false;
         
-        if(Update.Message?.Text is null)
-            return Task.FromResult(false);
+        if(message.Chat.Id != idChat)
+            return false;
         
-        if(Update.Message?.From?.Id != _idTelegramTrainer)
-            return Task.FromResult(false);
+        if(message.Text is null)
+            return false;
         
-        if (Update.Message.Text != null)
-            SaveAnswerForQuestion(question: Update.Message.ReplyToMessage.Text,
-                answer: Update.Message.Text);
+        if(message.From?.Id != idTrainer)
+            return false;
+        
+        if (message.Text != null)
+            SaveAnswerForQuestion(question: message.ReplyToMessage.Text,
+                answer: message.Text);
 
-        return Task.FromResult(true);
+        return true;
     }
-
+    
+    
     private void SaveAnswerForQuestion(string question, string answer)
     {
         var quest = new Question
         {
-            Quest = GetMessagePreparing(question),
-            Answer = GetMessagePreparing(answer)
+            Quest = question.GetMessageForFaq(),
+            Answer = question.GetMessageForFaq()
         };
 
-        Repository.Questions.Add(quest);
+        repository.Questions.Add(quest);
     }
-
-    private string GetMessagePreparing(string message)
-    {
-        var newMessage = message.Replace("Здравствуйте", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("доброе утро", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("добрый день", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("добрый вечер", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("доброй ночи", string.Empty, StringComparison.OrdinalIgnoreCase);
-
-        while (newMessage.StartsWith("!") || newMessage.StartsWith(".") || newMessage.StartsWith(",") || newMessage.StartsWith(" ") || newMessage.StartsWith("\n"))
-        {
-            newMessage = newMessage.Substring(1);
-        }
-
-        return newMessage;
-    }
+    
     
 }

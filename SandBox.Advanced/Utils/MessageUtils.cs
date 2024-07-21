@@ -30,4 +30,20 @@ public static class MessageUtils
             .Skip(skip)
             .ToList();
     }
+    
+    public static string GetMessageForFaq(this string message)
+    {
+        var newMessage = message.Replace("Здравствуйте", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("доброе утро", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("добрый день", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("добрый вечер", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("доброй ночи", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+        while (newMessage.StartsWith("!") || newMessage.StartsWith(".") || newMessage.StartsWith(",") || newMessage.StartsWith(" ") || newMessage.StartsWith("\n"))
+        {
+            newMessage = newMessage.Substring(1);
+        }
+
+        return newMessage;
+    }
 }
