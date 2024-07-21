@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Options;
-using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Configs;
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Activity;
@@ -188,6 +187,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _analyzers = new List<IAnalyzer>()
         {
+            new DetectEventsFromAccountSpammer(_repository, bot),
             new DetectSpamMl(_repository, bot),
             new DetectAsyncServerTime(_repository, bot),
             new DetectBlackWords(_repository, bot),

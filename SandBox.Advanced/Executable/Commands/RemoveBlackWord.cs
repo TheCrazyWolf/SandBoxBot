@@ -22,7 +22,7 @@ public class RemoveBlackWord(SandBoxRepository repository, ITelegramBotClient bo
         {
             repository.Accounts.UpdateApproved(account);
             var unBlockWords = DoUnBlockWords(message.Text ?? string.Empty);
-            SendMessage(message.From.Id, BuildSuccessMessage(unBlockWords));
+            SendMessage(message.Chat.Id, BuildSuccessMessage(unBlockWords));
             return;
         }
 
