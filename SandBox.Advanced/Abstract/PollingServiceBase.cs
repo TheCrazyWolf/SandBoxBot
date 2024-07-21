@@ -1,3 +1,5 @@
+using SandBox.Advanced.Interfaces;
+
 namespace SandBox.Advanced.Abstract;
 
 // A background service consuming a scoped service.

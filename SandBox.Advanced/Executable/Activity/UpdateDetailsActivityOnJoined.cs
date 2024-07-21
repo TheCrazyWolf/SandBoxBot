@@ -1,53 +1,32 @@
-using SandBox.Models.Events;
-using SandBox.Models.Telegram;
+using SandBox.Advanced.Database;
+using SandBox.Advanced.Interfaces;
+using SandBox.Advanced.Utils.Telegram;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Activity;
 
-public class UpdateDetailsActivityOnJoined: UpdateDetailsActivityProfile
+public class UpdateDetailsActivityOnJoined(SandBoxRepository repository, ITelegramBotClient botClient):  IAnalyzer
 {
-    public override Task<bool> Execute()
+    public bool Execute(Message message)
     {
-        if (Update.Message?.NewChatMembers is null)
-            return Task.FromResult(false);
+        if (message.NewChatMembers is null)
+            return false;
+        
+        var chatTg = repository.Chats.GetById(message.Chat.Id).Result;
 
-        ChatTg = GetThisChatTelegram(Update.Message.Chat.Id);
-
-        if (ChatTg is null)
-            CreateChatIfNull(idChat: Update.Message.Chat.Id,
-                title: Update.Message.Chat.Title ?? Update.Message.Chat.FirstName ?? string.Empty);
-
-        foreach (var user in Update.Message.NewChatMembers)
+        if (chatTg is null)
+            repository.Chats.Add(message.Chat.CreateChatDb());
+        
+        foreach (var user in message.NewChatMembers)
         {
-            CreateAccount(user);
-            CreateEventJoin(user);
+            repository.Accounts.Add(user.CreateAccountDb());
+            repository.Joins.Add(user.CreateEventJoinFromUser(message.Chat.Id));
         }
-        return Task.FromResult(true);
-    }
 
-    private void CreateEventJoin(User user)
-    {
-        var newEvent = new EventJoined
-        {
-            IdTelegram = user.Id,
-            ChatId = Update.Message?.Chat.Id,
-            DateTime = DateTime.Now
-        };
-        Repository.Joins.Add(newEvent);
+        return true;
     }
     
-    protected void CreateAccount(User user)
-    {
-        var newAccount = new Account
-        {
-            IdTelegram = user.Id,
-            UserName = user.Username,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            LastActivity = DateTime.Now,
-            DateTimeJoined = DateTime.Now,
-        };
-
-        Repository.Accounts.Add(newAccount);
-    }
+    // Сделать проверку на спам атаку заходов
+    
 }

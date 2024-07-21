@@ -22,8 +22,9 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     public static BotConfiguration Configuration { get; set; } = new ();
     
     private IList<ICommand> _commands = new List<ICommand>();
-    
+    private IList<IAnalyzer> _analyzerActivity = new List<IAnalyzer>();
     private IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
+    private IList<ICallQuery> _callBackQueryies = new List<ICallQuery>();
     
     private static bool _isFirstPool = true;
     private SandBoxRepository _repository = default!;
@@ -42,13 +43,15 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         await GetUserNameBotIfFirstPoll();
         CreateScopeAndGetCurrentService();
         ConfiguringCommands();
+        ConfiguringAnalyzers();
+        ConfiguringActivityAnalyzers();
 
         cancellationToken.ThrowIfCancellationRequested();
         await (update switch
         {
             { Message: { } message } => OnMessage(update),
             { EditedMessage: { } message } => OnMessage(update),
-            { CallbackQuery: { } callbackQuery } => OnCallbackQuery(update),
+            { CallbackQuery: { } callbackQuery } => OnCallbackQuery(update.CallbackQuery),
             _ => UnknownUpdateHandlerAsync(update)
         });
     }
@@ -65,17 +68,17 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         if (update.EditedMessage is not null)
             update.Message = update.EditedMessage;
-
-        if (update.Message?.NewChatMembers is not null)
-            await new UpdateDetailsActivityOnJoined { BotClient = bot, Update = update, Repository = _repository }
-                .Execute();
-
+        
         if (update.Message?.Text is not { } messageText)
             return;
-
-        await new UpdateDetailsActivityProfile { BotClient = bot, Update = update, Repository = _repository }.Execute();
-
-        // CHECK AND TO DO COMMANDS
+        
+        // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
+        foreach (var command in _analyzerActivity)
+        {
+            command.Execute(update.Message);
+        }
+        
+        // Проверка на наличие команда и исполнение
         foreach (var command in _commands)
         {
             if (!command.Contains(update.Message))
@@ -83,48 +86,12 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             command.Execute(update.Message);
             return;
         }
-
         
-        // ANALIZ
-        foreach (var analyzer in _analyzers)
+        // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
+        foreach (var command in _analyzers)
         {
-            analyzer.Execute(update.Message);
+            command.Execute(update.Message);
         }
-        
-        // Переместить выше если будут обходить путем команд
-        if (Configuration is { IsChatInWorkTime: true })
-        {
-            await new DetectDeleteMessagesInNonWorkTime { BotClient = bot, Update = update, Repository = _repository, }.Execute();
-            WorkTimeChatTimer.BotClient = bot;
-            WorkTimeChatTimer.Rune();
-        }
-        // это читай выше 
-
-
-        await new DetectQuestion { BotClient = bot, Update = update, Repository = _repository, }.Execute();
-
-        // Analatics chats
-
-        /*switch (Configuration)
-        {
-            case { IsBlockByMachineLearn: true }:
-            {
-                if (!await new DetectSpamMl { BotClient = bot, Update = update, Repository = _repository, }.Execute())
-                    if (Configuration is { IsBlockByKeywords: true })
-                        await new DetectBlackWords { BotClient = bot, Update = update, Repository = _repository, }
-                            .Execute();
-                break;
-            }
-            case { IsBlockByKeywords: true }:
-                await new DetectBlackWords() { BotClient = bot, Update = update, Repository = _repository, }.Execute();
-                break;
-        }
-
-        if (Configuration is { IsBlockFastActivity: true })
-            await new DetectFastActivity { BotClient = bot, Update = update, Repository = _repository, }.Execute();*/
-
-        /*if (Configuration is { IsBlockAntiArab: true })
-            await new DetectAntiArab { BotClient = bot, Update = update, Repository = _repository, }.Execute12();*/
     }
 
     async Task<Message> Usage(Message msg)
@@ -146,16 +113,24 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     }
 
     // Process Inline Keyboard callback data
-    private async Task OnCallbackQuery(Update update)
+    private async Task OnCallbackQuery(CallbackQuery callbackQuery)
     {
-        logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", update.Id);
+        logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", callbackQuery.Id);
 
-        var words = update.CallbackQuery?.Data?.Split(' ');
+        var words = callbackQuery.Data?.Split(' ');
 
         if (words is null)
             return;
 
-        if (words[0] == "question")
+        foreach (var callBack in _callBackQueryies)
+        {
+            if (!callBack.Contains(callbackQuery))
+                continue;
+            callBack.Execute(callbackQuery);
+            return;
+        }
+
+        /*if (words[0] == "question")
             await new QuestionFromDb { BotClient = bot, Repository = _repository, Update = update }.Execute();
         if (words[0] == "spamrestore")
             await new RestoreFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
@@ -164,7 +139,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         if (words[0] == "spamnospam")
             await new NoSpamFromEvent { BotClient = bot, Repository = _repository, Update = update }.Execute();
         if (words[0] == "captcha")
-            await new CaptchaFromChat { BotClient = bot, Repository = _repository, Update = update }.Execute();
+            await new CaptchaFromChat { BotClient = bot, Repository = _repository, Update = update }.Execute();*/
     }
 
     private Task UnknownUpdateHandlerAsync(Update update)
@@ -203,6 +178,16 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             // ETC
         };
     }
+    
+    private void ConfiguringActivityAnalyzers()
+    {
+        _analyzerActivity = new List<IAnalyzer>
+        {
+            new UpdateDetailsActivityProfile(_repository, bot),
+            new UpdateDetailsActivityOnJoined(_repository, bot),
+        };
+    }
+    
     
     private void ConfiguringAnalyzers()
     {

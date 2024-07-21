@@ -1,84 +1,34 @@
-using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
-using SandBox.Models.Telegram;
+using SandBox.Advanced.Utils.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Activity;
 
-public class UpdateDetailsActivityProfile : IExecutable<bool>
+public class UpdateDetailsActivityProfile(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
 {
-    public ITelegramBotClient BotClient = default!;
-    public Update Update = default!;
-    public SandBoxRepository Repository = default!;
-
-    protected ChatTg? ChatTg;
-    protected Account? AccountDb;
-    
-    public virtual Task<bool> Execute()
+    public virtual bool Execute(Message message)
     {
-        if (Update.Message?.From?.Id is null)
-            return Task.FromResult(false);
+        if (message.From?.Id is null)
+            return false;
 
-        ChatTg = GetThisChatTelegram(Update.Message.Chat.Id);
+        var chatTg = repository.Chats.GetById(message.Chat.Id).Result;
 
-        if (ChatTg is null)
-            CreateChatIfNull(idChat: Update.Message.Chat.Id,
-                title: Update.Message.Chat.Title ?? Update.Message.Chat.FirstName ?? string.Empty);
+        if (chatTg is null)
+            repository.Chats.Add(message.Chat.CreateChatDb());
         
-        AccountDb = Repository.Accounts.GetById(Update.Message.From.Id).Result;
+        var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if (AccountDb is not null)
+        if (account is not null)
         {
-            UpdateDetailsAccount(Update.Message.From);
-            return Task.FromResult(true);
+            repository.Accounts.UpdateDetails(account, message.From);
+            return false;
         }
 
-        CreateAccountIfNull(Update.Message.From);
+        repository.Accounts.Add(message.From.CreateAccountDb());
 
-        return Task.FromResult(true);
-    }
-
-    protected void CreateAccountIfNull(User user)
-    {
-        var newAccount = new Account
-        {
-            IdTelegram = user.Id,
-            UserName = user.Username,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            LastActivity = DateTime.Now,
-            DateTimeJoined = DateTime.Now,
-        };
-
-        Repository.Accounts.Add(newAccount);
-    }
-
-    protected void UpdateDetailsAccount(User user)
-    {
-        if(AccountDb is null)
-            return;
-        AccountDb.FirstName = user.FirstName;
-        AccountDb.LastName = user.LastName;
-        AccountDb.UserName = user.Username;
-        AccountDb.LastActivity = DateTime.Now;
-        Repository.Accounts.Update(AccountDb);
-    }
-
-    protected ChatTg? GetThisChatTelegram(long idChat)
-    {
-        return Repository.Chats.GetById(idChat).Result;
+        return true;
     }
     
-    protected void CreateChatIfNull(long idChat, string title)
-    {
-        var newChat = new ChatTg
-        {
-            IdChat = idChat,
-            Title = title
-        };
-
-        Repository.Chats.Add(newChat);
-    }
 }

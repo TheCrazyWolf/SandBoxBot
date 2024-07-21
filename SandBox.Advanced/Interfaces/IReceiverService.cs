@@ -1,4 +1,4 @@
-namespace SandBox.Advanced.Abstract;
+namespace SandBox.Advanced.Interfaces;
 
 /// <summary>
 /// A marker interface for Update Receiver service

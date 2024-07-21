@@ -1,4 +1,5 @@
 using SandBox.Models.Telegram;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Database.Repository;
 
@@ -65,6 +66,15 @@ public class AccountsRepository(SandBoxContext ef)
         account.IsNeedToVerifyByCaptcha = false;
         account.IsSpamer = false;
         account.IsManagerThisBot = true;
+        Update(account);
+    }
+
+    public void UpdateDetails(Account account, User user)
+    {
+        account.FirstName = user.FirstName;
+        account.LastName = user.LastName;
+        account.UserName = user.Username;
+        account.LastActivity = DateTime.Now;
         Update(account);
     }
 }

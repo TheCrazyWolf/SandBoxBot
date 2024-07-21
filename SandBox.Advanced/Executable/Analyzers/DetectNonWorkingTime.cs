@@ -1,17 +1,15 @@
-using Newtonsoft.Json.Linq;
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Common;
 using SandBox.Advanced.Interfaces;
 using SandBox.Advanced.Utils;
+using SandBox.Advanced.Utils.Telegram;
 using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
 public class DetectNonWorkingTime(SandBoxRepository repository, ITelegramBotClient botClient) : TimeServer, IAnalyzer
 {
-    
     public bool Execute(Message message)
     {
         if (message.From is null)
@@ -32,6 +30,5 @@ public class DetectNonWorkingTime(SandBoxRepository repository, ITelegramBotClie
 
         return false;
     }
-    
     
 }

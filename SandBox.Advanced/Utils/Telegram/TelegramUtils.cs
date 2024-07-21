@@ -1,6 +1,6 @@
 using Telegram.Bot;
 
-namespace SandBox.Advanced.Utils;
+namespace SandBox.Advanced.Utils.Telegram;
 
 public static class TelegramUtils
 {
