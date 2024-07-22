@@ -51,9 +51,9 @@ public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient 
 
     private string BuildNotifyMessage(bool allowToSendMsg)
     {
-        string allowed = allowToSendMsg ? "\u2705" : "\u26d4\ufe0f";
+        string allowed = allowToSendMsg ? "Да" : "Нет";
         return
-            $"\ud83d\udc7e Настройки чата: {idChat} обновлены в связи с началом/конца рабочего дня: \n\nПользователи могут писать сообщения: {allowed}";
+            $"\u2705 Настройки чата: {idChat} обновлены в связи с началом/конца рабочего дня: \n\nПользователи могут писать сообщения: {allowed}";
     }
 
     private void NotifyManagers(string message)
