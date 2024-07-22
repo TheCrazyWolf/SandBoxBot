@@ -21,7 +21,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 {
     public static BotConfiguration Configuration { get; set; } = new();
 
-    private static readonly long IdChatMain = -1002233749723; // -1001941895047 приемка, -4286170959 test
+    private static readonly long IdChatMain = -1001941895047; // -1001941895047 приемка, -1002233749723 test
     private static IList<ICommand> _commands = new List<ICommand>();
     private static IList<IAnalyzer> _analyzerActivity = new List<IAnalyzer>();
     private static IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
@@ -224,7 +224,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _services = new List<IService>()
         {
-            new WorkTimeChatTimer(_repository, bot, IdChatMain) // -1001941895047 приемка, -4286170959 test
+            new WorkTimeChatTimer(_repository, bot, IdChatMain) 
         };
     }
 }
