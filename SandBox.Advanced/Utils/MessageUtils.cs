@@ -52,7 +52,7 @@ public static class MessageUtils
     
     public static bool IsContaintsUrls(this string message)
     {
-        string linkPattern = @"(https?://\S+|http?://\S+|www\.\S+|\b\S+\.\S+\b|@\S+)";
+        string linkPattern = @"((http|https):\/\/)?[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?";
         return Regex.IsMatch(message, linkPattern);
     }
     

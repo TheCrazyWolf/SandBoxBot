@@ -29,6 +29,7 @@ public class DetectUrlsInMsgNonTrusted(SandBoxRepository repository, ITelegramBo
         if(isToBlock)
             @event.IsSpam = isToBlock;
         
+        
         if (@event.IsSpam && @event.Id is not 0)
         {
             botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
@@ -53,6 +54,7 @@ public class DetectUrlsInMsgNonTrusted(SandBoxRepository repository, ITelegramBo
         
         if (!@event.IsSpam) return false;
         
+        message.Text = string.Empty;
         botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
         NotifyManagers(message, GenerateKeyboardForNotify(@event));
         message.Text = string.Empty;
