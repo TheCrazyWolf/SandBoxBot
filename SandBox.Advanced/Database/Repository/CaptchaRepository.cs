@@ -15,7 +15,7 @@ public class CaptchaRepository(SandBoxContext ef)
     {
         return Task.FromResult(ef.Captchas.FirstOrDefault(x => x.Id == idCaptcha));
     }
-    
+
     public Task<bool> Exists(long idCaptcha)
     {
         return Task.FromResult(ef.EventsJoined.Any(x => x.Id == idCaptcha));
@@ -37,13 +37,22 @@ public class CaptchaRepository(SandBoxContext ef)
 
         ef.Remove(item);
         ef.SaveChanges();
-        
+
         return Task.FromResult(true);
     }
 
     public void UpdateDecrementAttemp(Captcha captha)
     {
+        if (captha.AttemptsRemain <= 0)
+            return;
         captha.AttemptsRemain--;
         Update(captha);
+    }
+
+    public bool ContainsCaptchas(long fromId)
+    {
+        return ef.Captchas.Any(x => x.IdTelegram == fromId
+                                    && x.DateTimeExpired >= DateTime.Now
+                                    && x.AttemptsRemain > 0);
     }
 }

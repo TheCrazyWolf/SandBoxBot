@@ -35,6 +35,14 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
             return;
         }
 
+        if (repository.Captchas.ContainsCaptchas(message.From.Id))
+        {
+            SendMessage(idChat: message.Chat.Id,
+                message: BuildIfContainsNonCompletedCaptcha(),
+                new LinkedList<InlineKeyboardButton>());
+            return;
+        }
+
         var captchaResult = _captchas.OrderBy(_ => new Random().Next())
             .First().Generate(message.From.Id);
         
@@ -58,6 +66,12 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
     {
         return
             "\u2705 Вам не требуется проходить проверку на бота, мы Вам доверяем";
+    }
+    
+    private string BuildIfContainsNonCompletedCaptcha()
+    {
+        return
+            "\u26a0\ufe0f У Вас есть ранее нерешенные каптчи";
     }
 
     private string BuildMsgWithCaptcha(CaptchaResult captchaResult)

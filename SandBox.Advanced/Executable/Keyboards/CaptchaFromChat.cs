@@ -54,13 +54,13 @@ public class CaptchaFromChat(SandBoxRepository repository, ITelegramBotClient bo
     private string BuildErrorCaptcha()
     {
         return
-            $"\u26a0\ufe0f Ошибка во время прохождения капчи. Возможно: ваши попытки закончились, срок её прохождения закончился или проходите сгенерированную капчу не для Вас";
+            $"\u26a0\ufe0f Ошибка во время прохождения капчи. \n\nВозможно: ваши попытки закончились, срок её прохождения закончился или проходите сгенерированную капчу не для Вас";
     }
 
     private string BuildWrongCaptcha()
     {
         return
-            $"\u26a0\ufe0f Ответ неправильный. Количество попыток ограничено";
+            $"\u26a0\ufe0f Ответ неправильный. \n\nКоличество попыток ограничено";
     }
     
     private string BuildSuccessCaptcha()
