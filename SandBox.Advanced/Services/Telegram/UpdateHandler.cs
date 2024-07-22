@@ -11,8 +11,6 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Services.Telegram;
 
@@ -93,23 +91,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         return Task.CompletedTask;
     }
-
-    async Task<Message> Usage(Message msg)
-    {
-        const string usage = """
-                                 <b><u>Меню бота</u></b>:
-                                 /start                   - О боте, версия и проверка ограничение
-                                 /check Текст сообщения   - Проверка текста на фильтры
-                                 /captcha                 - Пройти проверку на робота
-                                 /add Слово1 Слово2       - Заблокировать слова
-                                 /del Слово1 Слово2       - Удалить слова
-                                 /question Текст вопроса  - Поиск вопроса в базе знаний
-                                 /time                    - Проверка серверного времени
-                             """;
-        return await bot.SendTextMessageAsync(msg.Chat, usage, parseMode: ParseMode.Html,
-            replyMarkup: new ReplyKeyboardRemove());
-    }
-
+    
     // Process Inline Keyboard callback data
     private Task OnCallbackQuery(CallbackQuery callbackQuery)
     {
