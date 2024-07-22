@@ -199,6 +199,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new DetectSpamMl(_repository, bot, IdChatMain),
             new DetectBlackWords(_repository, bot, IdChatMain),
             new DetectFastActivityFromUser(_repository, bot, IdChatMain),
+            new DetectFastJoins(_repository, bot, IdChatMain),
             new DetectQuestion(_repository, 208049718, IdChatMain), // 1946031755 - Смирнова, 208049718 - я
         };
     }

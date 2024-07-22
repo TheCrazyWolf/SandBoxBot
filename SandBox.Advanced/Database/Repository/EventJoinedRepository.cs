@@ -1,5 +1,4 @@
 using SandBox.Models.Events;
-
 namespace SandBox.Advanced.Database.Repository;
 
 public class EventsJoinedRepository(SandBoxContext ef)
@@ -15,7 +14,7 @@ public class EventsJoinedRepository(SandBoxContext ef)
     {
         return Task.FromResult(ef.EventsJoined.FirstOrDefault(x => x.Id == idEvent));
     }
-    
+
     public Task<bool> Exists(long idEvent)
     {
         return Task.FromResult(ef.EventsJoined.Any(x => x.Id == idEvent));
@@ -37,7 +36,15 @@ public class EventsJoinedRepository(SandBoxContext ef)
 
         ef.Remove(item);
         ef.SaveChanges();
-        
+
         return Task.FromResult(true);
+    }
+
+    public int GetCountJoinsFromChat(long chatId, DateTime start, DateTime end)
+    {
+        return ef.EventsJoined
+            .Count(x => x.ChatId == chatId
+                        && x.DateTime >= start
+                        && x.DateTime <= end);
     }
 }
