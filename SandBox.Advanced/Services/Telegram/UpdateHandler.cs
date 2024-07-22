@@ -120,9 +120,9 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         _isFirstPool = false;
 
-        var result = bot.GetMeAsync().Result;
-        BotConfiguration.UserNameBot = $"@{result.Username}";
-        BotConfiguration.IdBot = result.Id;
+        BotConfiguration.BotInfo = bot.GetMeAsync().Result;
+        BotConfiguration.BotInfo.Username = $"@{BotConfiguration.BotInfo.Username}";
+        
         CreateScopeAndGetCurrentService();
         ConfiguringCommands();
         ConfiguringAnalyzers();
@@ -147,7 +147,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     private void ConfiguringCommands()
     {
-        _commands = new List<ICommand>()
+        _commands = new List<ICommand>
         {
             new AddNewBlackWord(_repository, bot),
             new CaptchaCommand(_repository, bot),
@@ -174,24 +174,38 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     private void ConfiguringAnalyzers()
     {
-        _analyzers = new List<IAnalyzer>()
-        {
-            new DetectAsyncServerTime(_repository, bot),
-            new DetectTelegramBotInChat(_repository, bot, IdChatMain),
-            new DetectEventsFromAccountSpammer(_repository, bot),
-            new DetectMediaInMessageNonTrusted(_repository, bot, IdChatMain),
-            new DetectUrlsInMsgNonTrusted(_repository, bot, IdChatMain),
-            new DetectSpamMl(_repository, bot, IdChatMain),
-            new DetectBlackWords(_repository, bot, IdChatMain),
-            new DetectFastActivityFromUser(_repository, bot, IdChatMain),
-            new DetectFastJoins(_repository, bot, IdChatMain),
-            new DetectQuestion(_repository, 1946031755, IdChatMain), // 1946031755 - Смирнова, 208049718 - я
-        };
+        _analyzers.Add(new DetectAsyncServerTime(_repository, bot));
+        _analyzers.Add(new DetectEventsFromAccountSpammer(_repository, bot));
+
+        foreach (var idChat in Configuration.AntiTelegramBotChats)
+            _analyzers.Add(new DetectTelegramBotInChat(_repository, bot, idChat));
+        
+        foreach (var idChat in Configuration.AntiMediaNonTrustedUsersChats)
+            _analyzers.Add(new DetectMediaInMessageNonTrusted(_repository, bot, idChat));
+        
+        foreach (var idChat in Configuration.AntiUrlsNonTrustedUsersChats)
+            _analyzers.Add(new DetectUrlsInMsgNonTrusted(_repository, bot, idChat));
+        
+        foreach (var idChat in Configuration.AntiSpamMachineLearnChats)
+            _analyzers.Add(new DetectSpamMl(_repository, bot, idChat));
+        
+        foreach (var idChat in Configuration.AntiSpamByBlackWordsChats)
+            _analyzers.Add(new DetectBlackWords(_repository, bot, idChat));
+        
+        foreach (var idChat in Configuration.NotifyFastActivityChats)
+            _analyzers.Add(new DetectFastActivityFromUser(_repository, bot, idChat));
+
+        foreach (var idChat in Configuration.NotifyFastJoinsChats)
+            _analyzers.Add(new DetectFastJoins(_repository, bot, idChat));
+
+        foreach (var keyValue in Configuration.TrainerFaqChats)
+            _analyzers.Add( new DetectQuestion(_repository, keyValue[1], keyValue[0]));
+        
     }
 
     private void ConfiguringCallBackQueryies()
     {
-        _callBackQueryies = new List<ICallQuery>()
+        _callBackQueryies = new List<ICallQuery>
         {
             new BanFromChat(_repository, bot),
             new BanFromEvent(_repository, bot),
@@ -204,7 +218,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     private void ConfiguringServices()
     {
-        _services = new List<IService>()
+        _services = new List<IService>
         {
             new WorkTimeChatTimer(_repository, bot, IdChatMain) 
         };

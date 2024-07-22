@@ -1,15 +1,21 @@
+// ReSharper disable All
+
+using Telegram.Bot.Types;
+
 namespace SandBox.Advanced.Configs;
 
 public class BotConfiguration
 {
-    public static string UserNameBot { get; set; } = string.Empty;
-    public static long IdBot { get; set; }
+    public static User BotInfo { get; set; } = new User();
     public string BotToken { get; init; } = string.Empty;
     public string ManagerPasswordSecret { get; init; } = string.Empty;
-    public bool IsBlockByKeywords { get; init; }
-    public bool IsBlockByMachineLearn { get; init; }
-    public bool IsChatInWorkTime { get; init; }
-    public bool IsBlockAntiArab { get; init; }
-    public bool IsBlockFastActivity { get; init; }
-    public float MaxPercentageMachineLearnToBlock { get; init; }
+    public IList<long> AntiTelegramBotChats { get; init; } = new List<long>();
+    public IList<long> AntiMediaNonTrustedUsersChats { get; init; } = new List<long>();
+    public IList<long> AntiUrlsNonTrustedUsersChats { get; init; } = new List<long>();
+    public IList<long> AntiSpamByBlackWordsChats { get; init; } = new List<long>();
+    public IList<long> AntiSpamMachineLearnChats { get; init; } = new List<long>();
+    public float MaxPercentageMachineLearnToBlock { get; init; } = 0.29f;
+    public IList<long> NotifyFastActivityChats { get; init; } = new List<long>();
+    public IList<long> NotifyFastJoinsChats { get; init; } = new List<long>();
+    public IList<IList<long>> TrainerFaqChats { get; init; } = new List<IList<long>>();
 }

@@ -9,7 +9,7 @@ public static class MessageUtils
 {
     public static string GetMessageWithoutUserNameBotsAndCommands(this string message, int skip = 1)
     {
-        var s = message.Replace($"{BotConfiguration.UserNameBot} ", string.Empty).Split(' ').Skip(skip);
+        var s = message.Replace($"{BotConfiguration.BotInfo.Username} ", string.Empty).Split(' ').Skip(skip);
         return s.Aggregate(String.Empty, (current, item) => current + $"{item} ");
     }
     

@@ -17,7 +17,7 @@ public class DetectTelegramBotInChat(SandBoxRepository repository, ITelegramBotC
         {
             foreach (var user in message.NewChatMembers)
             {
-                if(!user.IsBot || user.Id == BotConfiguration.IdBot)
+                if(!user.IsBot || user.Id == BotConfiguration.BotInfo.Id)
                     continue;
                 
                 NotifyManagers(message, BuildNotifyMessage(user));
@@ -31,7 +31,7 @@ public class DetectTelegramBotInChat(SandBoxRepository repository, ITelegramBotC
         if (message.From is null)
             return false;
 
-        if (!message.From.IsBot || message.From.Id == BotConfiguration.IdBot) return true;
+        if (!message.From.IsBot || message.From.Id == BotConfiguration.BotInfo.Id) return true;
         
         NotifyManagers(message, BuildNotifyMessage(message));
         botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
