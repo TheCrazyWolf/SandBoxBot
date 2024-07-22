@@ -21,7 +21,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 {
     public static BotConfiguration Configuration { get; set; } = new();
 
-    private static readonly long IdChatMain = -4286170959; // -1001941895047 приемка, -4286170959 test
+    private static readonly long IdChatMain = -1002233749723; // -1001941895047 приемка, -4286170959 test
     private static IList<ICommand> _commands = new List<ICommand>();
     private static IList<IAnalyzer> _analyzerActivity = new List<IAnalyzer>();
     private static IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
@@ -139,7 +139,10 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         if (!_isFirstPool) return Task.CompletedTask;
 
         _isFirstPool = false;
-        BotConfiguration.UserNameBot = $"@{bot.GetMeAsync().Result.Username}";
+
+        var result = bot.GetMeAsync().Result;
+        BotConfiguration.UserNameBot = $"@{result.Username}";
+        BotConfiguration.IdBot = result.Id;
         CreateScopeAndGetCurrentService();
         ConfiguringCommands();
         ConfiguringAnalyzers();
@@ -193,6 +196,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         _analyzers = new List<IAnalyzer>()
         {
             new DetectAsyncServerTime(_repository, bot),
+            new DetectTelegramBotInChat(_repository, bot, IdChatMain),
             new DetectEventsFromAccountSpammer(_repository, bot),
             new DetectMediaInMessageNonTrusted(_repository, bot, IdChatMain),
             new DetectUrlsInMsgNonTrusted(_repository, bot, IdChatMain),
@@ -200,7 +204,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new DetectBlackWords(_repository, bot, IdChatMain),
             new DetectFastActivityFromUser(_repository, bot, IdChatMain),
             new DetectFastJoins(_repository, bot, IdChatMain),
-            new DetectQuestion(_repository, 208049718, IdChatMain), // 1946031755 - Смирнова, 208049718 - я
+            new DetectQuestion(_repository, 1946031755, IdChatMain), // 1946031755 - Смирнова, 208049718 - я
         };
     }
 
