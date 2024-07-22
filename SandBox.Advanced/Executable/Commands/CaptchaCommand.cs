@@ -15,7 +15,7 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
 
     private readonly IList<CaptchaBase> _captchas = new List<CaptchaBase>
     {
-        new CaptchaMath(), new CaptchaEmoji()
+        new CaptchaMath(), new CaptchaEmoji(), new CaptchaImNotBot()
     };
 
     public override void Execute(Message message)
