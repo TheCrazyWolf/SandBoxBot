@@ -93,7 +93,8 @@ public class DetectUrlsInMsgNonTrusted(SandBoxRepository repository, ITelegramBo
     {
         return
             $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) со " +
-            $"следующем содержанием: \n\n{message?.Text} \n\n\u26a0\ufe0fМы недоверяем пользователям, которые состоят в беседе недавно и еще не прошли проверку на бота, сообщениям, которые содержат ссылки на сайты и внутри телеграмма";
+            $"следующем содержанием: \n\n{message?.Text} \n\n\u26a0\ufe0fМы недоверяем пользователям, которые состоят в беседе недавно и еще не прошли проверку на бота, сообщениям, которые содержат ссылки на сайты и внутри телеграмма" +
+            $"\n\nЕсли эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
     }
 
     private IList<IList<InlineKeyboardButton>> GenerateKeyboardForNotify(EventContent eventContent)

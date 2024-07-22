@@ -31,15 +31,7 @@ public class BanFromChat(SandBoxRepository repository, ITelegramBotClient botCli
             botClient.BanChatMemberAsync(chatId: @event.ChatId,
                 userId: Convert.ToInt64(@event.IdTelegram));
             
-        SendMessageOfExecuted(idChat: callbackQuery.From.Id, message: BuildNotifyMessage());
-
-    }
-    
-    private void SendMessageOfExecuted(long idChat, string message)
-    {
-        botClient.SendTextMessageAsync(chatId: idChat,
-            text: message,
-            disableNotification: true);
+        botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildNotifyMessage(), true);
     }
 
     private string BuildNotifyMessage()
