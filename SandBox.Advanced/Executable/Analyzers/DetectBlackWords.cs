@@ -29,20 +29,12 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
         if(isToBlock)
             @event.IsSpam = isToBlock;
         
-        if (@event.IsSpam && @event.Id is not 0)
-        {
-            botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
-            NotifyManagers(message, blockedWords, GenerateKeyboardForNotify(@event));
-            return true;
-        }
-
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id))
         {
             // выдать trusted??
             @event.IsSpam = false;
         }
-        
         
         if (@event.Id is 0)
             repository.Contents.Add(@event);
