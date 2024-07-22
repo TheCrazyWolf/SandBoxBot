@@ -32,7 +32,7 @@ public class StartCommand(SandBoxRepository repository, ITelegramBotClient botCl
 
     private string BuildMessage(bool isTrusted)
     {
-        string version = "1.5.0";
+        string version = "2.1";
         string msg = isTrusted
             ? "\n\n\ud83e\udd2f Очень жаль, что Вам пришлось столкнутся с ограничениями нашим суровым анти-спамом. Предлагаю это исправить - наберите команду /captcha мне личные сообщения"
             : "\n\n\u2705 На текущий момент на Вашем аккаунте нет ограничений на антиспам фильтре";

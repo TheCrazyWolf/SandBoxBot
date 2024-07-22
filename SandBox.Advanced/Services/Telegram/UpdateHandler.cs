@@ -97,16 +97,14 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     async Task<Message> Usage(Message msg)
     {
         const string usage = """
-                                 <b><u>Bot menu</u></b>:
-                                 /photo          - send a photo
-                                 /inline_buttons - send inline buttons
-                                 /keyboard       - send keyboard buttons
-                                 /remove         - remove keyboard buttons
-                                 /request        - request location or contact
-                                 /inline_mode    - send inline-mode results list
-                                 /poll           - send a poll
-                                 /poll_anonymous - send an anonymous poll
-                                 /throw          - what happens if handler fails
+                                 <b><u>Меню бота</u></b>:
+                                 /start                   - О боте, версия и проверка ограничение
+                                 /check Текст сообщения   - Проверка текста на фильтры
+                                 /captcha                 - Пройти проверку на робота
+                                 /add Слово1 Слово2       - Заблокировать слова
+                                 /del Слово1 Слово2       - Удалить слова
+                                 /question Текст вопроса  - Поиск вопроса в базе знаний
+                                 /time                    - Проверка серверного времени
                              """;
         return await bot.SendTextMessageAsync(msg.Chat, usage, parseMode: ParseMode.Html,
             replyMarkup: new ReplyKeyboardRemove());
@@ -176,7 +174,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new RemoveBlackWord(_repository, bot),
             new SetMeManager(_repository, bot),
             new StartCommand(_repository, bot),
-            new TimeCommand(bot)
+            new TimeCommand(bot),
+            new MenuCommand(bot)
             // ETC
         };
     }

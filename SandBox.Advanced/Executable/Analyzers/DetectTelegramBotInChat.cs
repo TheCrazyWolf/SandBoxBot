@@ -68,7 +68,7 @@ public class DetectTelegramBotInChat(SandBoxRepository repository, ITelegramBotC
     {
         return
             $"\ud83d\udc7e Пользователь # {user.Id} (@{user.Username}) (бот) " +
-            $"был добавлен в чат, в котором запрещено добавлять телеграм ботов. (Могут устраивать рейды)\n\n\u2705 Удален из чата";
+            $"был добавлен в чат, в котором запрещено добавлять телеграм ботов.\n\n\u2705 Удален из чата";
     }
     
 }

@@ -51,7 +51,7 @@ public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient 
     {
         var resultMsgForBlackList = isBlackWord ? "\ud83d\udeab" : "\u2705";
         var resultFromMl = isSpamMl ? "\ud83d\udeab" : "\u2705";
-        var resultFromUrls = isContainsUrls ? "\u2705" : "\u2705\ud83d\udeab";
+        var resultFromUrls = isContainsUrls ? "\ud83d\udeab" : "\u2705";
         
         var resultMessage = isSpamMl || isBlackWord || isContainsUrls
             ? "\u26a0\ufe0f Похоже, что это является спамом и подлежит блокировке"

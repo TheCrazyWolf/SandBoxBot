@@ -24,6 +24,7 @@ public class QuestionCommand(SandBoxRepository repository, ITelegramBotClient bo
             SendMessage(idChat: message.Chat.Id,
                 message: BuildErrorMessage(),
                 keyboardButtons: new List<InlineKeyboardButton>());
+            return;
         }
 
         SendMessage(idChat: message.Chat.Id,
