@@ -9,11 +9,11 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
+public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IAnalyzer
 {
     public bool Execute(Message message)
     {
-        if (message.From is null)
+        if (message.From is null || message.Chat.Id != idChat)
             return false;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;

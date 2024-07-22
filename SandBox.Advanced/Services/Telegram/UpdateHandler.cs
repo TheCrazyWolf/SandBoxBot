@@ -19,14 +19,15 @@ namespace SandBox.Advanced.Services.Telegram;
 public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger, IServiceScopeFactory scopeFactory)
     : IUpdateHandler
 {
-    public static BotConfiguration Configuration { get; set; } = new ();
-    
+    public static BotConfiguration Configuration { get; set; } = new();
+
+    private static readonly long IdChatMain = -4286170959; // -1001941895047 приемка, -4286170959 test
     private static IList<ICommand> _commands = new List<ICommand>();
     private static IList<IAnalyzer> _analyzerActivity = new List<IAnalyzer>();
     private static IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
     private static IList<ICallQuery> _callBackQueryies = new List<ICallQuery>();
     private static IList<IService> _services = new List<IService>();
-    
+
     private static bool _isFirstPool = true;
     private static SandBoxRepository _repository = default!;
 
@@ -65,16 +66,16 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
         if (update.EditedMessage is not null)
             update.Message = update.EditedMessage;
-        
+
         if (update.Message is null)
             return Task.CompletedTask;
-        
+
         // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
         foreach (var command in _analyzerActivity)
         {
             command.Execute(update.Message);
         }
-        
+
         // Проверка на наличие команда и исполнение
         foreach (var command in _commands)
         {
@@ -83,7 +84,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             command.Execute(update.Message);
             return Task.CompletedTask;
         }
-        
+
         // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
         foreach (var command in _analyzers)
         {
@@ -115,11 +116,6 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     private Task OnCallbackQuery(CallbackQuery callbackQuery)
     {
         logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", callbackQuery.Id);
-
-        var words = callbackQuery.Data?.Split(' ');
-
-        if (words is null)
-            return Task.CompletedTask;
 
         foreach (var callBack in _callBackQueryies)
         {
@@ -155,7 +151,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         {
             Task.Run(() => service.Execute());
         }
-        
+
         return Task.CompletedTask;
     }
 
@@ -181,7 +177,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             // ETC
         };
     }
-    
+
     private void ConfiguringActivityAnalyzers()
     {
         _analyzerActivity = new List<IAnalyzer>
@@ -190,24 +186,23 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new UpdateDetailsActivityOnJoined(_repository),
         };
     }
-    
-    
+
+
     private void ConfiguringAnalyzers()
     {
         _analyzers = new List<IAnalyzer>()
         {
+            new DetectAsyncServerTime(_repository, bot),
             new DetectEventsFromAccountSpammer(_repository, bot),
-            new DetectMediaInMessageNonTrusted(_repository, bot),
-            new DetectUrlsInMsgNonTrusted(_repository, bot),
-            new DetectSpamMl(_repository, bot),
-            new DetectAsyncServerTime(_repository, bot),
-            new DetectBlackWords(_repository, bot),
-            new DetectFastActivityFromUser(_repository, bot),
-            new DetectQuestion(_repository,1946031755, 1001941895047), // -1001941895047 приемка, -4286170959 test
-            new DetectAsyncServerTime(_repository, bot),
+            new DetectMediaInMessageNonTrusted(_repository, bot, IdChatMain),
+            new DetectUrlsInMsgNonTrusted(_repository, bot, IdChatMain),
+            new DetectSpamMl(_repository, bot, IdChatMain),
+            new DetectBlackWords(_repository, bot, IdChatMain),
+            new DetectFastActivityFromUser(_repository, bot, IdChatMain),
+            new DetectQuestion(_repository, 208049718, IdChatMain), // 1946031755 - Смирнова, 208049718 - я
         };
     }
-    
+
     private void ConfiguringCallBackQueryies()
     {
         _callBackQueryies = new List<ICallQuery>()
@@ -220,12 +215,12 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new RestoreFromEvent(_repository, bot),
         };
     }
-    
+
     private void ConfiguringServices()
     {
         _services = new List<IService>()
         {
-            new WorkTimeChatTimer(_repository, bot,-1001941895047 ) // -1001941895047 приемка, -4286170959 test
+            new WorkTimeChatTimer(_repository, bot, IdChatMain) // -1001941895047 приемка, -4286170959 test
         };
     }
 }

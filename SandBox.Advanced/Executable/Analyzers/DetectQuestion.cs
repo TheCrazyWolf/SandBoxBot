@@ -10,11 +10,6 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectQuestion(SandBoxRepository repository, 
     long idTrainer, long idChat) : IAnalyzer
 {
-    //my id 208049718
-    //1946031755 - prodAction
-    
-    //private readonly long _idTelegramTrainer = 1946031755;
-
     public bool Execute(Message message)
     {
         if(message.ReplyToMessage?.Text is null)
@@ -42,7 +37,7 @@ public class DetectQuestion(SandBoxRepository repository,
         var quest = new Question
         {
             Quest = question.GetMessageForFaq(),
-            Answer = question.GetMessageForFaq()
+            Answer = answer.GetMessageForFaq()
         };
 
         repository.Questions.Add(quest);

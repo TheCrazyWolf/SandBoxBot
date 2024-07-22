@@ -9,11 +9,11 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
+public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IAnalyzer
 {
     public bool Execute(Message message)
     {
-        if (message.From is null || string.IsNullOrEmpty(message.Text))
+        if (message.From is null || string.IsNullOrEmpty(message.Text) || message.Chat.Id != idChat)
             return false;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
