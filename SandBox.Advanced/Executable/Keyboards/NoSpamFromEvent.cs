@@ -29,7 +29,7 @@ public class NoSpamFromEvent(SandBoxRepository repository, ITelegramBotClient bo
     private string BuildNotifyMessage(long id)
     {
         return
-            $"\u2705 Принятые действия по событию № {id}: Сообщение отмечено как не спам";
+            $"\u2705 Принятые действия по событию № {id}: \n\nСообщение отмечено как не спам";
     }
     
 }

@@ -45,7 +45,7 @@ public class BanFromChat(SandBoxRepository repository, ITelegramBotClient botCli
     private string BuildNotifyMessage()
     {
         return
-            $"\u2705 Принятые действия: Пользователь заблокирован";
+            $"\u2705 Принятые действия: \n\nПользователь заблокирован";
     }
     
 }

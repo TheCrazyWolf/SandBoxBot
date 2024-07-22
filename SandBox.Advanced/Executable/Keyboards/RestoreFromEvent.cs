@@ -37,7 +37,7 @@ public class RestoreFromEvent(SandBoxRepository repository, ITelegramBotClient b
     private string BuildNotifyMessage(long id)
     {
         return
-            $"\u2705 Принятые действия по событию № {id}: Сообщение отмечено как не спам, восстановлено сообщение в беседу";
+            $"\u2705 Принятые действия по событию № {id}: \n\nСообщение отмечено как не спам, восстановлено сообщение в беседу";
     }
     
     private string BuildRestoredMessage(Account sender, EventContent content)
