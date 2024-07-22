@@ -18,4 +18,5 @@ public class BotConfiguration
     public IList<long> NotifyFastActivityChats { get; init; } = new List<long>();
     public IList<long> NotifyFastJoinsChats { get; init; } = new List<long>();
     public IList<IList<long>> TrainerFaqChats { get; init; } = new List<IList<long>>();
+    public IList<long> TimeWorkChats { get; init; } = new List<long>();
 }

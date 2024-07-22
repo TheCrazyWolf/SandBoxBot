@@ -11,14 +11,9 @@ public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient 
     private static readonly TimeOnly EndWorkTimeMonday = new(19, 00, 00);
     private static readonly TimeOnly EndWorkTimeDefault = new(16, 00, 00);
 
-    // CHAT приемки -1001941895047
-    // -4286170959
-    // private static readonly long ChatId = -1001941895047;
-
     private static DateTime _lastSendStartMessageDay;
     private static DateTime _lastSendEndMessageDay;
-
-
+    
     public async Task Execute()
     {
         while (true)
@@ -75,7 +70,7 @@ public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient 
 
     private ChatPermissions GetPermissions(bool isActive)
     {
-        return new ChatPermissions()
+        return new ChatPermissions
         {
             CanSendAudios = isActive,
             CanSendDocuments = isActive,
