@@ -56,8 +56,9 @@ public class DetectMediaInMessageNonTrusted(SandBoxRepository repository, ITeleg
     private string BuildNotifyMessage(Message message)
     {
         return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) со " +
-            $"следующем типом содержания: \n\n{message.Type} \n\n\u26a0\ufe0fМы недоверяем пользователям, которые состоят в беседе недавно и еще не прошли проверку на бота, сообщениям, которые содержат медиа файлы";
+            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) в чате # {message.Chat.Id} - ({message.Chat.Title ?? message.Chat.FirstName}) со " +
+            $"следующем типом содержания: \n\n{message.Type} \n\n" +
+            $"ℹ️ Это сообщение удалено, потому что в сообщении находятся медиа-материалы (голос, видео, картинка и т.д.) и пользователь находится в беседе не так долго.";
     }
     
 }

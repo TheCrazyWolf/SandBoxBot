@@ -59,7 +59,7 @@ public class DetectFastJoins(SandBoxRepository repository, ITelegramBotClient bo
     private string BuildNotifyMessage(Message originalMessage)
     {
         return
-            $"\ud83d\udc7e В чате # {originalMessage.Chat} - ({originalMessage.Chat.Title ?? originalMessage.Chat.FirstName}) " +
+            $"\ud83d\udc7e В чате # {originalMessage.Chat.Id} - ({originalMessage.Chat.Title ?? originalMessage.Chat.FirstName}) " +
             $"происходит аномальная активность: Слишком много пользователей заходят в чат за 1 минуту, похоже на атаку ботов";
     }
     

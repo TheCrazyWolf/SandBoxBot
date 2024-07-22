@@ -88,9 +88,9 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
     private string BuildNotifyMessage(Message message, string blockedWords)
     {
         return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) со " +
+            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) в чате # {message.Chat.Id} - ({message.Chat.Title ?? message.Chat.FirstName}) со " +
             $"следующем содержанием: \n\n{message.Text} \n\nЗапрещенные слова: {blockedWords} \n\n" +
-            $"\n\nЕсли эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
+            $"ℹ️ Если эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
     }
 
     private IList<IList<InlineKeyboardButton>> GenerateKeyboardForNotify(EventContent eventContent)

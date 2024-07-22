@@ -60,7 +60,8 @@ public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramB
     private string BuildNotifyMessage(Message originalMessage)
     {
         return
-            $"\ud83d\udc7e Пользователь {originalMessage.From?.Id} ({originalMessage.From?.Username}) слишком часто пишет сообщения в чат. Подумайте об этом";
+            $"\ud83d\udc7e Пользователь # {originalMessage.From?.Id} ({originalMessage.From?.Username}) слишком часто пишет сообщения в чат" +
+            $" # {originalMessage.Chat.Id} - ({originalMessage.Chat.Title ?? originalMessage.Chat.FirstName}). Подумайте об этом";
     }
 
     private IList<IList<InlineKeyboardButton>> GenerateKeyboardForNotify(Message originalMessage)

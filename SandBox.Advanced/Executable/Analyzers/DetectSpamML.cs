@@ -96,8 +96,8 @@ public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botCl
     private string BuildNotifyMessage(Message message, float score)
     {
         return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) со " +
-            $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Это сообщение удалено по решению модели машинного обучения. Вероятность спама составила {score}%" +
-            $"\n\nЕсли эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
+            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) в чате # {message.Chat.Id} - ({message.Chat.Title ?? message.Chat.FirstName}) со " +
+            $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Это сообщение удалено по решению модели машинного обучения. Вероятность спама составила {score}%\n\n" +
+            $"ℹ️ Если эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
     }
 }
