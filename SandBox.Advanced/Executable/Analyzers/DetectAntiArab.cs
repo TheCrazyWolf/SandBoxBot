@@ -10,12 +10,12 @@ public class DetectAntiArab(SandBoxRepository repository, ITelegramBotClient bot
     public SandBoxRepository Repository { get; } = repository;
     public ITelegramBotClient BotClient { get; } = botClient;
 
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if(message.NewChatMembers is not null)
-            return false;
+            return;
 
         // IMPLEMEMT
-        return true;
+        return;
     }
 }

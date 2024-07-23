@@ -8,27 +8,30 @@ using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectNonWorkingTime(SandBoxRepository repository, ITelegramBotClient botClient, long chatId) : TimeServer, IAnalyzer
+public class DetectNonWorkingTime(SandBoxRepository repository, 
+    ITelegramBotClient botClient, long chatId) : TimeServer, IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.From is null || message.Chat.Id != chatId)
-            return false;
+            return;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
         
         if (account != null && (account.IsManagerThisBot || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id)))
         {
-            return false;
+            return;
         }
         else if (!WorkTimeChatTimer.IsWorkTime())
         {
             botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
-            return true;
+            // т.к. этот скрипт сработал как спам, даем указанием следующим стриптам не проверять
+            message.Text = null;
+            return;
         }
-
-        return false;
+        
+        
     }
     
 }

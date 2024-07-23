@@ -7,26 +7,27 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace SandBox.Advanced.Executable.Analyzers;
+namespace SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
 
-public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IAnalyzer
+public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient botClient,
+    long idChat) : IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.From is null || message.Chat.Id != idChat)
-            return false;
+            return;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
 
         if (account is null || string.IsNullOrEmpty(message.Text))
-            return false;
+            return;
 
         var blockedWords = IsContainsBlackWord(message.Text);
         var isToBlock = !string.IsNullOrEmpty(blockedWords);
-        //var @event = message.GenerateEventFromContent(isToBlock);
-        // Костыль для того, чтобы пройти по второму кругу одно и тоже сообщение после Машинного обучения
-        var @event = repository.Contents.GetByContent(message.Text, message.From.Id, message.Chat.Id, message.MessageId).Result ?? message.GenerateEventFromContent(isToBlock);
-        if(isToBlock)
+        var @event = repository.Contents.GetByContent(message.Text, message.From.Id,
+            message.Chat.Id, message.MessageId).Result ?? message.GenerateEventFromContent(isToBlock);
+        
+        if (isToBlock)
             @event.IsSpam = isToBlock;
         
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
@@ -36,17 +37,15 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
             @event.IsSpam = false;
         }
         
-        if (@event.Id is 0)
-            repository.Contents.Add(@event);
-        else
-            repository.Contents.Update(@event);
+        repository.Contents.Update(@event);
         
-        if (!@event.IsSpam) return false;
+        if (!@event.IsSpam) return;
 
         botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
         NotifyManagers(message, blockedWords, GenerateKeyboardForNotify(@event));
-        message.Text = string.Empty;
-        return true;
+
+        // т.к. этот скрипт сработал как спам, даем указанием следующим стриптам не проверять
+        message.Text = null;
     }
 
     private string IsContainsBlackWord(string? message)

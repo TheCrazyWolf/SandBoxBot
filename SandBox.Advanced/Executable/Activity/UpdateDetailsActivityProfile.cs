@@ -8,10 +8,10 @@ namespace SandBox.Advanced.Executable.Activity;
 
 public sealed class UpdateDetailsActivityProfile(SandBoxRepository repository) : IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.From?.Id is null)
-            return false;
+            return;
 
         var chatTg = repository.Chats.GetById(message.Chat.Id).Result;
 
@@ -23,12 +23,11 @@ public sealed class UpdateDetailsActivityProfile(SandBoxRepository repository) :
         if (account is not null)
         {
             repository.Accounts.UpdateDetails(account, message.From);
-            return false;
+            return;
         }
 
         repository.Accounts.Add(message.From.CreateAccountDb());
-
-        return true;
+        
     }
     
 }

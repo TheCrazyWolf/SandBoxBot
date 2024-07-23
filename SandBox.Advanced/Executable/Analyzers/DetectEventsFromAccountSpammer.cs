@@ -7,10 +7,10 @@ namespace SandBox.Advanced.Executable.Analyzers;
 
 public class DetectEventsFromAccountSpammer(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.From is null)
-            return false;
+            return;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
 
@@ -20,6 +20,6 @@ public class DetectEventsFromAccountSpammer(SandBoxRepository repository, ITeleg
                 messageId: message.MessageId);
         }
 
-        return true;
+        return;
     }
 }

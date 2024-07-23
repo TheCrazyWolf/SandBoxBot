@@ -12,10 +12,10 @@ public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramB
 {
     private const int ConstMaxActivityPerMinute = 10;
 
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.From is null || message.Chat.Id != idChat)
-            return false;
+            return;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
         var totalMessage = repository.Events
@@ -24,17 +24,17 @@ public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramB
                 DateTime.Now.AddMinutes(-1), DateTime.Now).Result;
 
         if (account is null || totalMessage is 0)
-            return false;
+            return;
 
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id, chatId: message.Chat.Id))
-            return false;
+            return;
         
         if(totalMessage <= ConstMaxActivityPerMinute)
-            return false;
+            return;
         
         NotifyManagers(message, GenerateKeyboardForNotify(message));
         
-        return true;
+        return;
     }
     
     private void NotifyManagers(Message originalMessage, IList<IList<InlineKeyboardButton>> keyboardButtons)

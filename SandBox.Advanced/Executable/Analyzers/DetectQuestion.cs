@@ -9,25 +9,24 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectQuestion(SandBoxRepository repository, 
     long idTrainer, long idChat) : IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if(message.ReplyToMessage?.Text is null)
-            return false;
+            return;
         
         if(message.Chat.Id != idChat)
-            return false;
+            return;
         
         if(message.Text is null)
-            return false;
+            return;
         
         if(message.From?.Id != idTrainer)
-            return false;
+            return;
         
         if (message.Text != null)
             SaveAnswerForQuestion(question: message.ReplyToMessage.Text,
                 answer: message.Text);
-
-        return true;
+        
     }
     
     

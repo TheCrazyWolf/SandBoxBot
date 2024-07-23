@@ -7,28 +7,28 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace SandBox.Advanced.Executable.Analyzers;
+namespace SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
 
-public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IAnalyzer
+public class DetectSpamMl(SandBoxRepository repository, 
+    ITelegramBotClient botClient, long idChat) : IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.From is null || string.IsNullOrEmpty(message.Text) || message.Chat.Id != idChat)
-            return false;
+            return;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if (account is null)
-            return false;
+        if (account is null || string.IsNullOrEmpty(message.Text))
+            return;
 
         var isToBlock = message.Text.IsSpamMl();
-        //var @event = message.GenerateEventFromContent(isToBlock.Item1);
-        var @event =
-            repository.Contents.GetByContent(message.Text, message.From.Id, message.Chat.Id, message.MessageId)
-                .Result ?? message.GenerateEventFromContent(isToBlock.Item1);
+        var @event = repository.Contents.GetByContent(message.Text, message.From.Id,
+            message.Chat.Id, message.MessageId).Result ?? message.GenerateEventFromContent(isToBlock.Item1);
+
         if (isToBlock.Item1)
             @event.IsSpam = isToBlock.Item1;
-
+        
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id))
         {
@@ -36,20 +36,18 @@ public class DetectSpamMl(SandBoxRepository repository, ITelegramBotClient botCl
             @event.IsSpam = false;
         }
         
-        if (@event.Id is 0)
-            repository.Contents.Add(@event);
-        else
-            repository.Contents.Update(@event);
+        repository.Contents.Update(@event);
 
         if (!@event.IsSpam)
-            return false;
+            return;
 
         botClient.DeleteMessageAsync(chatId: message.Chat.Id,
             messageId: message.MessageId);
 
         NotifyManagers(message, isToBlock.Item2, GenerateKeyboardForNotify(@event));
-        message.Text = string.Empty;
-        return true;
+        
+        // т.к. этот скрипт сработал как спам, даем указанием следующим стриптам не проверять
+        message.Text = null;
     }
 
     private void NotifyManagers(Message originalMessage, float score,

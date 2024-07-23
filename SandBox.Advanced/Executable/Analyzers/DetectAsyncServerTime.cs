@@ -9,10 +9,10 @@ namespace SandBox.Advanced.Executable.Analyzers;
 public class DetectAsyncServerTime(SandBoxRepository repository, ITelegramBotClient botClient) : TimeServer, IAnalyzer
 {
     private static bool _isFirstExecute = true;
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (!_isFirstExecute)
-            return false;
+            return;
 
         var result = GetServerTimeNow().Result;
         var localTime = DateTime.Now;
@@ -27,7 +27,6 @@ public class DetectAsyncServerTime(SandBoxRepository repository, ITelegramBotCli
         }
 
         _isFirstExecute = false;
-        return true;
     }
 
     private async Task<(DateTime, bool)> GetServerTimeNow()

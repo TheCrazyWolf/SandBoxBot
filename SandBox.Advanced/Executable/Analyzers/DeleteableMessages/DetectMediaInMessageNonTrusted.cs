@@ -1,36 +1,40 @@
 ﻿using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
 using SandBox.Advanced.Utils;
+using SandBox.Advanced.Utils.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace SandBox.Advanced.Executable.Analyzers;
+namespace SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
 
-public class DetectMediaInMessageNonTrusted(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IAnalyzer
+public class DetectMediaInMessageNonTrusted(SandBoxRepository repository, 
+    ITelegramBotClient botClient, long idChat) : IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.From is null || message.Chat.Id != idChat)
-            return false;
+            return;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if (account is null)
-            return false;
+        if (account is null || string.IsNullOrEmpty(message.Text))
+            return;
         
-        if (account.IsTrustedProfile())
-            return false;
+        if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
+                chatId: message.Chat.Id))
+            return;
 
         if (message.Type is not (MessageType.Animation or MessageType.Audio or MessageType.Document
             or MessageType.Location
             or MessageType.Photo or MessageType.Poll or MessageType.Sticker or MessageType.Video
-            or MessageType.Voice)) return true;
+            or MessageType.Voice)) return;
         
         NotifyManagers(message);
         botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
-
-        return true;
+        
+        // т.к. этот скрипт сработал как спам, даем указанием следующим стриптам не проверять
+        message.Text = null;
     }
     
     private Task NotifyManagers(Message originalMessage)

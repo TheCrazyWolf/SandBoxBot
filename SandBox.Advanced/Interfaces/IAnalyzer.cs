@@ -4,5 +4,5 @@ namespace SandBox.Advanced.Interfaces;
 
 public interface IAnalyzer
 {
-    bool Execute(Message message);
+    void Execute(Message message);
 }

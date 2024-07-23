@@ -8,10 +8,10 @@ namespace SandBox.Advanced.Executable.Analyzers;
 
 public class DetectTelegramBotInChat(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.Chat.Id != idChat)
-            return false;
+            return;
 
         if (message.NewChatMembers is not null)
         {
@@ -25,19 +25,18 @@ public class DetectTelegramBotInChat(SandBoxRepository repository, ITelegramBotC
                 botClient.BanChatMemberAsync(chatId: message.Chat.Id, userId: user.Id);
             }
 
-            return true;
+            return;
         }
 
         if (message.From is null)
-            return false;
+            return;
 
-        if (!message.From.IsBot || message.From.Id == BotConfiguration.BotInfo.Id) return true;
+        if (!message.From.IsBot || message.From.Id == BotConfiguration.BotInfo.Id) return;
         
         NotifyManagers(message, BuildNotifyMessage(message));
         botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
         botClient.BanChatMemberAsync(chatId: message.Chat.Id, userId: message.From.Id);
-
-        return true;
+        
     }
     
     private void NotifyManagers(Message originalMessage, string message)

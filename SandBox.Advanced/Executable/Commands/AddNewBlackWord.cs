@@ -24,11 +24,11 @@ public class AddNewBlackWord(SandBoxRepository repository, ITelegramBotClient bo
         {
             repository.Accounts.UpdateApproved(account);
             var blockedWords = DoBlockWords(message.Text ?? string.Empty);
-            SendMessage(message.From.Id, BuildSuccessMessage(blockedWords));
+            SendMessage(message.Chat.Id, BuildSuccessMessage(blockedWords));
             return;
         }
 
-        SendMessage(message.From.Id, BuildErrorMessage());
+        SendMessage(message.Chat.Id, BuildErrorMessage());
     }
 
     private string DoBlockWords(string message)

@@ -8,10 +8,10 @@ namespace SandBox.Advanced.Executable.Activity;
 
 public class UpdateDetailsActivityOnJoined(SandBoxRepository repository):  IAnalyzer
 {
-    public bool Execute(Message message)
+    public void Execute(Message message)
     {
         if (message.NewChatMembers is null)
-            return false;
+            return;
         
         var chatTg = repository.Chats.GetById(message.Chat.Id).Result;
 
@@ -23,8 +23,7 @@ public class UpdateDetailsActivityOnJoined(SandBoxRepository repository):  IAnal
             repository.Accounts.Add(user.CreateAccountDb());
             repository.Joins.Add(user.CreateEventJoinFromUser(message.Chat.Id));
         }
-
-        return true;
+        
     }
     
     // Сделать проверку на спам атаку заходов

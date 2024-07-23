@@ -26,7 +26,7 @@ public class RemoveBlackWord(SandBoxRepository repository, ITelegramBotClient bo
             return;
         }
 
-        SendMessage(message.From.Id, BuildErrorMessage());
+        SendMessage(message.Chat.Id, BuildErrorMessage());
     }
     
     
