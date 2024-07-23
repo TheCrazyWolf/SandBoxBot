@@ -1,3 +1,4 @@
+using SandBox.Advanced.Services.Telegram;
 using SandBox.Models.Telegram;
 
 namespace SandBox.Advanced.Utils;
@@ -24,7 +25,7 @@ public static class AccountUtils
             return !account.IsSpamer;
 
         // Доверенный профиль, вероятность того что профиль на забанят через 4 дня после спама минимальная ?
-        if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 4)
+        if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= UpdateHandler.Configuration.DaysAfterUserBeTrusted)
             return true;
 
         return false;

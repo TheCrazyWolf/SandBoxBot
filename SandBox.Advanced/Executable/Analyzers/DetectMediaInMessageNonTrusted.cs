@@ -27,14 +27,13 @@ public class DetectMediaInMessageNonTrusted(SandBoxRepository repository, ITeleg
             or MessageType.Photo or MessageType.Poll or MessageType.Sticker or MessageType.Video
             or MessageType.Voice)) return true;
         
-        
-        botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
         NotifyManagers(message);
+        botClient.DeleteMessageAsync(chatId: message.Chat.Id, messageId: message.MessageId);
 
         return true;
     }
     
-    private void NotifyManagers(Message originalMessage)
+    private Task NotifyManagers(Message originalMessage)
     {
         foreach (var id in repository.Accounts.GetManagers().Result)
         {
@@ -42,6 +41,11 @@ public class DetectMediaInMessageNonTrusted(SandBoxRepository repository, ITeleg
             {
                 var message = BuildNotifyMessage(originalMessage);
 
+                botClient.ForwardMessageAsync(chatId: id.IdTelegram,
+                    fromChatId: originalMessage.Chat.Id,
+                    messageId: originalMessage.MessageId,
+                    disableNotification: true);
+                
                 botClient.SendTextMessageAsync(chatId: id.IdTelegram,
                     text: message,
                     disableNotification: true);
@@ -51,6 +55,8 @@ public class DetectMediaInMessageNonTrusted(SandBoxRepository repository, ITeleg
                 // ignored
             }
         }
+        
+        return Task.CompletedTask;
     }
 
     private string BuildNotifyMessage(Message message)

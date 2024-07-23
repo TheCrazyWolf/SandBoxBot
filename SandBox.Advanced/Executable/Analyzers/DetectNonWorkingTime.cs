@@ -8,11 +8,11 @@ using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectNonWorkingTime(SandBoxRepository repository, ITelegramBotClient botClient) : TimeServer, IAnalyzer
+public class DetectNonWorkingTime(SandBoxRepository repository, ITelegramBotClient botClient, long chatId) : TimeServer, IAnalyzer
 {
     public bool Execute(Message message)
     {
-        if (message.From is null)
+        if (message.From is null || message.Chat.Id != chatId)
             return false;
 
         var account = repository.Accounts.GetById(message.From.Id).Result;

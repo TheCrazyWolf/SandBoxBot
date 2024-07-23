@@ -200,6 +200,9 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         foreach (var keyValue in Configuration.TrainerFaqChats)
             _analyzers.Add( new DetectQuestion(_repository, keyValue[1], keyValue[0]));
         
+        foreach (var idChat in Configuration.TimeWorkChats)
+            _analyzers.Add( new DetectNonWorkingTime(_repository, bot, idChat));
+        
     }
 
     private void ConfiguringCallBackQueryies()

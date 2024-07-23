@@ -9,6 +9,7 @@ public class BotConfiguration
     public static User BotInfo { get; set; } = new User();
     public string BotToken { get; init; } = string.Empty;
     public string ManagerPasswordSecret { get; init; } = string.Empty;
+    public int DaysAfterUserBeTrusted { get; init; } = 4;
     public IList<long> AntiTelegramBotChats { get; init; } = new List<long>();
     public IList<long> AntiMediaNonTrustedUsersChats { get; init; } = new List<long>();
     public IList<long> AntiUrlsNonTrustedUsersChats { get; init; } = new List<long>();
