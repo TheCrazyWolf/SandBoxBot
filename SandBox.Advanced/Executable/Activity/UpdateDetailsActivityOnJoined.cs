@@ -21,7 +21,7 @@ public class UpdateDetailsActivityOnJoined(SandBoxRepository repository):  IAnal
         foreach (var user in message.NewChatMembers)
         {
             repository.Accounts.Add(user.CreateAccountDb());
-            repository.Joins.Add(user.CreateEventJoinFromUser(message.Chat.Id));
+            repository.Joins.Add(user.CreateEventJoinFromUser(message));
         }
         
     }

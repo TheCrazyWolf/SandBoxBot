@@ -19,12 +19,13 @@ public static class UserUtils
         };
     }
 
-    public static EventJoined CreateEventJoinFromUser(this User user, long chatId)
+    public static EventJoined CreateEventJoinFromUser(this User user, Message message)
     {
         return new EventJoined
         {
             IdTelegram = user.Id,
-            ChatId = chatId,
+            ChatId = message.Chat.Id,
+            MessageId = message.MessageId,
             DateTime = DateTime.Now
         };
     }
