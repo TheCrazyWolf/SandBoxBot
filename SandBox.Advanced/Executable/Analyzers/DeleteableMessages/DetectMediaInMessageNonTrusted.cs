@@ -18,7 +18,7 @@ public class DetectMediaInMessageNonTrusted(SandBoxRepository repository,
 
         var account = repository.Accounts.GetById(message.From.Id).Result;
 
-        if (account is null || string.IsNullOrEmpty(message.Text))
+        if (account is null)
             return;
         
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
