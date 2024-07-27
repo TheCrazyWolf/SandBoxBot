@@ -187,7 +187,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             _analyzers.Add(new DetectUrlsInMsgNonTrusted(_repository, bot, idChat));
         
         foreach (var idChat in Configuration.AntiSpamMachineLearnChats)
-            _analyzers.Add(new DetectSpamMl(_repository, bot, idChat));
+            _analyzers.Add(new DetectSpamMachineLearn(_repository, bot, idChat));
         
         foreach (var idChat in Configuration.AntiSpamByBlackWordsChats)
             _analyzers.Add(new DetectBlackWords(_repository, bot, idChat));

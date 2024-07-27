@@ -1,6 +1,5 @@
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
-using SandBox.Advanced.Utils.Telegram;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Activity;

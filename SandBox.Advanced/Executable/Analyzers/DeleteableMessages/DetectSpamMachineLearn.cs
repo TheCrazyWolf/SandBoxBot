@@ -9,7 +9,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
 
-public class DetectSpamMl(SandBoxRepository repository, 
+public class DetectSpamMachineLearn(SandBoxRepository repository, 
     ITelegramBotClient botClient, long idChat) : IAnalyzer
 {
     public void Execute(Message message)
