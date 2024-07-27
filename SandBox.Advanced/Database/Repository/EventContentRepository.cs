@@ -38,7 +38,7 @@ public class EventContentRepository(SandBoxContext ef)
         return Task.FromResult(ef.EventsContent.Any(x => x.Id == idEvent));
     }
 
-    public Task<EventContent> Update(EventContent blackWord)
+    public Task<EventContent> UpdateAsync(EventContent blackWord)
     {
         ef.Update(blackWord);
         ef.SaveChanges();
@@ -61,6 +61,6 @@ public class EventContentRepository(SandBoxContext ef)
     public void UpdateNoSpam(EventContent @event)
     {
         @event.IsSpam = false;
-        Update(@event);
+        UpdateAsync(@event);
     }
 }

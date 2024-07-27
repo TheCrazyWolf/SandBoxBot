@@ -36,7 +36,7 @@ public class DetectUrlsInMsgNonTrusted(SandBoxRepository repository,
             @event.IsSpam = false;
         }
         
-        repository.Contents.Update(@event);
+        repository.Contents.UpdateAsync(@event);
 
         if (!@event.IsSpam)
             return;

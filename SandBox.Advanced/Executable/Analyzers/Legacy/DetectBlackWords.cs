@@ -37,7 +37,7 @@ public class DetectBlackWords(SandBoxRepository repository, ITelegramBotClient b
             @event.IsSpam = false;
         }
         
-        repository.Contents.Update(@event);
+        repository.Contents.UpdateAsync(@event);
         
         if (!@event.IsSpam) return;
 

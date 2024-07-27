@@ -56,7 +56,7 @@ public static class MessageUtils
         return Regex.IsMatch(message, linkPattern);
     }
     
-    public static (bool, float) IsSpamMl(this string? message)
+    public static (bool, float) IsSpamMl(this string? message, float percentage)
     {
         // model training  lbfgsmaximumEntropyMulti
         
@@ -66,6 +66,6 @@ public static class MessageUtils
         };
         var result = AntiWorkSpam.Predict(sampleData);
 
-        return result.Score[1] >= UpdateHandler.Configuration.MaxPercentageMachineLearnToBlock ? (true, result.Score[1] * 100) : (false, result.Score[1] * 100);
+        return result.Score[1] >= percentage ? (true, result.Score[1] * 100) : (false, result.Score[1] * 100);
     }
 }

@@ -1,7 +1,6 @@
 ﻿using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
 using SandBox.Advanced.Utils;
-using SandBox.Advanced.Utils.Telegram;
 using SandBox.Models.Events;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -9,57 +8,75 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
 
-public class DetectSpamMachineLearn(SandBoxRepository repository, 
-    ITelegramBotClient botClient, long idChat) : IAnalyzer
+public class DetectSpamMachineLearn(
+    SandBoxRepository repository,
+    ITelegramBotClient botClient) : IAnalyzer
 {
-    public void Execute(Message message)
+    public async void Execute(Message message)
     {
-        if (message.From is null || string.IsNullOrEmpty(message.Text) || message.Chat.Id != idChat)
-            return;
+        if (message.From is null || string.IsNullOrEmpty(message.Text)) return;
 
-        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
+        var props = await repository.Chats.GetByIdAsync(message.Chat.Id);
 
-        if (account is null || string.IsNullOrEmpty(message.Text))
-            return;
+        if (props is null || props.PercentageToDetectSpamFromMl is 0) return;
 
-        var isToBlock = message.Text.IsSpamMl();
-        var @event = repository.Contents.GetByContent(message.Text, message.From.Id,
-            message.Chat.Id, message.MessageId).Result ?? message.GenerateEventFromContent(isToBlock.Item1);
+        var member = await repository.MembersInChat.GetByIdAsync(idChat: message.Chat.Id,
+            idTelegram: message.From.Id);
+
+        if (member is null) return;
+
+        var isToBlock = message.Text.IsSpamMl(props.PercentageToDetectSpamFromMl);
+
+        var @event = message.GenerateEventFromContent(isToBlock.Item1);
 
         if (isToBlock.Item1)
             @event.IsSpam = isToBlock.Item1;
-        
-        if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id,
-                chatId: message.Chat.Id))
+        else
+            member.CountMessage++;
+
+        if (member.CountMessage >= props.CountNormalMessageToBeAprroved || member.IsApproved || member.IsAdmin)
         {
-            // выдать trusted??
+            repository.MembersInChat.UpdateAprrovedAsync(member);
             @event.IsSpam = false;
         }
-        
-        repository.Contents.Update(@event);
 
-        if (!@event.IsSpam)
-            return;
+        await repository.Contents.UpdateAsync(@event);
 
-        botClient.DeleteMessageAsync(chatId: message.Chat.Id,
+        if (!@event.IsSpam) return;
+
+        await botClient.DeleteMessageAsync(chatId: message.Chat.Id,
             messageId: message.MessageId);
 
         NotifyManagers(message, isToBlock.Item2, GenerateKeyboardForNotify(@event));
-        
-        // т.к. этот скрипт сработал как спам, даем указанием следующим стриптам не проверять
-        message.Text = null;
     }
 
-    private void NotifyManagers(Message originalMessage, float score,
+    private async void NotifyManagers(Message originalMessage, float score,
         IList<IList<InlineKeyboardButton>> keyboardButtons)
     {
-        foreach (var id in repository.Accounts.GetManagers().Result)
+        foreach (var id in await repository.MembersInChat.GetAdminsFromChat(originalMessage.Chat.Id))
         {
             try
             {
                 var message = BuildNotifyMessage(originalMessage, score);
 
-                botClient.SendTextMessageAsync(chatId: id.IdTelegram,
+                await botClient.SendTextMessageAsync(chatId: id.IdTelegram!,
+                    text: message,
+                    replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
+                    disableNotification: true);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+        
+        foreach (var id in await repository.Accounts.GetManagers())
+        {
+            try
+            {
+                var message = BuildNotifyMessage(originalMessage, score);
+
+                await botClient.SendTextMessageAsync(chatId: id.IdTelegram!,
                     text: message,
                     replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
                     disableNotification: true);
@@ -95,7 +112,6 @@ public class DetectSpamMachineLearn(SandBoxRepository repository,
     {
         return
             $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) в чате # {message.Chat.Id} - ({message.Chat.Title ?? message.Chat.FirstName}) со " +
-            $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Это сообщение удалено по решению модели машинного обучения. Вероятность спама составила {score}%\n\n" +
-            $"ℹ️ Если эта оказалось ошибкой, укажите на это. Эти данные будут использованы для обучения моделей машинного обучения";
+            $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Это сообщение удалено по решению модели машинного обучения. Вероятность спама составила {score}%\n\n";
     }
 }

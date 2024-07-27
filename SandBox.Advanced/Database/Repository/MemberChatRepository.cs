@@ -1,3 +1,4 @@
+using System.Collections;
 using Microsoft.EntityFrameworkCore;
 using SandBox.Models.Telegram;
 using Telegram.Bot.Types;
@@ -69,5 +70,25 @@ public class MemberChatRepository(SandBoxContext ef)
         ef.Remove(item);
         await ef.SaveChangesAsync();
         return true;
+    }
+
+    public async void UpdateAprrovedAsync(MemberInChat member)
+    {
+        member.IsApproved = true;
+        await UpdateAsync(member);
+    }
+
+    public async Task UpdateIsAdmin(MemberInChat memberInChat, bool result)
+    {
+        memberInChat.IsAdmin = true;
+        memberInChat.IsApproved = false;
+        memberInChat.IsRestricted = false;
+        await UpdateAsync(memberInChat);
+    }
+
+    public async Task<IList<MemberInChat>> GetAdminsFromChat(long chatId)
+    {
+        return await ef.MembersInChats.Where(x => x.IdChat == chatId)
+            .Where(x => x.IsAdmin).ToListAsync();
     }
 }
