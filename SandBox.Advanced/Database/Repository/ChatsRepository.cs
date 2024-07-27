@@ -44,7 +44,7 @@ public class ChatsRepository(SandBoxContext ef)
         db.FirstName = chat.FirstName;
         db.LastName = chat.LastName;
         db.Type = chat.Type;
-        ef.Update(chat);
+        ef.Update(db);
         await ef.SaveChangesAsync();
         return db;
     }

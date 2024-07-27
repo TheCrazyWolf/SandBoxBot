@@ -133,19 +133,78 @@ namespace SandBox.Advanced.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("SandBox.Models.Telegram.ChatTg", b =>
+            modelBuilder.Entity("SandBox.Models.Telegram.ChatProps", b =>
                 {
                     b.Property<long>("IdChat")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<long>("CountNormalMessageToBeAprroved")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<float>("PercentageToDetectSpamFromMl")
+                        .HasColumnType("REAL");
+
                     b.Property<string>("Title")
-                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Username")
                         .HasColumnType("TEXT");
 
                     b.HasKey("IdChat");
 
                     b.ToTable("Chats");
+                });
+
+            modelBuilder.Entity("SandBox.Models.Telegram.MemberInChat", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("CountMessage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("CountSpam")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateTimeJoined")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("IdChat")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("IdTelegram")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsRestricted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastActivity")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdChat");
+
+                    b.HasIndex("IdTelegram");
+
+                    b.ToTable("MembersInChats");
                 });
 
             modelBuilder.Entity("SandBox.Models.Telegram.Question", b =>
@@ -199,9 +258,24 @@ namespace SandBox.Advanced.Migrations
 
             modelBuilder.Entity("SandBox.Models.Common.Event", b =>
                 {
-                    b.HasOne("SandBox.Models.Telegram.ChatTg", "Chat")
+                    b.HasOne("SandBox.Models.Telegram.ChatProps", "Chat")
                         .WithMany()
                         .HasForeignKey("ChatId");
+
+                    b.HasOne("SandBox.Models.Telegram.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("IdTelegram");
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Chat");
+                });
+
+            modelBuilder.Entity("SandBox.Models.Telegram.MemberInChat", b =>
+                {
+                    b.HasOne("SandBox.Models.Telegram.ChatProps", "Chat")
+                        .WithMany()
+                        .HasForeignKey("IdChat");
 
                     b.HasOne("SandBox.Models.Telegram.Account", "Account")
                         .WithMany()

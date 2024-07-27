@@ -4,6 +4,7 @@ using SandBox.Advanced.Utils;
 using SandBox.Models.Events;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
@@ -14,7 +15,7 @@ public class DetectSpamMachineLearn(
 {
     public async void Execute(Message message)
     {
-        if (message.From is null || string.IsNullOrEmpty(message.Text)) return;
+        if (message.From is null || string.IsNullOrEmpty(message.Text) || message.Chat.Type is ChatType.Private) return;
 
         var props = await repository.Chats.GetByIdAsync(message.Chat.Id);
 

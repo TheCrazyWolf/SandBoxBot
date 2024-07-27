@@ -48,6 +48,7 @@ public class MemberChatRepository(SandBoxContext ef)
             user.Id) ?? new MemberInChat()
         {
             IdChat = idChat,
+            IdTelegram = user.Id,
             CountMessage = 0,
             IsRestricted = false,
             LastActivity = DateTime.Now,
@@ -80,9 +81,12 @@ public class MemberChatRepository(SandBoxContext ef)
 
     public async Task UpdateIsAdmin(MemberInChat memberInChat, bool result)
     {
-        memberInChat.IsAdmin = true;
-        memberInChat.IsApproved = false;
-        memberInChat.IsRestricted = false;
+        memberInChat.IsAdmin = result;
+        if (result)
+        {
+            memberInChat.IsApproved = result;
+            memberInChat.IsRestricted = false;
+        }
         await UpdateAsync(memberInChat);
     }
 

@@ -12,7 +12,7 @@ public class AccountsRepository(SandBoxContext ef)
         dbAccount.FirstName = user.FirstName;
         dbAccount.LastName = user.LastName;
         dbAccount.UserName = user.Username;
-        ef.Update(user);
+        ef.Update(dbAccount);
         await ef.SaveChangesAsync();
         return dbAccount;
     }
