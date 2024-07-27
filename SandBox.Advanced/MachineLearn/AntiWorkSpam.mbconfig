@@ -3,23 +3,23 @@
   "DataSource": {
     "Type": "TabularFile",
     "Version": 1,
-    "FilePath": "C:\\Users\\kulagin\\Desktop\\data.csv",
+    "FilePath": "C:\\Users\\kulagin\\Desktop\\datasetTotalWithNewsAndFacts.csv",
     "Delimiter": ";",
     "DecimalMarker": ".",
     "HasHeader": true,
     "ColumnProperties": [
       {
-        "ColumnName": "IsSpam",
-        "ColumnPurpose": "Label",
-        "ColumnDataFormat": "Single",
-        "IsCategorical": true,
+        "ColumnName": "Value",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "String",
+        "IsCategorical": false,
         "Type": "Column",
         "Version": 4
       },
       {
-        "ColumnName": "Value",
-        "ColumnPurpose": "Feature",
-        "ColumnDataFormat": "String",
+        "ColumnName": "IsSpam",
+        "ColumnPurpose": "Label",
+        "ColumnDataFormat": "Single",
         "IsCategorical": false,
         "Type": "Column",
         "Version": 4
@@ -38,8 +38,8 @@
         "Version": 1,
         "Type": "Trial",
         "TrainerName": "LbfgsMaximumEntropyMulti",
-        "Score": 0.944668099993247,
-        "RuntimeInSeconds": 1.398,
+        "Score": 0.96983237973817893,
+        "RuntimeInSeconds": 20.016,
         "Parameter": {
           "_SCHEMA_": "e0 * e1 * e2 * e7 * e10",
           "e0": {
@@ -62,8 +62,8 @@
             "AddKeyValueAnnotationsAsText": false
           },
           "e7": {
-            "L1Regularization": 0.07266271,
-            "L2Regularization": 0.115571871,
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
             "LabelColumnName": "IsSpam",
             "FeatureColumnName": "Features"
           },
@@ -120,11 +120,11 @@
       {
         "Version": 1,
         "Type": "Trial",
-        "TrainerName": "FastForestOva",
-        "Score": 0.918298357493943,
-        "RuntimeInSeconds": 10.636,
+        "TrainerName": "LbfgsLogisticRegressionOva",
+        "Score": 0.965574840876514,
+        "RuntimeInSeconds": 25.906,
         "Parameter": {
-          "_SCHEMA_": "e0 * e1 * e2 * e4 * e10",
+          "_SCHEMA_": "e0 * e1 * e2 * e6 * e10",
           "e0": {
             "InputColumnName": "Value",
             "OutputColumnName": "Value"
@@ -144,10 +144,9 @@
             "InputColumnName": "IsSpam",
             "AddKeyValueAnnotationsAsText": false
           },
-          "e4": {
-            "NumberOfTrees": 22,
-            "NumberOfLeaves": 5,
-            "FeatureFraction": 0.8562339,
+          "e6": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
             "LabelColumnName": "IsSpam",
             "FeatureColumnName": "Features"
           },
@@ -161,6 +160,13 @@
             "LabelColumnName": "IsSpam",
             "FeatureColumnName": "Features"
           },
+          "e4": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "IsSpam",
+            "FeatureColumnName": "Features"
+          },
           "e5": {
             "NumberOfLeaves": 4,
             "MinimumExampleCountPerLeaf": 20,
@@ -170,12 +176,6 @@
             "MaximumBinCountPerFeature": 255,
             "FeatureFraction": 1.0,
             "L1Regularization": 2E-10,
-            "L2Regularization": 1.0,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
-          },
-          "e6": {
-            "L1Regularization": 1.0,
             "L2Regularization": 1.0,
             "LabelColumnName": "IsSpam",
             "FeatureColumnName": "Features"
@@ -204,8 +204,8 @@
         "Version": 1,
         "Type": "Trial",
         "TrainerName": "FastTreeOva",
-        "Score": 0.91385101219043963,
-        "RuntimeInSeconds": 3.569,
+        "Score": 0.80464531044440712,
+        "RuntimeInSeconds": 26.116,
         "Parameter": {
           "_SCHEMA_": "e0 * e1 * e2 * e3 * e10",
           "e0": {
@@ -228,12 +228,12 @@
             "AddKeyValueAnnotationsAsText": false
           },
           "e3": {
-            "NumberOfLeaves": 5,
-            "MinimumExampleCountPerLeaf": 14,
-            "NumberOfTrees": 6,
-            "MaximumBinCountPerFeature": 211,
-            "FeatureFraction": 0.99999999,
-            "LearningRate": 0.99999977667298645,
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "NumberOfTrees": 4,
+            "MaximumBinCountPerFeature": 254,
+            "FeatureFraction": 1.0,
+            "LearningRate": 0.099999999999999978,
             "LabelColumnName": "IsSpam",
             "FeatureColumnName": "Features"
           },
@@ -286,11 +286,11 @@
       {
         "Version": 1,
         "Type": "Trial",
-        "TrainerName": "FastTreeOva",
-        "Score": 0.912411307103626,
-        "RuntimeInSeconds": 3.056,
+        "TrainerName": "SdcaMaximumEntropyMulti",
+        "Score": 0.5,
+        "RuntimeInSeconds": 17.981,
         "Parameter": {
-          "_SCHEMA_": "e0 * e1 * e2 * e3 * e10",
+          "_SCHEMA_": "e0 * e1 * e2 * e8 * e10",
           "e0": {
             "InputColumnName": "Value",
             "OutputColumnName": "Value"
@@ -309,94 +309,10 @@
             "OutputColumnName": "IsSpam",
             "InputColumnName": "IsSpam",
             "AddKeyValueAnnotationsAsText": false
-          },
-          "e3": {
-            "NumberOfLeaves": 4,
-            "MinimumExampleCountPerLeaf": 24,
-            "NumberOfTrees": 7,
-            "MaximumBinCountPerFeature": 365,
-            "FeatureFraction": 0.99999999,
-            "LearningRate": 0.99999977667298645,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
-          },
-          "e4": {
-            "NumberOfTrees": 4,
-            "NumberOfLeaves": 4,
-            "FeatureFraction": 1.0,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
-          },
-          "e5": {
-            "NumberOfLeaves": 4,
-            "MinimumExampleCountPerLeaf": 20,
-            "LearningRate": 1.0,
-            "NumberOfTrees": 4,
-            "SubsampleFraction": 1.0,
-            "MaximumBinCountPerFeature": 255,
-            "FeatureFraction": 1.0,
-            "L1Regularization": 2E-10,
-            "L2Regularization": 1.0,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
-          },
-          "e6": {
-            "L1Regularization": 1.0,
-            "L2Regularization": 1.0,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
-          },
-          "e7": {
-            "L1Regularization": 1.0,
-            "L2Regularization": 1.0,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
           },
           "e8": {
             "L1Regularization": 1.0,
             "L2Regularization": 0.1,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
-          },
-          "e9": {
-            "L1Regularization": 1.0,
-            "L2Regularization": 0.1,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
-          }
-        }
-      },
-      {
-        "Version": 1,
-        "Type": "Trial",
-        "TrainerName": "FastForestOva",
-        "Score": 0.91043320275270234,
-        "RuntimeInSeconds": 74.387,
-        "Parameter": {
-          "_SCHEMA_": "e0 * e1 * e2 * e4 * e10",
-          "e0": {
-            "InputColumnName": "Value",
-            "OutputColumnName": "Value"
-          },
-          "e1": {
-            "InputColumnNames": [
-              "Value"
-            ],
-            "OutputColumnName": "Features"
-          },
-          "e10": {
-            "OutputColumnName": "PredictedLabel",
-            "InputColumnName": "PredictedLabel"
-          },
-          "e2": {
-            "OutputColumnName": "IsSpam",
-            "InputColumnName": "IsSpam",
-            "AddKeyValueAnnotationsAsText": false
-          },
-          "e4": {
-            "NumberOfTrees": 219,
-            "NumberOfLeaves": 4,
-            "FeatureFraction": 1.0,
             "LabelColumnName": "IsSpam",
             "FeatureColumnName": "Features"
           },
@@ -410,6 +326,13 @@
             "LabelColumnName": "IsSpam",
             "FeatureColumnName": "Features"
           },
+          "e4": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "IsSpam",
+            "FeatureColumnName": "Features"
+          },
           "e5": {
             "NumberOfLeaves": 4,
             "MinimumExampleCountPerLeaf": 20,
@@ -432,12 +355,6 @@
           "e7": {
             "L1Regularization": 1.0,
             "L2Regularization": 1.0,
-            "LabelColumnName": "IsSpam",
-            "FeatureColumnName": "Features"
-          },
-          "e8": {
-            "L1Regularization": 1.0,
-            "L2Regularization": 0.1,
             "LabelColumnName": "IsSpam",
             "FeatureColumnName": "Features"
           },
@@ -472,12 +389,12 @@
   "TrainingOption": {
     "Version": 1,
     "Type": "ClassificationTrainingOption",
-    "TrainingTime": 1800,
+    "TrainingTime": 600,
     "LabelColumn": "IsSpam",
     "ValidationOption": {
       "Version": 0,
-      "Type": "CrossValidationValidationOption",
-      "NumberOfFolds": 5
+      "Type": "TrainValidateSplitValidationOption",
+      "SplitRatio": 0.2
     }
   }
 }

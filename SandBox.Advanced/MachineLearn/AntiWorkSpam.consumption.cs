@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 namespace SandBox_Advanced
 {
     public partial class AntiWorkSpam
@@ -17,12 +16,12 @@ namespace SandBox_Advanced
         public class ModelInput
         {
             [LoadColumn(0)]
-            [ColumnName(@"IsSpam")]
-            public float IsSpam { get; set; }
-
-            [LoadColumn(1)]
             [ColumnName(@"Value")]
             public string Value { get; set; }
+
+            [LoadColumn(1)]
+            [ColumnName(@"IsSpam")]
+            public float IsSpam { get; set; }
 
         }
 
@@ -34,11 +33,11 @@ namespace SandBox_Advanced
         #region model output class
         public class ModelOutput
         {
-            [ColumnName(@"IsSpam")]
-            public uint IsSpam { get; set; }
-
             [ColumnName(@"Value")]
             public float[] Value { get; set; }
+
+            [ColumnName(@"IsSpam")]
+            public uint IsSpam { get; set; }
 
             [ColumnName(@"Features")]
             public float[] Features { get; set; }

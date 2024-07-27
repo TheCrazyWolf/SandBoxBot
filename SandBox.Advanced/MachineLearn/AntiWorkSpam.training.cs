@@ -13,7 +13,7 @@ namespace SandBox_Advanced
 {
     public partial class AntiWorkSpam
     {
-        public const string RetrainFilePath =  @"C:\Users\kulagin\Desktop\data.csv";
+        public const string RetrainFilePath =  @"C:\Users\kulagin\Desktop\datasetTotalWithNewsAndFacts.csv";
         public const char RetrainSeparatorChar = ';';
         public const bool RetrainHasHeader =  true;
 
@@ -93,7 +93,7 @@ namespace SandBox_Advanced
             var pipeline = mlContext.Transforms.Text.FeaturizeText(inputColumnName:@"Value",outputColumnName:@"Value")      
                                     .Append(mlContext.Transforms.Concatenate(@"Features", new []{@"Value"}))      
                                     .Append(mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:@"IsSpam",inputColumnName:@"IsSpam",addKeyValueAnnotationsAsText:false))      
-                                    .Append(mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy(new LbfgsMaximumEntropyMulticlassTrainer.Options(){L1Regularization=0.07266271F,L2Regularization=0.1155719F,LabelColumnName=@"IsSpam",FeatureColumnName=@"Features"}))      
+                                    .Append(mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy(new LbfgsMaximumEntropyMulticlassTrainer.Options(){L1Regularization=1F,L2Regularization=1F,LabelColumnName=@"IsSpam",FeatureColumnName=@"Features"}))      
                                     .Append(mlContext.Transforms.Conversion.MapKeyToValue(outputColumnName:@"PredictedLabel",inputColumnName:@"PredictedLabel"));
 
             return pipeline;
