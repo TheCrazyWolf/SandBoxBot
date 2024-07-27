@@ -15,17 +15,13 @@ public static class AccountUtils
         if (account.IsManagerThisBot)
             return account.IsManagerThisBot;
 
-        if (account.IsNeedToVerifyByCaptcha)
-            return !account.IsNeedToVerifyByCaptcha;
+        if (account.IsGlobalApproved)
+            return !account.IsGlobalApproved;
 
-        if (account.IsAprroved) // Прошедший капчу
-            return account.IsAprroved;
-
-        if (account.IsSpamer)
-            return !account.IsSpamer;
-
-        // Доверенный профиль, вероятность того что профиль на забанят через 4 дня после спама минимальная ?
-        if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= UpdateHandler.Configuration.DaysAfterUserBeTrusted)
+        if (account.IsGlobalRestricted) 
+            return !account.IsGlobalRestricted;
+        
+        if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 5)
             return true;
 
         return false;

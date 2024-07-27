@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SandBox.Models.Common;
 using SandBox.Models.Events;
 
@@ -62,5 +63,10 @@ public class EventContentRepository(SandBoxContext ef)
     {
         @event.IsSpam = false;
         UpdateAsync(@event);
+    }
+
+    public async Task<int> CountMessageFromUser(long userId, bool isSpam)
+    {
+        return await ef.EventsContent.CountAsync(x => x.IdTelegram == userId && x.IsSpam == isSpam);
     }
 }

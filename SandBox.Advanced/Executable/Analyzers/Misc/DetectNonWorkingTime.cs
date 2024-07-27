@@ -6,10 +6,12 @@ using SandBox.Advanced.Utils.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace SandBox.Advanced.Executable.Analyzers;
+namespace SandBox.Advanced.Executable.Analyzers.Misc;
 
-public class DetectNonWorkingTime(SandBoxRepository repository, 
-    ITelegramBotClient botClient, long chatId) : TimeServer, IAnalyzer
+public class DetectNonWorkingTime(
+    SandBoxRepository repository,
+    ITelegramBotClient botClient,
+    long chatId) : TimeServer, IAnalyzer
 {
     public void Execute(Message message)
     {
@@ -17,7 +19,7 @@ public class DetectNonWorkingTime(SandBoxRepository repository,
             return;
 
         var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
-        
+
         if (account != null && (account.IsManagerThisBot || botClient.IsUserAdminInChat(userId: message.From.Id,
                 chatId: message.Chat.Id)))
         {
@@ -30,8 +32,5 @@ public class DetectNonWorkingTime(SandBoxRepository repository,
             message.Text = null;
             return;
         }
-        
-        
     }
-    
 }

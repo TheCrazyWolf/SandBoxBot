@@ -31,7 +31,7 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
                 message: BuildMessageIfNoNeedCaptcha(),
                 new LinkedList<InlineKeyboardButton>());
 
-            repository.Accounts.UpdateApproved(account);
+            repository.Accounts.UpdateApprovedAsync(account);
             return;
         }
 

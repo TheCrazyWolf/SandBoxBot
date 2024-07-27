@@ -20,7 +20,7 @@ public class NoSpamFromEvent(SandBoxRepository repository, ITelegramBotClient bo
         var account = repository.Accounts.GetByIdAsync(Convert.ToInt64(@event.IdTelegram)).Result;
         if (account is null) return;
 
-        repository.Accounts.UpdateApproved(account);
+        repository.Accounts.UpdateApprovedAsync(account);
         repository.Contents.UpdateNoSpam(@event);
 
         botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildNotifyMessage(@event.Id), true);

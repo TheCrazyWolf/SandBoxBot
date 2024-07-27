@@ -24,9 +24,9 @@ public class AccountsRepository(SandBoxContext ef)
 
     public async Task<List<Account>> GetManagers()
     {
-        return await ef.Accounts.Where(x=> x.IsManagerThisBot == true).ToListAsync();
+        return await ef.Accounts.Where(x => x.IsManagerThisBot == true).ToListAsync();
     }
-    
+
     public async Task<bool> ExistsAsync(long idTelegram)
     {
         return await ef.Accounts.AnyAsync(x => x.IdTelegram == idTelegram);
@@ -48,40 +48,39 @@ public class AccountsRepository(SandBoxContext ef)
 
         ef.Remove(item);
         await ef.SaveChangesAsync();
-        
+
         return true;
     }
 
-    public void UpdateApproved(Account account)
+    public async void UpdateApprovedAsync(Account account)
     {
-        account.IsAprroved = true;
-        account.IsNeedToVerifyByCaptcha = false;
-        account.IsSpamer = false;
-        Update(account);
+        account.IsGlobalApproved = true;
+        account.IsGlobalRestricted = false;
+        await Update(account);
     }
 
-    public void UpdateAdmin(Account account)
+    public async void UpdateAdmin(Account account)
     {
-        account.IsAprroved = true;
-        account.IsNeedToVerifyByCaptcha = false;
-        account.IsSpamer = false;
+        account.IsGlobalApproved = true;
+        account.IsGlobalRestricted = false;
         account.IsManagerThisBot = true;
-        Update(account);
+        await Update(account);
     }
 
-    public void UpdateDetails(Account account, User user)
+    public async void UpdateDetails(Account account, User user)
     {
         account.FirstName = user.FirstName;
         account.LastName = user.LastName;
         account.UserName = user.Username;
         account.LastActivity = DateTime.Now;
-        Update(account);
+        await Update(account);
     }
 
-    public void UpdateToSpamer(Account account)
+    public async void UpdateRestrictedAsync(Account account)
     {
-        account.IsSpamer = true;
-        account.IsNeedToVerifyByCaptcha = true;
-        Update(account);
+        account.IsGlobalApproved = false;
+        account.IsGlobalRestricted = true;
+        await Update(account);
     }
+    
 }

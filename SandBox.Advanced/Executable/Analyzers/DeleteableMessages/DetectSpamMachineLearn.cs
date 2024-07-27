@@ -21,21 +21,20 @@ public class DetectSpamMachineLearn(
 
         if (props is null || props.PercentageToDetectSpamFromMl is 0) return;
 
+        var account = await repository.Accounts.GetByIdAsync(message.From.Id);
         var member = await repository.MembersInChat.GetByIdAsync(idChat: message.Chat.Id,
             idTelegram: message.From.Id);
 
-        if (member is null) return;
+        if (member is null || account is null) return;
 
         var isToBlock = message.Text.IsSpamMl(props.PercentageToDetectSpamFromMl);
 
         var @event = message.GenerateEventFromContent(isToBlock.Item1);
 
         if (isToBlock.Item1)
-            @event.IsSpam = isToBlock.Item1;
-        else
-            member.CountMessage++;
+            @event.IsSpam = true;
 
-        if (member.CountMessage >= props.CountNormalMessageToBeAprroved || member.IsApproved || member.IsAdmin)
+        if (member.IsTrustedMember() || account.IsTrustedProfile())
         {
             repository.MembersInChat.UpdateAprrovedAsync(member);
             @event.IsSpam = false;

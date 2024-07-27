@@ -15,7 +15,6 @@ public class MemberChatRepository(SandBoxContext ef)
             IdTelegram = user.Id,
             LastActivity = DateTime.Now,
             DateTimeJoined = DateTime.Now,
-            CountMessage = 0,
             IsRestricted = false
         };
 
@@ -49,7 +48,6 @@ public class MemberChatRepository(SandBoxContext ef)
         {
             IdChat = idChat,
             IdTelegram = user.Id,
-            CountMessage = 0,
             IsRestricted = false,
             LastActivity = DateTime.Now,
             DateTimeJoined = DateTime.Now,

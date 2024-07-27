@@ -4,9 +4,9 @@ using SandBox.Advanced.Utils;
 using SandBox.Models.Telegram;
 using Telegram.Bot.Types;
 
-namespace SandBox.Advanced.Executable.Analyzers;
+namespace SandBox.Advanced.Executable.Analyzers.Misc;
 
-public class DetectQuestion(SandBoxRepository repository, 
+public class TrainerSgk(SandBoxRepository repository, 
     long idTrainer, long idChat) : IAnalyzer
 {
     public void Execute(Message message)

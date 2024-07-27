@@ -1,5 +1,6 @@
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
+using SandBox.Advanced.Utils;
 using SandBox.Advanced.Utils.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -14,9 +15,32 @@ public sealed class UpdateChatAndDetailsUser(SandBoxRepository repository, ITele
             return;
 
         await repository.Chats.UpdateAsync(message.Chat);
+
         var memberInChat = await repository.MembersInChat.UpdateAsync(idChat: message.Chat.Id, user: message.From);
-        await repository.MembersInChat.UpdateIsAdmin(memberInChat, 
+
+        await repository.MembersInChat.UpdateIsAdmin(memberInChat,
             botClient.IsUserAdminInChat(chatId: message.Chat.Id, userId: message.From.Id));
-        await repository.Accounts.NewUserOrUpdateAsync(message.From);
+
+        var account = await repository.Accounts.NewUserOrUpdateAsync(message.From);
+
+        if (account.IsTrustedProfile())
+        {
+            repository.Accounts.UpdateApprovedAsync(account);
+            return;
+        }
+
+        var totalCountSpam = await repository.Contents.CountMessageFromUser(userId: message.From.Id, isSpam: true);
+        var totalCountNoSpam = await repository.Contents.CountMessageFromUser(userId: message.From.Id, isSpam: false);
+
+        if (totalCountNoSpam >= 3)
+        {
+            repository.Accounts.UpdateApprovedAsync(account);
+            return;
+        }
+
+        if (totalCountSpam >= 5)
+        {
+            repository.Accounts.UpdateRestrictedAsync(account);
+        }
     }
 }

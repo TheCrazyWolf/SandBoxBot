@@ -20,7 +20,7 @@ public class RemoveBlackWord(SandBoxRepository repository, ITelegramBotClient bo
 
         if (account != null && account.IfUserManager())
         {
-            repository.Accounts.UpdateApproved(account);
+            repository.Accounts.UpdateApprovedAsync(account);
             var unBlockWords = DoUnBlockWords(message.Text ?? string.Empty);
             SendMessage(message.Chat.Id, BuildSuccessMessage(unBlockWords));
             return;

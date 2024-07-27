@@ -14,6 +14,4 @@ public class MemberInChat : Entity
     public bool IsRestricted { get; set; }
     public bool IsApproved { get; set; }
     public bool IsAdmin { get; set; }
-    public long CountSpam { get; set; }
-    public long CountMessage { get; set; }
 }

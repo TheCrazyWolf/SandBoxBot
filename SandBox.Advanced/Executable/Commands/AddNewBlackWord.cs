@@ -22,7 +22,7 @@ public class AddNewBlackWord(SandBoxRepository repository, ITelegramBotClient bo
 
         if (account != null && account.IfUserManager())
         {
-            repository.Accounts.UpdateApproved(account);
+            repository.Accounts.UpdateApprovedAsync(account);
             var blockedWords = DoBlockWords(message.Text ?? string.Empty);
             SendMessage(message.Chat.Id, BuildSuccessMessage(blockedWords));
             return;

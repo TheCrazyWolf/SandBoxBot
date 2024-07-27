@@ -4,6 +4,7 @@ using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Activity;
 using SandBox.Advanced.Executable.Analyzers;
 using SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
+using SandBox.Advanced.Executable.Analyzers.Misc;
 using SandBox.Advanced.Executable.Commands;
 using SandBox.Advanced.Executable.Keyboards;
 using SandBox.Advanced.Executable.Services;
@@ -175,7 +176,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     private void ConfiguringAnalyzers()
     {
         _analyzers.Add(new DetectAsyncServerTime(_repository, bot));
-        _analyzers.Add(new DetectEventsFromAccountSpammer(_repository, bot));
+        _analyzers.Add(new DetectEventFromRestrictedAccount(_repository, bot));
         _analyzers.Add(new DetectSpamMachineLearn(_repository, bot));
         //_analyzers.Add(new DetectTelegramBotInChat(_repository, bot));
         
@@ -198,7 +199,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             _analyzers.Add(new DetectFastJoins(_repository, bot, idChat));*/
 
         foreach (var keyValue in Configuration.TrainerFaqChats)
-            _analyzers.Add( new DetectQuestion(_repository, keyValue[1], keyValue[0]));
+            _analyzers.Add( new TrainerSgk(_repository, keyValue[1], keyValue[0]));
         
         foreach (var idChat in Configuration.TimeWorkChats)
             _analyzers.Add( new DetectNonWorkingTime(_repository, bot, idChat));

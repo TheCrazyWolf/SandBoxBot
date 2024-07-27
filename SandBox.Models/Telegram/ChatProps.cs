@@ -12,5 +12,4 @@ public class ChatProps
     public string? LastName { get; set; }
     public ChatType Type { get; set; }
     public float PercentageToDetectSpamFromMl { get; set; } = 0.55f;
-    public long CountNormalMessageToBeAprroved { get; set; } = 3;
 }

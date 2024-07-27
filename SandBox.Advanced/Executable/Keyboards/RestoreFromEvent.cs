@@ -22,7 +22,7 @@ public class RestoreFromEvent(SandBoxRepository repository, ITelegramBotClient b
         var account = repository.Accounts.GetByIdAsync(Convert.ToInt64(@event.IdTelegram)).Result;
         if (account is null) return;
 
-        repository.Accounts.UpdateApproved(account);
+        repository.Accounts.UpdateApprovedAsync(account);
         repository.Contents.UpdateNoSpam(@event);
 
         var toRestoreMsg = BuildRestoredMessage(account, @event);

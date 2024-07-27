@@ -25,7 +25,7 @@ public class BanFromChat(SandBoxRepository repository, ITelegramBotClient botCli
 
         if (account is null) return;
         
-        repository.Accounts.UpdateToSpamer(account);
+        repository.Accounts.UpdateRestrictedAsync(account);
 
         if (@event.ChatId != null)
             botClient.BanChatMemberAsync(chatId: @event.ChatId,

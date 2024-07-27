@@ -43,7 +43,7 @@ public class CaptchaFromChat(SandBoxRepository repository, ITelegramBotClient bo
         if(account is null)
             return;
         
-        repository.Accounts.UpdateApproved(account);
+        repository.Accounts.UpdateApprovedAsync(account);
         botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildSuccessCaptcha(), true);
         
         if (callbackQuery.Message != null)
