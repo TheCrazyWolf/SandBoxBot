@@ -17,7 +17,7 @@ public class DetectFastJoins(SandBoxRepository repository, ITelegramBotClient bo
         if (message.From is null || message.Chat.Id != idChat)
             return;
 
-        var account = repository.Accounts.GetById(message.From.Id).Result;
+        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
         var totalJoins = repository.Joins
             .GetCountJoinsFromChat( message.Chat.Id,
                 DateTime.Now.AddMinutes(-1), DateTime.Now);

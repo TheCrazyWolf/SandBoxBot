@@ -28,14 +28,14 @@ public class ChatsRepository(SandBoxContext ef)
         return await ef.Chats.AnyAsync(x => x.IdChat == idChat);
     }
 
-    public async Task<ChatProps> Update(ChatProps chat)
+    public async Task<ChatProps> UpdateAsync(ChatProps chat)
     {
         ef.Update(chat);
         await ef.SaveChangesAsync();
         return chat;
     }
     
-    public async Task<ChatProps> Update(Chat chat)
+    public async Task<ChatProps> UpdateAsync(Chat chat)
     {
         var db = await GetByIdAsync(chat.Id) ?? new ChatProps();
 

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SandBox.Models.Telegram;
 using Telegram.Bot.Types;
 
@@ -5,51 +6,50 @@ namespace SandBox.Advanced.Database.Repository;
 
 public class AccountsRepository(SandBoxContext ef)
 {
-    public Task<Account> Add(Account account)
+    public async Task<Account> NewUserOrUpdateAsync(User user)
     {
-        var dbAccount = GetById(account.IdTelegram).Result;
-
-        if (dbAccount is not null)
-            return Task.FromResult(dbAccount);
-        
-        ef.Add(account);
-        ef.SaveChanges();
-        return Task.FromResult(account);
+        var dbAccount = await GetByIdAsync(user.Id) ?? new Account();
+        dbAccount.FirstName = user.FirstName;
+        dbAccount.LastName = user.LastName;
+        dbAccount.UserName = user.Username;
+        ef.Update(user);
+        await ef.SaveChangesAsync();
+        return dbAccount;
     }
 
-    public Task<Account?> GetById(long idTelegram)
+    public async Task<Account?> GetByIdAsync(long idTelegram)
     {
-        return Task.FromResult(ef.Accounts.FirstOrDefault(x => x.IdTelegram == idTelegram));
+        return await ef.Accounts.FirstOrDefaultAsync(x => x.IdTelegram == idTelegram);
     }
 
-    public Task<List<Account>> GetManagers()
+    public async Task<List<Account>> GetManagers()
     {
-        return Task.FromResult(ef.Accounts.Where(x=> x.IsManagerThisBot == true).ToList());
+        return await ef.Accounts.Where(x=> x.IsManagerThisBot == true).ToListAsync();
     }
     
-    public Task<bool> Exists(long idTelegram)
+    public async Task<bool> ExistsAsync(long idTelegram)
     {
-        return Task.FromResult(ef.Accounts.Any(x => x.IdTelegram == idTelegram));
+        return await ef.Accounts.AnyAsync(x => x.IdTelegram == idTelegram);
     }
 
-    public Task<Account> Update(Account account)
+    public async Task<Account> Update(Account account)
     {
         ef.Update(account);
-        ef.SaveChanges();
-        return Task.FromResult(account);
+        await ef.SaveChangesAsync();
+        return account;
     }
 
-    public Task<bool> Delete(long idTelegram)
+    public async Task<bool> RemoveAsync(long idTelegram)
     {
-        var item = GetById(idTelegram).Result;
+        var item = GetByIdAsync(idTelegram).Result;
 
         if (item is null)
-            return Task.FromResult(false);
+            return false;
 
         ef.Remove(item);
-        ef.SaveChanges();
+        await ef.SaveChangesAsync();
         
-        return Task.FromResult(true);
+        return true;
     }
 
     public void UpdateApproved(Account account)

@@ -11,5 +11,6 @@ public class SandBoxRepository(SandBoxContext ef)
     public EventsJoinedRepository Joins = new(ef);
     public CaptchaRepository Captchas = new(ef);
     public ChatsRepository Chats = new(ef);
+    public MemberChatRepository MembersInChat = new(ef);
     public QuestionsRepository Questions = new(ef);
 }

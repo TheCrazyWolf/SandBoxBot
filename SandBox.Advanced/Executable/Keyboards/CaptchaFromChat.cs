@@ -38,7 +38,7 @@ public class CaptchaFromChat(SandBoxRepository repository, ITelegramBotClient bo
             return;
         }
 
-        var account = repository.Accounts.GetById(Convert.ToInt64(captha.IdTelegram)).Result;
+        var account = repository.Accounts.GetByIdAsync(Convert.ToInt64(captha.IdTelegram)).Result;
         
         if(account is null)
             return;

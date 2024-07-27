@@ -20,7 +20,7 @@ public class BanFromEvent(SandBoxRepository repository, ITelegramBotClient botCl
         if (@event is null)
             return;
         
-        var account = repository.Accounts.GetById(Convert.ToInt64(@event.IdTelegram)).Result;
+        var account = repository.Accounts.GetByIdAsync(Convert.ToInt64(@event.IdTelegram)).Result;
 
         if (account is null) return;
         

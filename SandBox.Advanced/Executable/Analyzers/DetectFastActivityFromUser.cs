@@ -17,7 +17,7 @@ public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramB
         if (message.From is null || message.Chat.Id != idChat)
             return;
 
-        var account = repository.Accounts.GetById(message.From.Id).Result;
+        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
         var totalMessage = repository.Events
             .GetCountEventsFromIdAccount(message.From.Id,
                 message.Chat.Id,

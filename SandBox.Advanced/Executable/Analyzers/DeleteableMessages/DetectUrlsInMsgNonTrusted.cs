@@ -17,7 +17,7 @@ public class DetectUrlsInMsgNonTrusted(SandBoxRepository repository,
         if (message.From is null || message.Chat.Id != idChat)
             return;
 
-        var account = repository.Accounts.GetById(message.From.Id).Result;
+        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
 
         if (account is null || string.IsNullOrEmpty(message.Text))
             return;

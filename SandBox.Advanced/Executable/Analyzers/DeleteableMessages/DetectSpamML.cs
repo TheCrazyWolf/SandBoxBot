@@ -17,7 +17,7 @@ public class DetectSpamMl(SandBoxRepository repository,
         if (message.From is null || string.IsNullOrEmpty(message.Text) || message.Chat.Id != idChat)
             return;
 
-        var account = repository.Accounts.GetById(message.From.Id).Result;
+        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
 
         if (account is null || string.IsNullOrEmpty(message.Text))
             return;

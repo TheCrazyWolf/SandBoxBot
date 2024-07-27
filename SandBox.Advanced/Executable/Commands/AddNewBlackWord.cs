@@ -18,7 +18,7 @@ public class AddNewBlackWord(SandBoxRepository repository, ITelegramBotClient bo
 
         message.Text = message.Text?.GetMessageWithoutUserNameBotsAndCommands();
 
-        var account = repository.Accounts.GetById(message.From.Id).Result;
+        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
 
         if (account != null && account.IfUserManager())
         {

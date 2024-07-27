@@ -166,8 +166,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _analyzerActivity = new List<IAnalyzer>
         {
-            new UpdateDetailsActivityProfile(_repository),
-            new UpdateDetailsActivityOnJoined(_repository),
+            new UpdateChatAndDetailsUser(_repository),
+            new UpdateChatAndUserAfterInvited(_repository),
         };
     }
 

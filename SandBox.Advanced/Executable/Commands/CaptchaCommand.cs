@@ -23,7 +23,7 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
         if (message.From is null)
             return;
 
-        var account = repository.Accounts.GetById(message.From.Id).Result;
+        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
 
         if ((account != null) && account.IsTrustedProfile())
         {

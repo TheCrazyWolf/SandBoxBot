@@ -18,7 +18,7 @@ public class SetMeManager(SandBoxRepository repository, ITelegramBotClient botCl
 
         message.Text = message.Text?.GetMessageWithoutUserNameBotsAndCommands().Split(' ').First();
 
-        var account = repository.Accounts.GetById(message.From.Id).Result;
+        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
         
         if (string.IsNullOrEmpty(message.Text))
         {

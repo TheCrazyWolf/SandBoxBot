@@ -16,6 +16,7 @@ public class SandBoxContext : DbContext
     public DbSet<EventContent> EventsContent { get; set; }
     public DbSet<Captcha> Captchas { get; set; }
     public DbSet<ChatProps> Chats { get; set; }
+    public DbSet<MemberInChat> MembersInChats { get; set; } 
     public DbSet<Question> Questions { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
