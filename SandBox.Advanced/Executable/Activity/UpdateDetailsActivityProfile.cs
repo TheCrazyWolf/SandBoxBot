@@ -13,10 +13,10 @@ public sealed class UpdateDetailsActivityProfile(SandBoxRepository repository) :
         if (message.From?.Id is null)
             return;
 
-        var chatTg = repository.Chats.GetById(message.Chat.Id).Result;
+        var chatTg = repository.Chats.GetByIdAsync(message.Chat.Id).Result;
 
         if (chatTg is null)
-            repository.Chats.Add(message.Chat.CreateChatDb());
+            repository.Chats.AddAsync(message.Chat.CreateChatDb());
         
         var account = repository.Accounts.GetById(message.From.Id).Result;
 

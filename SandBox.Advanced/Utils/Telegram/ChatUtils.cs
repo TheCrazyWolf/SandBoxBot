@@ -5,12 +5,16 @@ namespace SandBox.Advanced.Utils.Telegram;
 
 public static class ChatUtils
 {
-    public static ChatTg CreateChatDb(this Chat chat)
+    public static ChatProps CreateChatDb(this Chat chat)
     {
-        return new ChatTg()
+        return new ChatProps
         {
             IdChat = chat.Id,
-            Title = chat.Title ?? chat.FirstName ?? string.Empty
+            Title = chat.Title,
+            Type = chat.Type,
+            FirstName = chat.FirstName,
+            LastName = chat.LastName,
+            Username = chat.Username,
         };
     }
 }

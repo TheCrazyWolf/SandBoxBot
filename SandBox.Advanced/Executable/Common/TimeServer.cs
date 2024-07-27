@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
+using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Common;
 
 public class TimeServer
 {
+    public Chat Type { get; set; }
     public string BuildMessageAsyncTime(DateTime serverTime, DateTime currentTime)
     {
         return $"⚠️ Внимание! Обнаружено расcинхронизация по времени:\n\n" +

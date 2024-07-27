@@ -13,10 +13,10 @@ public class UpdateDetailsActivityOnJoined(SandBoxRepository repository):  IAnal
         if (message.NewChatMembers is null)
             return;
         
-        var chatTg = repository.Chats.GetById(message.Chat.Id).Result;
+        var chatTg = repository.Chats.GetByIdAsync(message.Chat.Id).Result;
 
         if (chatTg is null)
-            repository.Chats.Add(message.Chat.CreateChatDb());
+            repository.Chats.AddAsync(message.Chat.CreateChatDb());
         
         foreach (var user in message.NewChatMembers)
         {
