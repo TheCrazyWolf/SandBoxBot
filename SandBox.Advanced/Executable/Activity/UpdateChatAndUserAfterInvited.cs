@@ -11,7 +11,7 @@ public class UpdateChatAndUserAfterInvited(SandBoxRepository repository) : IAnal
         if (message.NewChatMembers is null)
             return;
 
-        var chatProps = await repository.Chats.NewChatOrUpdateAsync(message.Chat);
+        await repository.Chats.NewChatOrUpdateAsync(message.Chat);
 
         foreach (var user in message.NewChatMembers)
         {

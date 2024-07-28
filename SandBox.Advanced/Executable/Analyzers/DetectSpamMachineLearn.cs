@@ -34,7 +34,11 @@ public class DetectSpamMachineLearn(
 
         @event.IsSpam = isToBlock.Item1 || member.IsRestricted || account.IsGlobalRestricted;
 
-        if (member.IsTrustedMember() || account.IsTrustedProfile())
+        if (account.IsGlobalRestricted && member.IsApproved && member.IdChat == message.Chat.Id)
+            @event.IsSpam = false; // локальная амнистия (т.е. в текущем чате)
+        else if(account.IsGlobalRestricted)
+            @event.IsSpam = true;
+        else if (member.IsTrustedMember() || account.IsTrustedProfile())
         {
             repository.MembersInChat.UpdateAprrovedAsync(member);
             @event.IsSpam = false;

@@ -6,9 +6,6 @@ public static class MemberInChatUtils
 {
     public static bool IsTrustedMember(this MemberInChat memberInChat)
     {
-        if (memberInChat.IsApproved)
-            return memberInChat.IsApproved;
-
         if (memberInChat.IsAdmin)
             return memberInChat.IsAdmin;
 

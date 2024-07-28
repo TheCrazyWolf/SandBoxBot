@@ -175,25 +175,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         _analyzers.Add(new DetectAsyncServerTime(_repository, bot));
         _analyzers.Add(new DetectSpamMachineLearn(_repository, bot));
         _analyzers.Add(new DetectEventFromRestrictedAccount(_repository, bot));
-        //_analyzers.Add(new DetectTelegramBotInChat(_repository, bot));
-        
-        /*foreach (var idChat in Configuration.AntiMediaNonTrustedUsersChats)
-            _analyzers.Add(new DetectMediaInMessageNonTrusted(_repository, bot, idChat));
-        
-        foreach (var idChat in Configuration.AntiUrlsNonTrustedUsersChats)
-            _analyzers.Add(new DetectUrlsInMsgNonTrusted(_repository, bot, idChat));
-        
-        foreach (var idChat in Configuration.AntiSpamMachineLearnChats)
-            _analyzers.Add(new DetectSpamMachineLearn(_repository, bo));
-        
-        foreach (var idChat in Configuration.AntiSpamByBlackWordsChats)
-            _analyzers.Add(new DetectBlackWords(_repository, bot, idChat));
-        
-        foreach (var idChat in Configuration.NotifyFastActivityChats)
-            _analyzers.Add(new DetectFastActivityFromUser(_repository, bot, idChat));
-
-        foreach (var idChat in Configuration.NotifyFastJoinsChats)
-            _analyzers.Add(new DetectFastJoins(_repository, bot, idChat));*/
+        _analyzers.Add(new DetectFastActivityFromUser(_repository, bot));
 
         foreach (var keyValue in Configuration.TrainerFaqChats)
             _analyzers.Add( new TrainerSgk(_repository, keyValue[1], keyValue[0]));

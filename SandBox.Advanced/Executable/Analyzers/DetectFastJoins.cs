@@ -66,10 +66,10 @@ public class DetectFastJoins(SandBoxRepository repository, ITelegramBotClient bo
     {
         return new List<IList<InlineKeyboardButton>>
         {
-            new List<InlineKeyboardButton>()
+            new List<InlineKeyboardButton>
             {
-                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"ban {originalMessage.From?.Id} {originalMessage.Chat.Id}")
+                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 [] Забанить юзера",
+                    $"ban {originalMessage.Chat.Id} {originalMessage.From?.Id}")
             },
         };
     }

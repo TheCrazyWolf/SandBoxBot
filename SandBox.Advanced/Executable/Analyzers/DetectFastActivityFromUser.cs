@@ -1,7 +1,6 @@
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
 using SandBox.Advanced.Utils;
-using SandBox.Advanced.Utils.Telegram;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -78,8 +77,8 @@ public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramB
         {
             new List<InlineKeyboardButton>()
             {
-                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"ban {originalMessage.From?.Id} {originalMessage.Chat.Id}")
+                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 [ЧАТ] Забанить юзера",
+                    $"ban {originalMessage.Chat.Id} {originalMessage.From?.Id}")
             },
         };
     }
