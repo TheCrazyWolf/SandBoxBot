@@ -70,6 +70,7 @@ public class MemberChatRepository(SandBoxContext ef)
     public async void UpdateAprrovedAsync(MemberInChat member)
     {
         member.IsApproved = true;
+        member.IsRestricted = false;
         await UpdateAsync(member);
     }
 

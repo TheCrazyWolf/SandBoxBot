@@ -150,7 +150,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         _commands = new List<ICommand>
         {
             new CaptchaCommand(_repository, bot),
-            new CheckForBlackWord(_repository, bot),
+            new CheckMessageForMachineLearn(_repository, bot),
             new QuestionCommand(_repository, bot),
             new SetMeManager(_repository, bot),
             new StartCommand(_repository, bot),
@@ -207,8 +207,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _callBackQueryies = new List<ICallQuery>
         {
-            new BanFromChat(_repository, bot),
-            new BanFromEvent(_repository, bot),
+            new BanKeyboard(_repository, bot),
+            new KickKeyboard(_repository, bot),
             new CaptchaFromChat(_repository, bot),
             new NoSpamFromEvent(_repository, bot),
             new QuestionFromDb(_repository, bot),

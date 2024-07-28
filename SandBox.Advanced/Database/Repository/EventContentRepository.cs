@@ -1,71 +1,65 @@
 using Microsoft.EntityFrameworkCore;
-using SandBox.Models.Common;
 using SandBox.Models.Events;
 
 namespace SandBox.Advanced.Database.Repository;
 
 public class EventContentRepository(SandBoxContext ef)
 {
-    public Task<EventContent> Add(EventContent @event)
+    public async Task<EventContent> NewContentAsync(EventContent @event)
     {
-        /*
-        var foundContent = GetByContent(@event.Content).Result;
-        if (foundContent is not null)
-            return Task.FromResult(foundContent);
-            */
-        
-        ef.Add(@event);
-        ef.SaveChanges();
-        return Task.FromResult(@event);
+        await ef.AddAsync(@event);
+        await ef.SaveChangesAsync();
+        return @event;
     }
 
-    public Task<EventContent?> GetById(long idEvent)
+    public async Task<EventContent?> GetByIdAsync(long idEvent)
     {
-        return Task.FromResult(ef.EventsContent.FirstOrDefault(x => x.Id == idEvent));
-    }
-    
-    public Task<EventContent?> GetByContent(string? content)
-    {
-        return Task.FromResult(ef.EventsContent.FirstOrDefault(x => x.Content == content));
-    }
-    
-    public Task<EventContent?> GetByContent(string? content, long userId, long chaId, long messageId)
-    {
-        return Task.FromResult(ef.EventsContent.FirstOrDefault(x => x.Content == content && x.IdTelegram == userId && x.ChatId == chaId && x.MessageId == messageId));
-    }
-    
-    public Task<bool> Exists(long idEvent)
-    {
-        return Task.FromResult(ef.EventsContent.Any(x => x.Id == idEvent));
+        return await ef.EventsContent.FirstOrDefaultAsync(x => x.Id == idEvent);
     }
 
-    public Task<EventContent> UpdateAsync(EventContent blackWord)
+    public async Task<EventContent?> GetByContentAsync(string? content)
+    {
+        return await ef.EventsContent.FirstOrDefaultAsync(x => x.Content == content);
+    }
+
+    public async Task<EventContent?> GetByContentAsync(string? content, long userId, long chaId, long messageId)
+    {
+        return await (ef.EventsContent.FirstOrDefaultAsync(x =>
+            x.Content == content && x.IdTelegram == userId && x.ChatId == chaId && x.MessageId == messageId));
+    }
+
+    public async Task<bool> ExistsAsync(long idEvent)
+    {
+        return await ef.EventsContent.AnyAsync(x => x.Id == idEvent);
+    }
+
+    public async Task<EventContent> UpdateAsync(EventContent blackWord)
     {
         ef.Update(blackWord);
-        ef.SaveChanges();
-        return Task.FromResult(blackWord);
+        await ef.SaveChangesAsync();
+        return blackWord;
     }
 
-    public Task<bool> Delete(long idEvent)
+    public async Task<bool> RemoveAsync(long idEvent)
     {
-        var item = GetById(idEvent).Result;
+        var item = GetByIdAsync(idEvent).Result;
 
         if (item is null)
-            return Task.FromResult(false);
+            return false;
 
         ef.Remove(item);
-        ef.SaveChanges();
-        
-        return Task.FromResult(true);
+        await ef.SaveChangesAsync();
+
+        return true;
     }
 
-    public void UpdateNoSpam(EventContent @event)
+    public async void UpdateNoSpamAsync(EventContent @event)
     {
         @event.IsSpam = false;
-        UpdateAsync(@event);
+        await UpdateAsync(@event);
     }
 
-    public async Task<int> CountMessageFromUser(long userId, bool isSpam)
+    public async Task<int> CountMessageFromUserAsync(long userId, bool isSpam)
     {
         return await ef.EventsContent.CountAsync(x => x.IdTelegram == userId && x.IsSpam == isSpam);
     }

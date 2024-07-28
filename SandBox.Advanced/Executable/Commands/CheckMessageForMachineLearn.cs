@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient botClient) : Command
+public class CheckMessageForMachineLearn(SandBoxRepository repository, ITelegramBotClient botClient) : Command
 {
     public override string Name { get; set; } = "/check";
 

@@ -22,7 +22,7 @@ public class DetectSpamMachineLearn(
         if (props is null || props.PercentageToDetectSpamFromMl is 0) return;
 
         var account = await repository.Accounts.GetByIdAsync(message.From.Id);
-        
+
         var member = await repository.MembersInChat.GetByIdAsync(idChat: message.Chat.Id,
             idTelegram: message.From.Id);
 
@@ -40,51 +40,63 @@ public class DetectSpamMachineLearn(
             @event.IsSpam = false;
         }
 
-        await repository.Contents.UpdateAsync(@event);
+        _ = repository.Contents.UpdateAsync(@event);
 
         if (!@event.IsSpam) return;
 
-        try
-        {
-            await botClient.DeleteMessageAsync(chatId: message.Chat.Id,
-                messageId: message.MessageId);
-        }
-        catch 
-        {
-            // ignore
-        }
-
-        NotifyManagers(message, isToBlock.Item2, GenerateKeyboardForNotify(@event));
-        
+        TryDeleteMessage(message);
+        TryNotifyManagers(message, isToBlock.Item2, GenerateKeyboardForNotify(@event));
+        TryKickMember(message, props.AutoKickIfWillBeDetectedSpam);
     }
 
-    private async void NotifyManagers(Message originalMessage, float score,
+    private async void TryDeleteMessage(Message originalMessage)
+    {
+        try
+        {
+            await botClient.DeleteMessageAsync(chatId: originalMessage.Chat.Id,
+                messageId: originalMessage.MessageId);
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+
+    private async void TryKickMember(Message originalMessage, bool isPropAutoKick)
+    {
+        if (!isPropAutoKick)
+            return;
+
+        try
+        {
+            if (originalMessage.From != null)
+                await botClient.UnbanChatMemberAsync(chatId: originalMessage.Chat.Id,
+                    userId: originalMessage.From.Id);
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+
+    private async void TryNotifyManagers(Message originalMessage, float score,
         IList<IList<InlineKeyboardButton>> keyboardButtons)
     {
-        foreach (var id in await repository.MembersInChat.GetAdminsFromChat(originalMessage.Chat.Id))
+        var memberAdminThisChat = repository.MembersInChat.GetAdminsFromChat(originalMessage.Chat.Id).Result
+            .Select(x => Convert.ToInt64(x.IdTelegram));
+
+        var memberManagers = repository.Accounts.GetManagers().Result
+            .Select(x => x.IdTelegram);
+
+        var combinedMembers = memberAdminThisChat.Union(memberManagers).ToList();
+
+        foreach (var id in combinedMembers)
         {
             try
             {
                 var message = BuildNotifyMessage(originalMessage, score);
 
-                await botClient.SendTextMessageAsync(chatId: id.IdTelegram!,
-                    text: message,
-                    replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
-                    disableNotification: true);
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-        
-        foreach (var id in await repository.Accounts.GetManagers())
-        {
-            try
-            {
-                var message = BuildNotifyMessage(originalMessage, score);
-
-                await botClient.SendTextMessageAsync(chatId: id.IdTelegram!,
+                await botClient.SendTextMessageAsync(chatId: id,
                     text: message,
                     replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
                     disableNotification: true);
@@ -102,16 +114,18 @@ public class DetectSpamMachineLearn(
         {
             new List<InlineKeyboardButton>()
             {
-                InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
-                    $"spamrestore {eventContent.Id}"),
-                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Забанить юзера",
-                    $"spamban {eventContent.Id}")
+                InlineKeyboardButton.WithCallbackData("\ud83d\udd39 [ЧАТ] Восстановить",
+                    $"restoremsg {eventContent.ChatId} {eventContent.IdTelegram} {eventContent.Id}"),
+                InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
+                    $"nospam {eventContent.ChatId} {eventContent.IdTelegram} {eventContent.Id}")
             },
 
             new List<InlineKeyboardButton>()
             {
-                InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
-                    $"spamnospam {eventContent.Id}")
+                InlineKeyboardButton.WithCallbackData("\ud83e\udea0 [ЧАТ] Кикнуть",
+                    $"kick {eventContent.ChatId} {eventContent.IdTelegram} {eventContent.Id}"),
+                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 [ЧАТ] Забанить",
+                    $"ban {eventContent.ChatId} {eventContent.IdTelegram} {eventContent.Id}")
             },
         };
     }
@@ -119,7 +133,7 @@ public class DetectSpamMachineLearn(
     private string BuildNotifyMessage(Message message, float score)
     {
         return
-            $"\ud83d\udc7e Удалено сообщение от пользователя {message.From?.Id} (@{message.From?.Username}) в чате # {message.Chat.Id} - ({message.Chat.Title ?? message.Chat.FirstName}) со " +
-            $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Это сообщение удалено по решению модели машинного обучения. Вероятность спама составила {score}%\n\n";
+            $"\ud83d\udc7e Я удалил сообщение от пользователя \nID # {message.From?.Id}, username: @{message.From?.Username}\nв чате \nID # {message.Chat.Id}, название чата [{message.Chat.Title ?? message.Chat.FirstName}] \n\nсо " +
+            $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Вероятность спама составила {score}%";
     }
 }

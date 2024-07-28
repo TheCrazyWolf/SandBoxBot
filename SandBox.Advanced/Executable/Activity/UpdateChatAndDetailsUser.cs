@@ -30,8 +30,8 @@ public sealed class UpdateChatAndDetailsUser(SandBoxRepository repository, ITele
             return;
         }
 
-        var totalCountSpam = await repository.Contents.CountMessageFromUser(userId: message.From.Id, isSpam: true);
-        var totalCountNoSpam = await repository.Contents.CountMessageFromUser(userId: message.From.Id, isSpam: false);
+        var totalCountSpam = await repository.Contents.CountMessageFromUserAsync(userId: message.From.Id, isSpam: true);
+        var totalCountNoSpam = await repository.Contents.CountMessageFromUserAsync(userId: message.From.Id, isSpam: false);
 
         switch (totalCountNoSpam)
         {

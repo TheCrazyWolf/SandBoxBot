@@ -1,15 +1,9 @@
-using SandBox.Advanced.Services.Telegram;
 using SandBox.Models.Telegram;
 
 namespace SandBox.Advanced.Utils;
 
 public static class AccountUtils
 {
-    public static bool IfUserManager(this Account account)
-    {
-        return account.IsManagerThisBot;
-    }
-
     public static bool IsTrustedProfile(this Account account)
     {
         if (account.IsManagerThisBot)
@@ -18,10 +12,9 @@ public static class AccountUtils
         if (account.IsGlobalApproved)
             return !account.IsGlobalApproved;
 
-        if (account.IsGlobalRestricted) 
+        if (account.IsGlobalRestricted)
             return !account.IsGlobalRestricted;
 
         return false;
     }
-    
 }

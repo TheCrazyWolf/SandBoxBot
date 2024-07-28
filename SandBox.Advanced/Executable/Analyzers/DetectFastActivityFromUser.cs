@@ -34,18 +34,26 @@ public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramB
         if(totalMessage <= ConstMaxActivityPerMinute)
             return;
         
-        NotifyManagers(message, GenerateKeyboardForNotify(message));
+        TryNotifyManagers(message, GenerateKeyboardForNotify(message));
     }
     
-    private void NotifyManagers(Message originalMessage, IList<IList<InlineKeyboardButton>> keyboardButtons)
+    private void TryNotifyManagers(Message originalMessage, IList<IList<InlineKeyboardButton>> keyboardButtons)
     {
-        foreach (var id in repository.Accounts.GetManagers().Result)
+        var memberAdminThisChat = repository.MembersInChat.GetAdminsFromChat(originalMessage.Chat.Id).Result
+            .Select(x => Convert.ToInt64(x.IdTelegram));
+
+        var memberManagers = repository.Accounts.GetManagers().Result
+            .Select(x => x.IdTelegram);
+
+        var combinedMembers = memberAdminThisChat.Union(memberManagers).ToList();
+        
+        foreach (var id in combinedMembers)
         {
             try
             {
                 var message = BuildNotifyMessage(originalMessage);
 
-                botClient.SendTextMessageAsync(chatId: id.IdTelegram,
+                botClient.SendTextMessageAsync(chatId: id,
                     text: message,
                     replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
                     disableNotification: true);
