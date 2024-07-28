@@ -6,10 +6,9 @@ using SandBox.Models.Telegram;
 
 namespace SandBox.Advanced.Database;
 
-public class SandBoxContext : DbContext
+public sealed class SandBoxContext : DbContext
 {
     public SandBoxContext() => Database.MigrateAsync();
-    public DbSet<BlackWord> BlackWords { get; set; }
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Event> Events { get; set; }
     public DbSet<EventJoined> EventsJoined { get; set; }

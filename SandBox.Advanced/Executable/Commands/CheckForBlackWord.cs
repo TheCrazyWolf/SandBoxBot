@@ -13,11 +13,6 @@ public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient 
     public override async void Execute(Message message)
     {
         if (message.From is null) return;
-
-        /*
-        var forBlackWords = CheckForBlackWords(message.Text);
-        var isBlackWords = !string.IsNullOrEmpty(forBlackWords);
-        var isContainsUrls = message.Text != null && message.Text.IsContaintsUrls();*/
         
         var props = await repository.Chats.GetByIdAsync(message.Chat.Id);
         
@@ -31,20 +26,6 @@ public class CheckForBlackWord(SandBoxRepository repository, ITelegramBotClient 
         
         SendMessage(message.Chat.Id, buildMessage);
     }
-    
-    private string CheckForBlackWords(string? message)
-    {
-        var words = message?.GetArrayWordsTreatmentMessage(1);
-        string blackWords = (from word in words
-                let result =
-                    repository.BlackWords.Exists(word).Result
-                where result
-                select word)
-            .Aggregate(string.Empty, (current, word) => current + $"{word}, ");
-
-        return blackWords;
-    }
-
     private void SendMessage(long idChat, string message)
     {
         botClient.SendTextMessageAsync(chatId: idChat,

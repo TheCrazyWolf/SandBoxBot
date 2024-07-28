@@ -7,7 +7,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
+namespace SandBox.Advanced.Executable.Analyzers;
 
 public class DetectSpamMachineLearn(
     SandBoxRepository repository,
@@ -22,6 +22,7 @@ public class DetectSpamMachineLearn(
         if (props is null || props.PercentageToDetectSpamFromMl is 0) return;
 
         var account = await repository.Accounts.GetByIdAsync(message.From.Id);
+        
         var member = await repository.MembersInChat.GetByIdAsync(idChat: message.Chat.Id,
             idTelegram: message.From.Id);
 
@@ -31,8 +32,7 @@ public class DetectSpamMachineLearn(
 
         var @event = message.GenerateEventFromContent(isToBlock.Item1);
 
-        if (isToBlock.Item1)
-            @event.IsSpam = true;
+        @event.IsSpam = isToBlock.Item1 || member.IsRestricted || account.IsGlobalRestricted;
 
         if (member.IsTrustedMember() || account.IsTrustedProfile())
         {
@@ -44,10 +44,18 @@ public class DetectSpamMachineLearn(
 
         if (!@event.IsSpam) return;
 
-        await botClient.DeleteMessageAsync(chatId: message.Chat.Id,
-            messageId: message.MessageId);
+        try
+        {
+            await botClient.DeleteMessageAsync(chatId: message.Chat.Id,
+                messageId: message.MessageId);
+        }
+        catch 
+        {
+            // ignore
+        }
 
         NotifyManagers(message, isToBlock.Item2, GenerateKeyboardForNotify(@event));
+        
     }
 
     private async void NotifyManagers(Message originalMessage, float score,

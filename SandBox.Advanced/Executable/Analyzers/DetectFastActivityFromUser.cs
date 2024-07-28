@@ -8,33 +8,33 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IAnalyzer
+public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
 {
     private const int ConstMaxActivityPerMinute = 10;
 
-    public void Execute(Message message)
+    public async void Execute(Message message)
     {
-        if (message.From is null || message.Chat.Id != idChat)
+        if (message.From is null)
             return;
 
-        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
+        var account = await repository.Accounts.GetByIdAsync(message.From.Id);
+        var member = await repository.MembersInChat.GetByIdAsync(idChat: message.Chat.Id, idTelegram: message.From.Id);
+        
         var totalMessage = repository.Events
             .GetCountEventsFromIdAccount(message.From.Id,
                 message.Chat.Id,
                 DateTime.Now.AddMinutes(-1), DateTime.Now).Result;
 
-        if (account is null || totalMessage is 0)
+        if (account is null || member is null|| totalMessage is 0)
             return;
 
-        if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id, chatId: message.Chat.Id))
+        if (account.IsTrustedProfile() || member.IsTrustedMember())
             return;
         
         if(totalMessage <= ConstMaxActivityPerMinute)
             return;
         
         NotifyManagers(message, GenerateKeyboardForNotify(message));
-        
-        return;
     }
     
     private void NotifyManagers(Message originalMessage, IList<IList<InlineKeyboardButton>> keyboardButtons)

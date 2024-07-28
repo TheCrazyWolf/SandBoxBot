@@ -16,15 +16,21 @@ public class DetectEventFromRestrictedAccount(SandBoxRepository repository, ITel
         var account = await repository.Accounts.GetByIdAsync(message.From.Id);
         var memberInChat = await repository.MembersInChat.GetByIdAsync(idChat: message.Chat.Id, idTelegram: message.From.Id);
 
-        if (account is not null && memberInChat is not null && (account.IsGlobalRestricted || memberInChat.IsRestricted))
-        {
-            await botClient.DeleteMessageAsync(chatId: message.Chat.Id,
-                messageId: message.MessageId);
-        }
-
         if (message.Chat.Type is not ChatType.Private) return;
         
-        TrySendNotifyMessage(message.Chat.Id);
+        if (account != null && memberInChat != null && (account.IsGlobalRestricted || memberInChat.IsRestricted))
+        {
+            try
+            {
+                await botClient.DeleteMessageAsync(chatId: message.Chat.Id,
+                    messageId: message.MessageId);
+                TrySendNotifyMessage(message.Chat.Id);
+            }
+            catch
+            {
+                // ingore
+            }
+        }
     }
 
     private string BuildNotifyMessage()

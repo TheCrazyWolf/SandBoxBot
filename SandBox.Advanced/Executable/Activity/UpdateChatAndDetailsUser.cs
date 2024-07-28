@@ -14,14 +14,15 @@ public sealed class UpdateChatAndDetailsUser(SandBoxRepository repository, ITele
         if (message.From?.Id is null)
             return;
 
-        await repository.Chats.UpdateAsync(message.Chat);
+        var account = await repository.Accounts.NewUserOrUpdateAsync(message.From);
 
-        var memberInChat = await repository.MembersInChat.UpdateAsync(idChat: message.Chat.Id, user: message.From);
+        await repository.Chats.NewChatOrUpdateAsync(message.Chat);
+
+        var memberInChat =
+            await repository.MembersInChat.NewMemberOrUpdateInChatAsync(idChat: message.Chat.Id, user: message.From);
 
         await repository.MembersInChat.UpdateIsAdmin(memberInChat,
             botClient.IsUserAdminInChat(chatId: message.Chat.Id, userId: message.From.Id));
-
-        var account = await repository.Accounts.NewUserOrUpdateAsync(message.From);
 
         if (account.IsTrustedProfile())
         {
@@ -32,15 +33,24 @@ public sealed class UpdateChatAndDetailsUser(SandBoxRepository repository, ITele
         var totalCountSpam = await repository.Contents.CountMessageFromUser(userId: message.From.Id, isSpam: true);
         var totalCountNoSpam = await repository.Contents.CountMessageFromUser(userId: message.From.Id, isSpam: false);
 
-        if (totalCountNoSpam >= 3)
+        switch (totalCountNoSpam)
         {
-            repository.Accounts.UpdateApprovedAsync(account);
-            return;
+            case >= 3 and <= 29:
+                repository.MembersInChat.UpdateAprrovedAsync(memberInChat);
+                return;
+            case >= 30:
+                repository.Accounts.UpdateApprovedAsync(account);
+                return;
         }
 
-        if (totalCountSpam >= 5)
+        switch (totalCountSpam)
         {
-            repository.Accounts.UpdateRestrictedAsync(account);
+            case >= 3 and <= 8:
+                repository.MembersInChat.UpdateRestrictedAsync(memberInChat);
+                return;
+            case >= 9:
+                repository.Accounts.UpdateRestrictedAsync(account);
+                return;
         }
     }
 }

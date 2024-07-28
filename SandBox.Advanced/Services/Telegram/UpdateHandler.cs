@@ -3,7 +3,6 @@ using SandBox.Advanced.Configs;
 using SandBox.Advanced.Database;
 using SandBox.Advanced.Executable.Activity;
 using SandBox.Advanced.Executable.Analyzers;
-using SandBox.Advanced.Executable.Analyzers.DeleteableMessages;
 using SandBox.Advanced.Executable.Analyzers.Misc;
 using SandBox.Advanced.Executable.Commands;
 using SandBox.Advanced.Executable.Keyboards;
@@ -150,11 +149,9 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _commands = new List<ICommand>
         {
-            new AddNewBlackWord(_repository, bot),
             new CaptchaCommand(_repository, bot),
             new CheckForBlackWord(_repository, bot),
             new QuestionCommand(_repository, bot),
-            new RemoveBlackWord(_repository, bot),
             new SetMeManager(_repository, bot),
             new StartCommand(_repository, bot),
             new TimeCommand(bot),
@@ -176,8 +173,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     private void ConfiguringAnalyzers()
     {
         _analyzers.Add(new DetectAsyncServerTime(_repository, bot));
-        _analyzers.Add(new DetectEventFromRestrictedAccount(_repository, bot));
         _analyzers.Add(new DetectSpamMachineLearn(_repository, bot));
+        _analyzers.Add(new DetectEventFromRestrictedAccount(_repository, bot));
         //_analyzers.Add(new DetectTelegramBotInChat(_repository, bot));
         
         /*foreach (var idChat in Configuration.AntiMediaNonTrustedUsersChats)

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SandBox.Advanced.Database;
 
@@ -10,12 +11,29 @@ using SandBox.Advanced.Database;
 namespace SandBox.Advanced.Migrations
 {
     [DbContext(typeof(SandBoxContext))]
-    partial class SandBoxContextModelSnapshot : ModelSnapshot
+    [Migration("20240727160759_v4")]
+    partial class v4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
+
+            modelBuilder.Entity("SandBox.Models.Blackbox.BlackWord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BlackWords");
+                });
 
             modelBuilder.Entity("SandBox.Models.Blackbox.Captcha", b =>
                 {
@@ -85,18 +103,27 @@ namespace SandBox.Advanced.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("DateTimeJoined")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsGlobalApproved")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsGlobalRestricted")
+                    b.Property<bool>("IsAprroved")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsManagerThisBot")
                         .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsNeedToVerifyByCaptcha")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSpamer")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastActivity")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("LastName")
                         .HasColumnType("TEXT");
@@ -113,6 +140,9 @@ namespace SandBox.Advanced.Migrations
                 {
                     b.Property<long>("IdChat")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("CountNormalMessageToBeAprroved")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("FirstName")
@@ -142,6 +172,12 @@ namespace SandBox.Advanced.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("CountMessage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("CountSpam")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateTimeJoined")

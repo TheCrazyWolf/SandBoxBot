@@ -6,12 +6,34 @@ namespace SandBox.Advanced.Database.Repository;
 
 public class AccountsRepository(SandBoxContext ef)
 {
+    public async Task<Account> AddNew(Account account)
+    {
+        await ef.AddAsync(account);
+        await ef.SaveChangesAsync();
+        return account;
+    }
+
     public async Task<Account> NewUserOrUpdateAsync(User user)
     {
-        var dbAccount = await GetByIdAsync(user.Id) ?? new Account();
+        var dbAccount = await GetByIdAsync(user.Id);
+
+        if (dbAccount is null)
+        {
+            dbAccount = new()
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                UserName = user.Username,
+                IdTelegram = user.Id,
+            };
+            await AddNew(dbAccount);
+            return dbAccount;
+        }
+
         dbAccount.FirstName = user.FirstName;
         dbAccount.LastName = user.LastName;
         dbAccount.UserName = user.Username;
+        dbAccount.IdTelegram = user.Id;
         ef.Update(dbAccount);
         await ef.SaveChangesAsync();
         return dbAccount;
@@ -72,7 +94,6 @@ public class AccountsRepository(SandBoxContext ef)
         account.FirstName = user.FirstName;
         account.LastName = user.LastName;
         account.UserName = user.Username;
-        account.LastActivity = DateTime.Now;
         await Update(account);
     }
 
@@ -82,5 +103,4 @@ public class AccountsRepository(SandBoxContext ef)
         account.IsGlobalRestricted = true;
         await Update(account);
     }
-    
 }

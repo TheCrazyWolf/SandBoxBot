@@ -20,9 +20,6 @@ public static class AccountUtils
 
         if (account.IsGlobalRestricted) 
             return !account.IsGlobalRestricted;
-        
-        if ((DateTime.Now.Date - account.DateTimeJoined.Date).TotalDays >= 5)
-            return true;
 
         return false;
     }

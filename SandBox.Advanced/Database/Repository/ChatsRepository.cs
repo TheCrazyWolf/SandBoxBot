@@ -8,12 +8,7 @@ public class ChatsRepository(SandBoxContext ef)
 {
     public async Task<ChatProps> AddAsync(ChatProps chat)
     {
-        var dbChat = GetByIdAsync(chat.IdChat).Result;
-
-        if (dbChat is not null)
-            return dbChat;
-
-        ef.Add(chat);
+        await ef.AddAsync(chat);
         await ef.SaveChangesAsync();
         return chat;
     }
@@ -34,18 +29,33 @@ public class ChatsRepository(SandBoxContext ef)
         await ef.SaveChangesAsync();
         return chat;
     }
-    
-    public async Task<ChatProps> UpdateAsync(Chat chat)
+
+    public async Task<ChatProps> NewChatOrUpdateAsync(Chat chat)
     {
-        var db = await GetByIdAsync(chat.Id) ?? new ChatProps();
+        var db = await GetByIdAsync(chat.Id);
+
+        if (db is null)
+        {
+            db = new()
+            {
+                Title = chat.Title,
+                Username = chat.Username,
+                FirstName = chat.FirstName,
+                LastName = chat.LastName,
+                Type = chat.Type,
+                IdChat = chat.Id,
+            };
+
+            await AddAsync(db);
+            return db;
+        }
 
         db.Title = chat.Title;
         db.Username = chat.Username;
         db.FirstName = chat.FirstName;
         db.LastName = chat.LastName;
         db.Type = chat.Type;
-        ef.Update(db);
-        await ef.SaveChangesAsync();
+        await UpdateAsync(db);
         return db;
     }
 
