@@ -156,7 +156,9 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new StartCommand(_repository, bot),
             new TimeCommand(bot),
             new MenuCommand(bot),
-            new PrivacyCommand(bot)
+            new PrivacyCommand(bot),
+            new InfoCommand(_repository, bot),
+            new PurgeCommand(_repository, bot)
             // ETC
         };
     }

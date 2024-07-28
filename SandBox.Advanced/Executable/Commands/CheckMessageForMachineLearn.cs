@@ -17,8 +17,13 @@ public class CheckMessageForMachineLearn(SandBoxRepository repository, ITelegram
         var props = await repository.Chats.GetByIdAsync(message.Chat.Id);
         
         if (props is null) return;
+
+        if (message.ReplyToMessage is not null)
+            message.Text = message.ReplyToMessage.Text;
+                
+        if (message.Text == null) return;
         
-        var isMlNet = message.Text.IsSpamMl(props.PercentageToDetectSpamFromMl);
+        var isMlNet = message.Text.GetMessageWithoutUserNameBotsAndCommands().IsSpamMl(props.PercentageToDetectSpamFromMl);
 
         var buildMessage = BuildMessage(  
             isSpamMl : isMlNet.Item1, 
@@ -34,7 +39,7 @@ public class CheckMessageForMachineLearn(SandBoxRepository repository, ITelegram
                 text: message,
                 disableNotification: true);
         }
-        catch (Exception e)
+        catch
         {
             // ignored
         }
@@ -48,7 +53,7 @@ public class CheckMessageForMachineLearn(SandBoxRepository repository, ITelegram
         return
             $"\u2705 Команда выполнена" +
             $"\n\nРезультаты распознавания текста: " +
-            $"\n\n\u26a1\ufe0f Модель машинного обучения: Вероятность {score}%" +
+            $"\n\n\u26a1\ufe0f Модель машинного обучения: Вероятность спама {score}%" +
             $"\n\n{resultMessage}" ;
     }
 }
