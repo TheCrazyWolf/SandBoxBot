@@ -20,14 +20,21 @@ public class StartCommand(SandBoxRepository repository, ITelegramBotClient botCl
         if (account is null)
             return;
 
-        SendMessage(idChat: message.Chat.Id, message: BuildMessage(!account.IsTrustedProfile()));
+        TrySendMessage(idChat: message.Chat.Id, message: BuildMessage(!account.IsTrustedProfile()));
     }
     
-    private void SendMessage(long idChat, string message)
+    private void TrySendMessage(long idChat, string message)
     {
-        botClient.SendTextMessageAsync(chatId: idChat,
-            text: message,
-            disableNotification: true);
+        try
+        {
+            botClient.SendTextMessageAsync(chatId: idChat,
+                text: message,
+                disableNotification: true);
+        }
+        catch 
+        {
+            // ignored
+        }
     }
 
     private string BuildMessage(bool isTrusted)

@@ -24,26 +24,31 @@ public class CheckMessageForMachineLearn(SandBoxRepository repository, ITelegram
             isSpamMl : isMlNet.Item1, 
             score: isMlNet.Item2);
         
-        SendMessage(message.Chat.Id, buildMessage);
+        TrySendMessage(message.Chat.Id, buildMessage);
     }
-    private void SendMessage(long idChat, string message)
+    private void TrySendMessage(long idChat, string message)
     {
-        botClient.SendTextMessageAsync(chatId: idChat,
-            text: message,
-            disableNotification: true);
+        try
+        {
+            botClient.SendTextMessageAsync(chatId: idChat,
+                text: message,
+                disableNotification: true);
+        }
+        catch (Exception e)
+        {
+            // ignored
+        }
     }
 
     private string BuildMessage(bool isSpamMl, float score)
     {
-        var resultFromMl = isSpamMl ? "\ud83d\udeab" : "\u2705";
-        
         var resultMessage = isSpamMl 
             ? "\u26a0\ufe0f Похоже, что это является спамом и подлежит блокировке"
             : "\u2705 Похоже, что это обычное сообщение";
         return
             $"\u2705 Команда выполнена" +
             $"\n\nРезультаты распознавания текста: " +
-            $"\n\n\u26a1\ufe0f Модель машинного обучения:  {resultFromMl}\nВероятность {score}%" +
+            $"\n\n\u26a1\ufe0f Модель машинного обучения: Вероятность {score}%" +
             $"\n\n{resultMessage}" ;
     }
 }

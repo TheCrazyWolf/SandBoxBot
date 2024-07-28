@@ -22,26 +22,33 @@ public class SetMeManager(SandBoxRepository repository, ITelegramBotClient botCl
         
         if (string.IsNullOrEmpty(message.Text))
         {
-            SendMessage(idChat: message.Chat.Id, message: BuildErrorMessage());
+            TrySendMessage(idChat: message.Chat.Id, message: BuildErrorMessage());
             return;
         }
 
         if (message.Text == UpdateHandler.Configuration.ManagerPasswordSecret && account != null)
         {
             repository.Accounts.UpdateAdminAsync(account);
-            SendMessage(idChat: message.Chat.Id, message: BuildSuccessMessage());
+            TrySendMessage(idChat: message.Chat.Id, message: BuildSuccessMessage());
             return;
         }
 
-        SendMessage(idChat: message.Chat.Id, message: BuildErrorMessage());
+        TrySendMessage(idChat: message.Chat.Id, message: BuildErrorMessage());
     }
     
 
-    private void SendMessage(long idChat, string message)
+    private void TrySendMessage(long idChat, string message)
     {
-        botClient.SendTextMessageAsync(chatId: idChat,
-            text: message,
-            disableNotification: true);
+        try
+        {
+            botClient.SendTextMessageAsync(chatId: idChat,
+                text: message,
+                disableNotification: true);
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     private string BuildSuccessMessage()

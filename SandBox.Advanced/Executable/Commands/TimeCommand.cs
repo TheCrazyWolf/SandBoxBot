@@ -20,26 +20,33 @@ public class TimeCommand(ITelegramBotClient botClient) : Command
 
         if (result.Item2 && !IsSyncTime(result.Item1, localTime))
         {
-            SendMessage(idChat: message.Chat.Id, message: _timeServer.
+            TrySendMessage(idChat: message.Chat.Id, message: _timeServer.
                 BuildMessageAsyncTime(result.Item1, localTime));
             return;
         }
         else if(!result.Item2)
         {
-            SendMessage(idChat: message.Chat.Id, message: _timeServer.
+            TrySendMessage(idChat: message.Chat.Id, message: _timeServer.
                 BuildMessageUnsuccessCheck(localTime));
             return;
         }
 
-        SendMessage(idChat: message.Chat.Id, message: _timeServer
+        TrySendMessage(idChat: message.Chat.Id, message: _timeServer
             .BuildMessageSyncTime(result.Item1, localTime));
     }
     
-    private void SendMessage(long idChat, string message)
+    private void TrySendMessage(long idChat, string message)
     {
-        botClient.SendTextMessageAsync(chatId: idChat,
-            text: message,
-            disableNotification: true);
+        try
+        {
+            botClient.SendTextMessageAsync(chatId: idChat,
+                text: message,
+                disableNotification: true);
+        }
+        catch
+        {
+            // ignored
+        }
     }
     
     private async Task<(DateTime, bool)> GetServerTimeNow()

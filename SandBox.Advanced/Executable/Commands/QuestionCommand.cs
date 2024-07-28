@@ -21,13 +21,13 @@ public class QuestionCommand(SandBoxRepository repository, ITelegramBotClient bo
 
         if (questions.Count is 0)
         {
-            SendMessage(idChat: message.Chat.Id,
+            TrySendMessage(idChat: message.Chat.Id,
                 message: BuildErrorMessage(),
                 keyboardButtons: new List<InlineKeyboardButton>());
             return;
         }
 
-        SendMessage(idChat: message.Chat.Id,
+        TrySendMessage(idChat: message.Chat.Id,
             message: BuildSuccessMessage(questions),
             keyboardButtons: GenerateKeyboardQuestions(questions, message.Chat.Id));
     }
@@ -38,12 +38,19 @@ public class QuestionCommand(SandBoxRepository repository, ITelegramBotClient bo
             .WithCallbackData($"{item.Id}", $"question {item.Id} {chatId}")).ToList();
     }
 
-    private void SendMessage(long idChat, string message, IReadOnlyCollection<InlineKeyboardButton> keyboardButtons)
+    private void TrySendMessage(long idChat, string message, IReadOnlyCollection<InlineKeyboardButton> keyboardButtons)
     {
-        botClient.SendTextMessageAsync(chatId: idChat,
-            text: message,
-            replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
-            disableNotification: true);
+        try
+        {
+            botClient.SendTextMessageAsync(chatId: idChat,
+                text: message,
+                replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
+                disableNotification: true);
+        }
+        catch 
+        {
+            // ignored
+        }
     }
 
     private string BuildSuccessMessage(IList<Question> questions)
