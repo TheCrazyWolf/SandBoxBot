@@ -89,7 +89,7 @@ public class DetectSpamMachineLearn(
         var memberAdminThisChat = repository.MembersInChat.GetAdminsFromChat(originalMessage.Chat.Id).Result
             .Select(x => Convert.ToInt64(x.IdTelegram));
 
-        var memberManagers = repository.Accounts.GetManagers().Result
+        var memberManagers = repository.Accounts.GetManagersAsync().Result
             .Select(x => x.IdTelegram);
 
         var combinedMembers = memberAdminThisChat.Union(memberManagers).ToList();

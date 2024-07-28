@@ -1,22 +1,16 @@
-using SandBox.Models.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace SandBox.Advanced.Database.Repository;
 
 public class EventRepository(SandBoxContext ef)
 {
-    public Task<int> GetCountEventsFromIdAccount(long idTelegram, long chatId,
+    public async Task<int> GetCountEventsFromIdAccountAsync(long idTelegram, long chatId,
         DateTime dateTimeStart, DateTime dateTimeEnd)
     {
-        return Task.FromResult<int>(ef.Events
-            .Count(x=> x.IdTelegram == idTelegram 
+        return await ef.Events
+            .CountAsync(x=> x.IdTelegram == idTelegram 
                        && x.ChatId == chatId
                        && x.DateTime >= dateTimeStart 
-                       && x.DateTime<= dateTimeEnd));
-    }
-    
-    public Task<Event?> GetById(long idEvent)
-    {
-        return Task.FromResult(ef.Events
-            .FirstOrDefault(x=> x.Id == idEvent));
+                       && x.DateTime<= dateTimeEnd);
     }
 }

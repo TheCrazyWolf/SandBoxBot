@@ -155,7 +155,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new SetMeManager(_repository, bot),
             new StartCommand(_repository, bot),
             new TimeCommand(bot),
-            new MenuCommand(bot)
+            new MenuCommand(bot),
+            new PrivacyCommand(bot)
             // ETC
         };
     }
@@ -189,8 +190,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         _callBackQueryies = new List<ICallQuery>
         {
-            new BanKeyboard(_repository, bot),
-            new KickKeyboard(_repository, bot),
+            new BanKeyboard(bot),
+            new KickKeyboard(bot),
             new CaptchaFromChat(_repository, bot),
             new NoSpamFromEvent(_repository, bot),
             new QuestionFromDb(_repository, bot),

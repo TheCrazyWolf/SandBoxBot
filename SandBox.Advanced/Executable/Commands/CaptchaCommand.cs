@@ -18,16 +18,16 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
         new CaptchaMath(), new CaptchaEmoji(), new CaptchaImNotBot()
     };
 
-    public override void Execute(Message message)
+    public override async void Execute(Message message)
     {
         if (message.From is null)
             return;
 
-        var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
+        var account = await repository.Accounts.GetByIdAsync(message.From.Id);
 
         if ((account != null) && account.IsTrustedProfile())
         {
-            SendMessage(idChat: message.Chat.Id,
+            TrySendMessage(idChat: message.Chat.Id,
                 message: BuildMessageIfNoNeedCaptcha(),
                 new LinkedList<InlineKeyboardButton>());
 
@@ -35,9 +35,9 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
             return;
         }
 
-        if (repository.Captchas.ContainsCaptchas(message.From.Id))
+        if (await repository.Captchas.ContainsCaptchasAsync(message.From.Id))
         {
-            SendMessage(idChat: message.Chat.Id,
+            TrySendMessage(idChat: message.Chat.Id,
                 message: BuildIfContainsNonCompletedCaptcha(),
                 new LinkedList<InlineKeyboardButton>());
             return;
@@ -46,20 +46,27 @@ public class CaptchaCommand(SandBoxRepository repository, ITelegramBotClient bot
         var captchaResult = _captchas.OrderBy(_ => new Random().Next())
             .First().Generate(message.From.Id);
         
-        repository.Captchas.Add(captchaResult.CatchaToDb);
+        await repository.Captchas.NewCaptchaAsync(captchaResult.CatchaToDb);
         
-        SendMessage(idChat: message.Chat.Id,
+        TrySendMessage(idChat: message.Chat.Id,
             message: BuildMsgWithCaptcha(captchaResult),
             GenerateKeyboard(captchaResult));
     }
     
 
-    private void SendMessage(long idChat, string message, IReadOnlyCollection<InlineKeyboardButton> keyboardButtons)
+    private void TrySendMessage(long idChat, string message, IReadOnlyCollection<InlineKeyboardButton> keyboardButtons)
     {
-        botClient.SendTextMessageAsync(chatId: idChat,
-            text: message,
-            replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
-            disableNotification: true);
+        try
+        {
+            botClient.SendTextMessageAsync(chatId: idChat,
+                text: message,
+                replyMarkup: new InlineKeyboardMarkup(keyboardButtons),
+                disableNotification: true);
+        }
+        catch 
+        {
+            // ignored
+        }
     }
 
     private string BuildMessageIfNoNeedCaptcha()

@@ -12,14 +12,14 @@ public class DetectFastJoins(SandBoxRepository repository, ITelegramBotClient bo
 {
     private const int ConstMaxActivityPerMinute = 10;
 
-    public void Execute(Message message)
+    public async void Execute(Message message)
     {
         if (message.From is null || message.Chat.Id != idChat)
             return;
 
         var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
-        var totalJoins = repository.Joins
-            .GetCountJoinsFromChat( message.Chat.Id,
+        var totalJoins = await repository.Joins
+            .GetCountJoinsFromChatAsync( message.Chat.Id,
                 DateTime.Now.AddMinutes(-1), DateTime.Now);
 
         if (account is null || totalJoins is 0)
@@ -37,7 +37,7 @@ public class DetectFastJoins(SandBoxRepository repository, ITelegramBotClient bo
     
     private void NotifyManagers(Message originalMessage, IList<IList<InlineKeyboardButton>> keyboardButtons)
     {
-        foreach (var id in repository.Accounts.GetManagers().Result)
+        foreach (var id in repository.Accounts.GetManagersAsync().Result)
         {
             try
             {

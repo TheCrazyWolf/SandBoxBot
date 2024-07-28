@@ -1,11 +1,10 @@
 using SandBox.Advanced.Abstract;
-using SandBox.Advanced.Database;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Keyboards;
 
-public class KickKeyboard(SandBoxRepository repository, ITelegramBotClient botClient) : CallQuery
+public class KickKeyboard(ITelegramBotClient botClient) : CallQuery
 {
     public override string Name { get; set; } = "kick"; // FORMAT: KICK ID_CHAT ID_USER
 
@@ -28,7 +27,7 @@ public class KickKeyboard(SandBoxRepository repository, ITelegramBotClient botCl
         {
             return callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         }
-        catch (Exception e)
+        catch
         {
             return null;
         }

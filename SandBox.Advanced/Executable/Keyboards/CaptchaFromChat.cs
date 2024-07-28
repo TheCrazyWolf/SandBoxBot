@@ -9,46 +9,43 @@ public class CaptchaFromChat(SandBoxRepository repository, ITelegramBotClient bo
 {
     public override string Name { get; set; } = "captcha";
 
-    public override void Execute(CallbackQuery callbackQuery)
+    public override async void Execute(CallbackQuery callbackQuery)
     {
         var words = TryGetArrayFromCallBack(callbackQuery);
 
         if (words is null) return;
 
-        var captcha = repository.Captchas.GetById(Convert.ToInt64(words[0])).Result;
+        var captcha = await repository.Captchas.GetByIdAsync(Convert.ToInt64(words[0]));
 
-        if (captcha is null)
-            return;
+        if (captcha is null) return;
 
         if (captcha.AttemptsRemain <= 0 || captcha.DateTimeExpired <= DateTime.Now ||
             captcha.IdTelegram != callbackQuery.From.Id)
         {
-            botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildErrorCaptcha(), true);
-            repository.Captchas.UpdateDecrementAttemp(captcha);
-            if (callbackQuery.Message != null)
-                botClient.DeleteMessageAsync(chatId: callbackQuery.Message.Chat.Id,
-                    messageId: callbackQuery.Message.MessageId);
+            TryAnswerOnCallBack(callbackQuery.Id, BuildErrorCaptcha());
+            repository.Captchas.UpdateDecrementAttempAsync(captcha);
+            
+            if (callbackQuery.Message != null) 
+                TryRemoveMessageAfterCallback(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
             return;
         }
 
         if (words[1] != captcha.Content)
         {
-            botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildWrongCaptcha(), true);
-            repository.Captchas.UpdateDecrementAttemp(captcha);
+            TryAnswerOnCallBack(callbackQuery.Id, BuildWrongCaptcha());
+            repository.Captchas.UpdateDecrementAttempAsync(captcha);
             return;
         }
 
-        var account = repository.Accounts.GetByIdAsync(Convert.ToInt64(captcha.IdTelegram)).Result;
+        var account = await repository.Accounts.GetByIdAsync(Convert.ToInt64(captcha.IdTelegram));
 
-        if (account is null)
-            return;
+        if (account is null) return;
 
         repository.Accounts.UpdateApprovedAsync(account);
-        botClient.AnswerCallbackQueryAsync(callbackQuery.Id, BuildSuccessCaptcha(), true);
+        TryAnswerOnCallBack(callbackQuery.Id, BuildSuccessCaptcha());
 
-        if (callbackQuery.Message != null)
-            botClient.DeleteMessageAsync(chatId: callbackQuery.Message.Chat.Id,
-                messageId: callbackQuery.Message.MessageId);
+        if (callbackQuery.Message != null) 
+            TryRemoveMessageAfterCallback(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
     }
 
     private string[]? TryGetArrayFromCallBack(CallbackQuery callbackQuery)
@@ -57,9 +54,33 @@ public class CaptchaFromChat(SandBoxRepository repository, ITelegramBotClient bo
         {
             return callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         }
-        catch (Exception e)
+        catch 
         {
             return null;
+        }
+    }
+    
+    private async void TryRemoveMessageAfterCallback(long chatId, int messageId)
+    {
+        try
+        {
+            await botClient.DeleteMessageAsync(chatId: chatId, messageId: messageId);
+        }
+        catch
+        {
+            //ignored
+        }
+    }
+    
+    private async void TryAnswerOnCallBack(string callbackQueryId, string message)
+    {
+        try
+        {
+            await botClient.AnswerCallbackQueryAsync(callbackQueryId,message, true);
+        }
+        catch
+        {
+            // ingored
         }
     }
 

@@ -1,50 +1,52 @@
+using Microsoft.EntityFrameworkCore;
 using SandBox.Models.Events;
+
 namespace SandBox.Advanced.Database.Repository;
 
 public class EventsJoinedRepository(SandBoxContext ef)
 {
-    public Task<EventJoined> Add(EventJoined @event)
+    public async Task<EventJoined> NewJoinAsync(EventJoined @event)
     {
-        ef.Add(@event);
-        ef.SaveChanges();
-        return Task.FromResult(@event);
+        await ef.AddAsync(@event);
+        await ef.SaveChangesAsync();
+        return @event;
     }
 
-    public Task<EventJoined?> GetById(long idEvent)
+    public async Task<EventJoined?> GetByIdAsync(long idEvent)
     {
-        return Task.FromResult(ef.EventsJoined.FirstOrDefault(x => x.Id == idEvent));
+        return await ef.EventsJoined.FirstOrDefaultAsync(x => x.Id == idEvent);
     }
 
-    public Task<bool> Exists(long idEvent)
+    public async Task<bool> ExistsAsync(long idEvent)
     {
-        return Task.FromResult(ef.EventsJoined.Any(x => x.Id == idEvent));
+        return await ef.EventsJoined.AnyAsync(x => x.Id == idEvent);
     }
 
-    public Task<EventJoined> Update(EventJoined blackWord)
+    public async Task<EventJoined> UpdateAsync(EventJoined eventJoin)
     {
-        ef.Update(blackWord);
-        ef.SaveChanges();
-        return Task.FromResult(blackWord);
+        ef.Update(eventJoin);
+        await ef.SaveChangesAsync();
+        return eventJoin;
     }
 
-    public Task<bool> Delete(long idEvent)
+    public async Task<bool> RemoveAsync(long idEvent)
     {
-        var item = GetById(idEvent).Result;
+        var item = GetByIdAsync(idEvent).Result;
 
         if (item is null)
-            return Task.FromResult(false);
+            return false;
 
         ef.Remove(item);
-        ef.SaveChanges();
+        await ef.SaveChangesAsync();
 
-        return Task.FromResult(true);
+        return true;
     }
 
-    public int GetCountJoinsFromChat(long chatId, DateTime start, DateTime end)
+    public async Task<int> GetCountJoinsFromChatAsync(long chatId, DateTime start, DateTime end)
     {
-        return ef.EventsJoined
-            .Count(x => x.ChatId == chatId
-                        && x.DateTime >= start
-                        && x.DateTime <= end);
+        return await ef.EventsJoined
+            .CountAsync(x => x.ChatId == chatId
+                             && x.DateTime >= start
+                             && x.DateTime <= end);
     }
 }

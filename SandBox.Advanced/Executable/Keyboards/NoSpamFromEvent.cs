@@ -37,7 +37,7 @@ public class NoSpamFromEvent(SandBoxRepository repository, ITelegramBotClient bo
         {
             return callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         }
-        catch (Exception e)
+        catch
         {
             return null;
         }

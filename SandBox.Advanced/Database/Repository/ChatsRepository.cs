@@ -59,7 +59,7 @@ public class ChatsRepository(SandBoxContext ef)
         return db;
     }
 
-    public async Task<bool> Delete(long idChat)
+    public async Task<bool> RemoveAsync(long idChat)
     {
         var item = await GetByIdAsync(idChat);
 

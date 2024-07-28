@@ -6,7 +6,7 @@ namespace SandBox.Advanced.Database.Repository;
 
 public class AccountsRepository(SandBoxContext ef)
 {
-    public async Task<Account> AddNew(Account account)
+    public async Task<Account> AddNewAsync(Account account)
     {
         await ef.AddAsync(account);
         await ef.SaveChangesAsync();
@@ -26,7 +26,7 @@ public class AccountsRepository(SandBoxContext ef)
                 UserName = user.Username,
                 IdTelegram = user.Id,
             };
-            await AddNew(dbAccount);
+            await AddNewAsync(dbAccount);
             return dbAccount;
         }
 
@@ -44,7 +44,7 @@ public class AccountsRepository(SandBoxContext ef)
         return await ef.Accounts.FirstOrDefaultAsync(x => x.IdTelegram == idTelegram);
     }
 
-    public async Task<List<Account>> GetManagers()
+    public async Task<List<Account>> GetManagersAsync()
     {
         return await ef.Accounts.Where(x => x.IsManagerThisBot == true).ToListAsync();
     }
@@ -54,7 +54,7 @@ public class AccountsRepository(SandBoxContext ef)
         return await ef.Accounts.AnyAsync(x => x.IdTelegram == idTelegram);
     }
 
-    public async Task<Account> Update(Account account)
+    public async Task<Account> UpdateAsync(Account account)
     {
         ef.Update(account);
         await ef.SaveChangesAsync();
@@ -78,29 +78,29 @@ public class AccountsRepository(SandBoxContext ef)
     {
         account.IsGlobalApproved = true;
         account.IsGlobalRestricted = false;
-        await Update(account);
+        await UpdateAsync(account);
     }
 
-    public async void UpdateAdmin(Account account)
+    public async void UpdateAdminAsync(Account account)
     {
         account.IsGlobalApproved = true;
         account.IsGlobalRestricted = false;
         account.IsManagerThisBot = true;
-        await Update(account);
+        await UpdateAsync(account);
     }
 
-    public async void UpdateDetails(Account account, User user)
+    public async void UpdateDetailsAsync(Account account, User user)
     {
         account.FirstName = user.FirstName;
         account.LastName = user.LastName;
         account.UserName = user.Username;
-        await Update(account);
+        await UpdateAsync(account);
     }
 
     public async void UpdateRestrictedAsync(Account account)
     {
         account.IsGlobalApproved = false;
         account.IsGlobalRestricted = true;
-        await Update(account);
+        await UpdateAsync(account);
     }
 }

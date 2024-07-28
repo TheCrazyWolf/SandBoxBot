@@ -48,7 +48,7 @@ public class RestoreFromEvent(SandBoxRepository repository, ITelegramBotClient b
         {
             return callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         }
-        catch (Exception e)
+        catch
         {
             return null;
         }

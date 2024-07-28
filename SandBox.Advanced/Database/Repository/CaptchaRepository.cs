@@ -1,57 +1,58 @@
+using Microsoft.EntityFrameworkCore;
 using SandBox.Models.Blackbox;
 
 namespace SandBox.Advanced.Database.Repository;
 
 public class CaptchaRepository(SandBoxContext ef)
 {
-    public Task<Captcha> Add(Captcha captcha)
+    public async Task<Captcha> NewCaptchaAsync(Captcha captcha)
     {
-        ef.Add(captcha);
-        ef.SaveChanges();
-        return Task.FromResult(captcha);
+        await ef.AddAsync(captcha);
+        await ef.SaveChangesAsync();
+        return captcha;
     }
 
-    public Task<Captcha?> GetById(long idCaptcha)
+    public async Task<Captcha?> GetByIdAsync(long idCaptcha)
     {
-        return Task.FromResult(ef.Captchas.FirstOrDefault(x => x.Id == idCaptcha));
+        return await ef.Captchas.FirstOrDefaultAsync(x => x.Id == idCaptcha);
     }
 
-    public Task<bool> Exists(long idCaptcha)
+    public async Task<bool> ExistsAsync(long idCaptcha)
     {
-        return Task.FromResult(ef.EventsJoined.Any(x => x.Id == idCaptcha));
+        return await ef.EventsJoined.AnyAsync(x => x.Id == idCaptcha);
     }
 
-    public Task<Captcha> Update(Captcha captcha)
+    public async Task<Captcha> UpdateAsync(Captcha captcha)
     {
         ef.Update(captcha);
-        ef.SaveChanges();
-        return Task.FromResult(captcha);
+        await ef.SaveChangesAsync();
+        return captcha;
     }
 
-    public Task<bool> Delete(long idCaptcha)
+    public async Task<bool> RemoveAsync(long idCaptcha)
     {
-        var item = GetById(idCaptcha).Result;
+        var item = GetByIdAsync(idCaptcha).Result;
 
         if (item is null)
-            return Task.FromResult(false);
+            return false;
 
         ef.Remove(item);
-        ef.SaveChanges();
+        await ef.SaveChangesAsync();
 
-        return Task.FromResult(true);
+        return true;
     }
 
-    public void UpdateDecrementAttemp(Captcha captha)
+    public async void UpdateDecrementAttempAsync(Captcha captha)
     {
         if (captha.AttemptsRemain <= 0)
             return;
         captha.AttemptsRemain--;
-        Update(captha);
+        await UpdateAsync(captha);
     }
 
-    public bool ContainsCaptchas(long fromId)
+    public async Task<bool> ContainsCaptchasAsync(long fromId)
     {
-        return ef.Captchas.Any(x => x.IdTelegram == fromId
+        return await ef.Captchas.AnyAsync(x => x.IdTelegram == fromId
                                     && x.DateTimeExpired >= DateTime.Now
                                     && x.AttemptsRemain > 0);
     }

@@ -28,7 +28,7 @@ public class SetMeManager(SandBoxRepository repository, ITelegramBotClient botCl
 
         if (message.Text == UpdateHandler.Configuration.ManagerPasswordSecret && account != null)
         {
-            repository.Accounts.UpdateAdmin(account);
+            repository.Accounts.UpdateAdminAsync(account);
             SendMessage(idChat: message.Chat.Id, message: BuildSuccessMessage());
             return;
         }

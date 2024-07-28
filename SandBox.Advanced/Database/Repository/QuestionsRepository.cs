@@ -1,22 +1,23 @@
 using FuzzySharp;
+using Microsoft.EntityFrameworkCore;
 using SandBox.Models.Telegram;
 
 namespace SandBox.Advanced.Database.Repository;
 
 public class QuestionsRepository(SandBoxContext ef)
 {
-    public Task<Question> Add(Question question)
+    public async Task<Question> NewQuestionAsync(Question question)
     {
-        ef.Add(question);
-        ef.SaveChanges();
-        return Task.FromResult(question);
+        await ef.AddAsync(question);
+        await ef.SaveChangesAsync();
+        return question;
     }
 
-    public Task<Question?> GetById(long question)
+    public async Task<Question?> GetByIdAsync(long question)
     {
-        return Task.FromResult(ef.Questions.FirstOrDefault(x => x.Id == question));
+        return await ef.Questions.FirstOrDefaultAsync(x => x.Id == question);
     }
-    
+
     /*public Task<IList<Question>> GetByContentQuestion(string searchText)
     {
         var questions = ef.Questions.ToList();
@@ -41,10 +42,10 @@ public class QuestionsRepository(SandBoxContext ef)
 
         return Task.FromResult<IList<Question>>(results);
     }*/
-    
-    public Task<IList<Question>> GetByContentQuestion(string question)
+
+    public async Task<IList<Question>> GetByContentQuestionAsync(string question)
     {
-        var questions = ef.Questions.ToList();
+        var questions = await ef.Questions.ToListAsync();
 
         var results = questions
             .Select(q => new
@@ -58,26 +59,26 @@ public class QuestionsRepository(SandBoxContext ef)
             .Take(5)
             .ToList();
 
-        return Task.FromResult<IList<Question>>(results);
+        return results;
     }
 
-    public Task<Question> Update(Question question)
+    public async Task<Question> UpdateAsync(Question question)
     {
         ef.Update(question);
-        ef.SaveChanges();
-        return Task.FromResult(question);
+        await ef.SaveChangesAsync();
+        return question;
     }
 
-    public Task<bool> Delete(long idQuestion)
+    public async Task<bool> RemoveAsync(long idQuestion)
     {
-        var item = GetById(idQuestion).Result;
+        var item = GetByIdAsync(idQuestion).Result;
 
         if (item is null)
-            return Task.FromResult(false);
+            return false;
 
         ef.Remove(item);
-        ef.SaveChanges();
-        
-        return Task.FromResult(true);
+        await ef.SaveChangesAsync();
+
+        return true;
     }
 }

@@ -20,7 +20,7 @@ public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramB
         var member = await repository.MembersInChat.GetByIdAsync(idChat: message.Chat.Id, idTelegram: message.From.Id);
         
         var totalMessage = repository.Events
-            .GetCountEventsFromIdAccount(message.From.Id,
+            .GetCountEventsFromIdAccountAsync(message.From.Id,
                 message.Chat.Id,
                 DateTime.Now.AddMinutes(-1), DateTime.Now).Result;
 
@@ -41,7 +41,7 @@ public class DetectFastActivityFromUser(SandBoxRepository repository, ITelegramB
         var memberAdminThisChat = repository.MembersInChat.GetAdminsFromChat(originalMessage.Chat.Id).Result
             .Select(x => Convert.ToInt64(x.IdTelegram));
 
-        var memberManagers = repository.Accounts.GetManagers().Result
+        var memberManagers = repository.Accounts.GetManagersAsync().Result
             .Select(x => x.IdTelegram);
 
         var combinedMembers = memberAdminThisChat.Union(memberManagers).ToList();

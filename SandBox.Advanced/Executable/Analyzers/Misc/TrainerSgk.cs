@@ -38,7 +38,7 @@ public class TrainerSgk(SandBoxRepository repository,
             Answer = answer.GetMessageForFaq()
         };
 
-        repository.Questions.Add(quest);
+        repository.Questions.NewQuestionAsync(quest);
     }
     
     

@@ -53,7 +53,7 @@ public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient 
 
     private void NotifyManagers(string message)
     {
-        foreach (var id in repository.Accounts.GetManagers().Result)
+        foreach (var id in repository.Accounts.GetManagersAsync().Result)
         {
             try
             {

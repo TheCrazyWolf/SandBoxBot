@@ -16,7 +16,7 @@ public class QuestionFromDb(SandBoxRepository repository, ITelegramBotClient bot
 
         if (words is null) return;
 
-        var quest = repository.Questions.GetById(Convert.ToInt64(words[0])).Result;
+        var quest = repository.Questions.GetByIdAsync(Convert.ToInt64(words[0])).Result;
 
         if (quest is null)
             return;
@@ -33,7 +33,7 @@ public class QuestionFromDb(SandBoxRepository repository, ITelegramBotClient bot
         {
             return callbackQuery.Data?.Split(' ').Skip(1).ToArray();
         }
-        catch (Exception e)
+        catch
         {
             return null;
         }

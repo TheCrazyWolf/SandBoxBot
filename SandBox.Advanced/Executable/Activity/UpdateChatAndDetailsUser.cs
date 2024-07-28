@@ -27,6 +27,7 @@ public sealed class UpdateChatAndDetailsUser(SandBoxRepository repository, ITele
         if (account.IsTrustedProfile())
         {
             repository.Accounts.UpdateApprovedAsync(account);
+            repository.MembersInChat.UpdateAprrovedAsync(memberInChat);
             return;
         }
 
