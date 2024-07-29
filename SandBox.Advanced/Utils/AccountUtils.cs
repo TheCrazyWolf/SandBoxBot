@@ -10,7 +10,7 @@ public static class AccountUtils
             return account.IsManagerThisBot;
 
         if (account.IsGlobalApproved)
-            return !account.IsGlobalApproved;
+            return account.IsGlobalApproved;
 
         if (account.IsGlobalRestricted)
             return !account.IsGlobalRestricted;

@@ -8,6 +8,9 @@ public static class MemberInChatUtils
     {
         if (memberInChat.IsAdmin)
             return memberInChat.IsAdmin;
+        
+        if (memberInChat.IsApproved)
+            return memberInChat.IsApproved;
 
         if ((DateTime.Now.Date - memberInChat.DateTimeJoined.Date).TotalDays >= 5)
             return true;
