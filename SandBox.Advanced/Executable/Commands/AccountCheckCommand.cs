@@ -6,9 +6,9 @@ using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Executable.Commands;
 
-public class InfoCommand(SandBoxRepository repository, ITelegramBotClient botClient) : Command
+public class AccountCheckCommand(SandBoxRepository repository, ITelegramBotClient botClient) : Command
 {
-    public override string Name { get; set; } = "/info";
+    public override string Name { get; set; } = "/acheck";
 
     public override async void Execute(Message message)
     {
