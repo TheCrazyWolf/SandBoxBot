@@ -34,7 +34,7 @@ public class DetectSpamMachineLearn(SandBoxRepository repository, ITelegramBotCl
 
         if (account.IsGlobalRestricted && member.IsApproved && member.IdChat == message.Chat.Id)
             @event.IsSpam = false; // локальная амнистия (т.е. в текущем чате)
-        else if(account.IsGlobalRestricted)
+        else if (account.IsGlobalRestricted)
             @event.IsSpam = true;
         else if (member.IsTrustedMember() || account.IsTrustedProfile())
         {

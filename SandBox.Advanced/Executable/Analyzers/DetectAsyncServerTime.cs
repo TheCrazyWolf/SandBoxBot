@@ -10,18 +10,23 @@ public class DetectAsyncServerTime(SandBoxRepository repository, ITelegramBotCli
 {
     private static bool _isFirstExecute = true;
 
-    public void Execute(Message message)
+    public async void Execute(Message message)
     {
         if (!_isFirstExecute)
             return;
 
-        var result = GetServerTimeNow().Result;
+        var result = await GetServerTimeNow();
         var localTime = DateTime.Now;
 
-        if (result.Item2 && !IsSyncTime(result.Item1, localTime))
-            NotifyManagers(BuildMessageAsyncTime(result.Item1, localTime));
-        else if (!result.Item2)
-            NotifyManagers(BuildMessageUnsuccessCheck(localTime));
+        switch (result.Item2)
+        {
+            case true when !IsSyncTime(result.Item1, localTime):
+                NotifyManagers(BuildMessageAsyncTime(result.Item1, localTime));
+                break;
+            case false:
+                NotifyManagers(BuildMessageUnsuccessCheck(localTime));
+                break;
+        }
         
         _isFirstExecute = false;
     }
@@ -47,13 +52,13 @@ public class DetectAsyncServerTime(SandBoxRepository repository, ITelegramBotCli
         return (serverDateTime.Date == localDateTime.Date) && serverTime == localTime;
     }
 
-    private void NotifyManagers(string message)
+    private async void NotifyManagers(string message)
     {
-        foreach (var id in repository.Accounts.GetManagersAsync().Result)
+        foreach (var id in await repository.Accounts.GetManagersAsync())
         {
             try
             {
-                botClient.SendTextMessageAsync(chatId: id.IdTelegram,
+                _ = botClient.SendTextMessageAsync(chatId: id.IdTelegram,
                     text: message,
                     disableNotification: true);
             }
