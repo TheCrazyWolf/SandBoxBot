@@ -20,11 +20,11 @@ public class MenuCommand(ITelegramBotClient botClient) : Command
         TrySendMessage(message.Chat.Id, BuildUsageMessage());
     }
 
-    private async void TrySendMessage(long idChat, string message)
+    private void TrySendMessage(long idChat, string message)
     {
         try
         {
-            _ = botClient.SendTextMessageAsync(chatId: idChat,
+            botClient.SendTextMessageAsync(chatId: idChat,
                 text: message,
                 disableNotification: true);
         }

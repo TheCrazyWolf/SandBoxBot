@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using SandBox_Advanced;
 using SandBox.Advanced.Configs;
 using SandBox.Advanced.Services.Telegram;
+using AntiWorkSpam = SandBox.Advanced.MachineLearn.AntiWorkSpam;
 
 namespace SandBox.Advanced.Utils;
 

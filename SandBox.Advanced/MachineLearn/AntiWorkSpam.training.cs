@@ -43,7 +43,7 @@ namespace SandBox_Advanced
         /// <returns>IDataView with loaded training data.</returns>
         public static IDataView LoadIDataViewFromFile(MLContext mlContext, string inputDataFilePath, char separatorChar, bool hasHeader)
         {
-            return mlContext.Data.LoadFromTextFile<ModelInput>(inputDataFilePath, separatorChar, hasHeader);
+            return mlContext.Data.LoadFromTextFile<SandBox.Advanced.MachineLearn.AntiWorkSpam.ModelInput>(inputDataFilePath, separatorChar, hasHeader);
         }
 
 
