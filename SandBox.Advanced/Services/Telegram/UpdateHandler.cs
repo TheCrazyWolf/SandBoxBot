@@ -159,7 +159,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new PrivacyCommand(bot),
             new AccountCheckCommand(_repository, bot),
             new PurgeCommand(_repository, bot),
-            new CountDownCommand(_repository, bot)
+            new CountDownCommand(_repository, bot),
+            new RemoveCommand(_repository, bot)
             // ETC
         };
     }
