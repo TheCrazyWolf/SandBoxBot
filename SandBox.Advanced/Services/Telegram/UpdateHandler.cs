@@ -158,7 +158,8 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
             new MenuCommand(bot),
             new PrivacyCommand(bot),
             new AccountCheckCommand(_repository, bot),
-            new PurgeCommand(_repository, bot)
+            new PurgeCommand(_repository, bot),
+            new CountDownCommand(_repository, bot)
             // ETC
         };
     }
@@ -207,5 +208,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         {
             _services.Add(new WorkTimeChatTimer(_repository, bot, idChat));
         }
+        
+        _services.Add(new EndPriem(_repository, bot));
     }
 }

@@ -16,7 +16,8 @@ public class QuestionCommand(SandBoxRepository repository, ITelegramBotClient bo
     {
         if (message.From is null || message.Text is null) return;
 
-        var questions = repository.Questions.GetByContentQuestionAsync(message.Text.GetMessageWithoutUserNameBotsAndCommands())
+        var questions = repository.Questions
+            .GetByContentQuestionAsync(message.Text.GetMessageWithoutUserNameBotsAndCommands())
             .Result;
 
         if (questions.Count is 0)

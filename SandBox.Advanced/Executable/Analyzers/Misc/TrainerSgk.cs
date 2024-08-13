@@ -11,22 +11,17 @@ public class TrainerSgk(SandBoxRepository repository,
 {
     public void Execute(Message message)
     {
-        if(message.ReplyToMessage?.Text is null)
-            return;
+        if(message.ReplyToMessage?.Text is null) return;
         
-        if(message.Chat.Id != idChat)
-            return;
+        if(message.Chat.Id != idChat) return;
         
-        if(message.Text is null)
-            return;
+        if(message.Text is null) return;
         
-        if(message.From?.Id != idTrainer)
-            return;
+        if(message.From?.Id != idTrainer) return;
         
         if (message.Text != null)
             SaveAnswerForQuestion(question: message.ReplyToMessage.Text,
                 answer: message.Text);
-        
     }
     
     
