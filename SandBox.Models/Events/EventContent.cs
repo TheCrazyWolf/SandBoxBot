@@ -6,4 +6,5 @@ public class EventContent : Event
 {
     public string Content { get; set; } = default!;
     public bool IsSpam { get; set; }
+    public bool IsRestored { get; set; }
 }

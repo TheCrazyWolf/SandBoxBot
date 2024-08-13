@@ -40,6 +40,7 @@ public class StartCommand(SandBoxRepository repository, ITelegramBotClient botCl
     private string BuildMessage()
     {
         string version = "3.1";
+        
         return
             $"\ud83c\udfaf Анти-спам\n\nВерсия: {version}" +
             $"\n\nРазработано @kulagin_alex, by samgk.ru \n\n" +

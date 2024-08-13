@@ -19,7 +19,7 @@ public class DetectFastJoins(SandBoxRepository repository, ITelegramBotClient bo
 
         var account = repository.Accounts.GetByIdAsync(message.From.Id).Result;
         var totalJoins = await repository.Joins
-            .GetCountJoinsFromChatAsync( message.Chat.Id,
+            .GetCountJoinsFromChatAsync(message.Chat.Id,
                 DateTime.Now.AddMinutes(-1), DateTime.Now);
 
         if (account is null || totalJoins is 0)
@@ -27,14 +27,13 @@ public class DetectFastJoins(SandBoxRepository repository, ITelegramBotClient bo
 
         if (account.IsTrustedProfile() || botClient.IsUserAdminInChat(userId: message.From.Id, chatId: message.Chat.Id))
             return;
-        
-        if(totalJoins <= ConstMaxActivityPerMinute)
+
+        if (totalJoins <= ConstMaxActivityPerMinute)
             return;
-        
+
         NotifyManagers(message, GenerateKeyboardForNotify(message));
-        
     }
-    
+
     private void NotifyManagers(Message originalMessage, IList<IList<InlineKeyboardButton>> keyboardButtons)
     {
         foreach (var id in repository.Accounts.GetManagersAsync().Result)
@@ -61,7 +60,7 @@ public class DetectFastJoins(SandBoxRepository repository, ITelegramBotClient bo
             $"\ud83d\udc7e В чате # {originalMessage.Chat.Id} - ({originalMessage.Chat.Title ?? originalMessage.Chat.FirstName}) " +
             $"происходит аномальная активность: Слишком много пользователей заходят в чат за 1 минуту, похоже на атаку ботов";
     }
-    
+
     private IList<IList<InlineKeyboardButton>> GenerateKeyboardForNotify(Message originalMessage)
     {
         return new List<IList<InlineKeyboardButton>>

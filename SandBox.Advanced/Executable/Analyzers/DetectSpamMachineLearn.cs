@@ -9,9 +9,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SandBox.Advanced.Executable.Analyzers;
 
-public class DetectSpamMachineLearn(
-    SandBoxRepository repository,
-    ITelegramBotClient botClient) : IAnalyzer
+public class DetectSpamMachineLearn(SandBoxRepository repository, ITelegramBotClient botClient) : IAnalyzer
 {
     public async void Execute(Message message)
     {
@@ -36,7 +34,7 @@ public class DetectSpamMachineLearn(
 
         if (account.IsGlobalRestricted && member.IsApproved && member.IdChat == message.Chat.Id)
             @event.IsSpam = false; // локальная амнистия (т.е. в текущем чате)
-        else if(account.IsGlobalRestricted)
+        else if (account.IsGlobalRestricted)
             @event.IsSpam = true;
         else if (member.IsTrustedMember() || account.IsTrustedProfile())
         {
@@ -118,7 +116,7 @@ public class DetectSpamMachineLearn(
         {
             new List<InlineKeyboardButton>()
             {
-                InlineKeyboardButton.WithCallbackData("\ud83d\udd39 [ЧАТ] Восстановить",
+                InlineKeyboardButton.WithCallbackData("\ud83d\udd39 Восстановить",
                     $"restoremsg {eventContent.ChatId} {eventContent.IdTelegram} {eventContent.Id}"),
                 InlineKeyboardButton.WithCallbackData("\u267b\ufe0f Это не спам",
                     $"nospam {eventContent.ChatId} {eventContent.IdTelegram} {eventContent.Id}")
@@ -126,9 +124,9 @@ public class DetectSpamMachineLearn(
 
             new List<InlineKeyboardButton>()
             {
-                InlineKeyboardButton.WithCallbackData("\ud83e\udea0 [ЧАТ] Кикнуть",
+                InlineKeyboardButton.WithCallbackData("\ud83e\udea0 Кик",
                     $"kick {eventContent.ChatId} {eventContent.IdTelegram} {eventContent.Id}"),
-                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 [ЧАТ] Забанить",
+                InlineKeyboardButton.WithCallbackData("\ud83e\ude93 Бан",
                     $"ban {eventContent.ChatId} {eventContent.IdTelegram} {eventContent.Id}")
             },
         };
@@ -137,7 +135,7 @@ public class DetectSpamMachineLearn(
     private string BuildNotifyMessage(Message message, float score)
     {
         return
-            $"\ud83d\udc7e Я удалил сообщение от пользователя \nID # {message.From?.Id}, username: @{message.From?.Username}\nв чате \nID # {message.Chat.Id}, название чата [{message.Chat.Title ?? message.Chat.FirstName}] \n\nсо " +
-            $"следующем содержанием: \n\n{message.Text} \n\nℹ️ Вероятность спама составила {score}%";
+            $"ℹ️ Я удалил сообщение от юзера \nID # {message.From?.Id}, @{message.From?.Username}\nв чате \nID # {message.Chat.Id} [{message.Chat.Title ?? message.Chat.FirstName}]" +
+            $"\n\n{message.Text} \n\nℹ️ Вероятность спама {Math.Round(score, 2)}%";
     }
 }

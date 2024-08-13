@@ -58,6 +58,12 @@ public class EventContentRepository(SandBoxContext ef)
         @event.IsSpam = false;
         await UpdateAsync(@event);
     }
+    
+    public async void UpdateRestored(EventContent @event)
+    {
+        @event.IsRestored = true;
+        await UpdateAsync(@event);
+    }
 
     public async Task<int> CountMessageFromUserAsync(long userId, bool isSpam)
     {

@@ -20,7 +20,18 @@ public class RestoreFromEvent(SandBoxRepository repository, ITelegramBotClient b
 
         if (@event is null) return;
 
+        if (@event.IsRestored)
+        {
+            TryAnswerOnCallBack(callbackQuery.Id, BuildIfRestoredMessage());
+                
+            if (callbackQuery.Message != null)
+                TryRemoveMessageAfterCallback(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId);
+            
+            return;
+        }
+        
         var account = repository.Accounts.GetByIdAsync(Convert.ToInt64(@event.IdTelegram)).Result;
+        
         if (account is null) return;
 
         var memberChat = await repository.MembersInChat.GetByIdAsync(idChat: Convert.ToInt64(@event.ChatId),
@@ -31,7 +42,7 @@ public class RestoreFromEvent(SandBoxRepository repository, ITelegramBotClient b
         //repository.Accounts.UpdateApprovedAsync(account);
         repository.MembersInChat.UpdateAprrovedAsync(memberChat);
         repository.Contents.UpdateNoSpamAsync(@event);
-
+        repository.Contents.UpdateRestored(@event);
 
         var isSuccessSend = await TrySendMessage(chatId: Convert.ToInt64(@event.ChatId),
             message: BuildRestoredMessage(account, @event));
@@ -94,6 +105,19 @@ public class RestoreFromEvent(SandBoxRepository repository, ITelegramBotClient b
             // ingored
         }
     }
+    
+    private async void TryAnswerOnCallBack(string callbackQueryId, string message)
+    {
+        try
+        {
+            await botClient.AnswerCallbackQueryAsync(callbackQueryId,
+                message, true);
+        }
+        catch
+        {
+            // ingored
+        }
+    }
 
     private string BuildSuccessMessage()
     {
@@ -105,6 +129,12 @@ public class RestoreFromEvent(SandBoxRepository repository, ITelegramBotClient b
     {
         return
             $"\u274c Не удалось отправить сообщение в чат";
+    }
+    
+    private string BuildIfRestoredMessage()
+    {
+        return
+            $"\u274c Сообщение ранее было восстановлено";
     }
 
     private string BuildRestoredMessage(Account sender, EventContent content)

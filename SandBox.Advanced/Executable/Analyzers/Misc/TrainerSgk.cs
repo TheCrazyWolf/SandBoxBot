@@ -25,7 +25,7 @@ public class TrainerSgk(SandBoxRepository repository,
     }
     
     
-    private void SaveAnswerForQuestion(string question, string answer)
+    private async void SaveAnswerForQuestion(string question, string answer)
     {
         var quest = new Question
         {
@@ -33,7 +33,7 @@ public class TrainerSgk(SandBoxRepository repository,
             Answer = answer.GetMessageForFaq()
         };
 
-        repository.Questions.NewQuestionAsync(quest);
+        await repository.Questions.NewQuestionAsync(quest);
     }
     
     
