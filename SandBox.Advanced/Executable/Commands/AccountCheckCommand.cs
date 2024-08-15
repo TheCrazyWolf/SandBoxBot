@@ -1,6 +1,7 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
-using SandBox.Models.Telegram;
+using SandBox.Models.Chats;
+using SandBox.Models.Members;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -31,7 +32,7 @@ public class AccountCheckCommand(SandBoxRepository repository, ITelegramBotClien
         if(account is null || memberInChat is null) return;
         
         TrySendMessage(message.Chat.Id, BuildMessage(originalMessage: message, account: 
-            account, memberInChat: memberInChat, props: props));
+            account, memberChat: memberInChat, props: props));
     }
     private void TrySendMessage(long idChat, string message)
     {
@@ -47,7 +48,7 @@ public class AccountCheckCommand(SandBoxRepository repository, ITelegramBotClien
         }
     }
 
-    private string BuildMessage(Message originalMessage, Account account, MemberInChat memberInChat, ChatProps props)
+    private string BuildMessage(Message originalMessage, Account account, MemberChat memberChat, ChatProps props)
     {
         return
             $"\u2705 Команда выполнена" +
@@ -60,9 +61,9 @@ public class AccountCheckCommand(SandBoxRepository repository, ITelegramBotClien
             $"Поведение:\n" +
             $"Глобальные ограничения: {ConvertBoolean(account.IsGlobalRestricted)}\n" +
             $"Глобальные доверие: {ConvertBoolean(account.IsGlobalApproved)}\n\n" +
-            $"Локальные ограничения: {ConvertBoolean(memberInChat.IsRestricted)}\n" +
-            $"Локальное доверие: {ConvertBoolean(memberInChat.IsApproved)}\n" +
-            $"Локальный админ: {ConvertBoolean(memberInChat.IsAdmin)}\n";
+            $"Локальные ограничения: {ConvertBoolean(memberChat.IsRestricted)}\n" +
+            $"Локальное доверие: {ConvertBoolean(memberChat.IsApproved)}\n" +
+            $"Локальный админ: {ConvertBoolean(memberChat.IsAdmin)}\n";
     }
 
     private string ConvertBoolean(bool value)

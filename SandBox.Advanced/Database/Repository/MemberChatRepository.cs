@@ -1,26 +1,26 @@
 using System.Collections;
 using Microsoft.EntityFrameworkCore;
-using SandBox.Models.Telegram;
+using SandBox.Models.Members;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Database.Repository;
 
 public class MemberChatRepository(SandBoxContext ef)
 {
-    public async Task<MemberInChat> AddAsync(MemberInChat memberInChat)
+    public async Task<MemberChat> AddAsync(MemberChat memberChat)
     {
-        await ef.AddAsync(memberInChat);
+        await ef.AddAsync(memberChat);
         await ef.SaveChangesAsync();
-        return memberInChat;
+        return memberChat;
     }
 
-    public async Task<MemberInChat> NewMemberOrUpdateInChatAsync(long idChat, User user)
+    public async Task<MemberChat> NewMemberOrUpdateInChatAsync(long idChat, User user)
     {
         var member = await GetByIdAsync(idChat: idChat, idTelegram: user.Id);
 
         if (member is null)
         {
-            member = new MemberInChat()
+            member = new MemberChat()
             {
                 IdChat = idChat,
                 IdTelegram = user.Id,
@@ -38,7 +38,7 @@ public class MemberChatRepository(SandBoxContext ef)
         return member;
     }
 
-    public async Task<MemberInChat?> GetByIdAsync(long idChat, long idTelegram)
+    public async Task<MemberChat?> GetByIdAsync(long idChat, long idTelegram)
     {
         return await ef.MembersInChats.FirstOrDefaultAsync(x => x.IdChat == idChat && x.IdTelegram == idTelegram);
     }
@@ -48,7 +48,7 @@ public class MemberChatRepository(SandBoxContext ef)
         return await ef.MembersInChats.AnyAsync(x => x.Id == id);
     }
 
-    public async Task<MemberInChat> UpdateAsync(MemberInChat member)
+    public async Task<MemberChat> UpdateAsync(MemberChat member)
     {
         ef.Update(member);
         await ef.SaveChangesAsync();
@@ -67,35 +67,35 @@ public class MemberChatRepository(SandBoxContext ef)
         return true;
     }
 
-    public async void UpdateAprrovedAsync(MemberInChat member)
+    public async void UpdateAprrovedAsync(MemberChat member)
     {
         member.IsApproved = true;
         member.IsRestricted = false;
         await UpdateAsync(member);
     }
 
-    public async Task UpdateIsAdmin(MemberInChat memberInChat, bool result)
+    public async Task UpdateIsAdmin(MemberChat memberChat, bool result)
     {
-        memberInChat.IsAdmin = result;
+        memberChat.IsAdmin = result;
         if (result)
         {
-            memberInChat.IsApproved = result;
-            memberInChat.IsRestricted = false;
+            memberChat.IsApproved = result;
+            memberChat.IsRestricted = false;
         }
 
-        await UpdateAsync(memberInChat);
+        await UpdateAsync(memberChat);
     }
 
-    public async Task<IList<MemberInChat>> GetAdminsFromChat(long chatId)
+    public async Task<IList<MemberChat>> GetAdminsFromChat(long chatId)
     {
         return await ef.MembersInChats.Where(x => x.IdChat == chatId)
             .Where(x => x.IsAdmin).ToListAsync();
     }
 
-    public async void UpdateRestrictedAsync(MemberInChat memberInChat)
+    public async void UpdateRestrictedAsync(MemberChat memberChat)
     {
-        memberInChat.IsApproved = false;
-        memberInChat.IsRestricted = true;
-        await UpdateAsync(memberInChat);
+        memberChat.IsApproved = false;
+        memberChat.IsRestricted = true;
+        await UpdateAsync(memberChat);
     }
 }

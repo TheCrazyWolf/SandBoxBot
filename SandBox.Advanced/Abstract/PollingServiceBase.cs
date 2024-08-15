@@ -47,7 +47,7 @@ public abstract class PollingServiceBase<TReceiverService> : BackgroundService
             }
             // Update Handler only captures exception inside update polling loop
             // We'll catch all other exceptions here
-            // see: https://github.com/TelegramBots/Telegram.Bot/issues/1106
+            // see: https://github.com/TelegramBots/Members.Bot/issues/1106
             catch (Exception ex)
             {
                 _logger.LogError("Polling failed with exception: {Exception}", ex);

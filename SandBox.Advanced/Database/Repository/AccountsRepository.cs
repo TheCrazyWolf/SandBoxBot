@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SandBox.Models.Telegram;
+using SandBox.Models.Members;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Database.Repository;

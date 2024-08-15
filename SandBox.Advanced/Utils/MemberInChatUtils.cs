@@ -1,18 +1,18 @@
-using SandBox.Models.Telegram;
+using SandBox.Models.Members;
 
 namespace SandBox.Advanced.Utils;
 
 public static class MemberInChatUtils
 {
-    public static bool IsTrustedMember(this MemberInChat memberInChat)
+    public static bool IsTrustedMember(this MemberChat memberChat)
     {
-        if (memberInChat.IsAdmin)
-            return memberInChat.IsAdmin;
+        if (memberChat.IsAdmin)
+            return memberChat.IsAdmin;
         
-        if (memberInChat.IsApproved)
-            return memberInChat.IsApproved;
+        if (memberChat.IsApproved)
+            return memberChat.IsApproved;
 
-        if ((DateTime.Now.Date - memberInChat.DateTimeJoined.Date).TotalDays >= 5)
+        if ((DateTime.Now.Date - memberChat.DateTimeJoined.Date).TotalDays >= 5)
             return true;
 
         return false;

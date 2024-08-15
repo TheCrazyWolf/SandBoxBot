@@ -1,6 +1,6 @@
 using FuzzySharp;
 using Microsoft.EntityFrameworkCore;
-using SandBox.Models.Telegram;
+using SandBox.Models.FAQ;
 
 namespace SandBox.Advanced.Database.Repository;
 

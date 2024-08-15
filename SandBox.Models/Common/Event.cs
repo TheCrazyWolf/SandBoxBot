@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using SandBox.Models.Telegram;
+using SandBox.Models.Chats;
+using SandBox.Models.Members;
 
 namespace SandBox.Models.Common;
 

@@ -10,8 +10,4 @@
       <PackageReference Include="Telegram.Bot" Version="19.0.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\SandBox.Interfaces\SandBox.Interfaces.csproj" />
-    </ItemGroup>
-
 </Project>

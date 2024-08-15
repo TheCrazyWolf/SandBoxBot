@@ -1,4 +1,4 @@
-﻿using SandBox.Models.Telegram;
+﻿using SandBox.Models.Chats;
 using Telegram.Bot.Types;
 
 namespace SandBox.Advanced.Utils.Telegram;

@@ -9,7 +9,7 @@ var builder = Host.CreateApplicationBuilder(args);
 // Регистрируем BotConfiguration как конфигурационный объект
 builder.Services.Configure<BotConfiguration>(builder.Configuration.GetSection("BotConfiguration"));
 
-// Настраиваем HttpClient для Telegram Bot
+// Настраиваем HttpClient для Members Bot
 builder.Services.AddHttpClient("telegram_bot_client").RemoveAllLoggers()
     .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
     {

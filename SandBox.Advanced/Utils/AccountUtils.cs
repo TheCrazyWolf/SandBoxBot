@@ -1,4 +1,4 @@
-using SandBox.Models.Telegram;
+using SandBox.Models.Members;
 
 namespace SandBox.Advanced.Utils;
 

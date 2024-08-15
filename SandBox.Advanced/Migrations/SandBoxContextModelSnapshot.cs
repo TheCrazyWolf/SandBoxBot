@@ -17,7 +17,7 @@ namespace SandBox.Advanced.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
 
-            modelBuilder.Entity("SandBox.Models.Blackbox.Captcha", b =>
+            modelBuilder.Entity("SandBox.Models.Captchas.Captcha", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,7 +79,7 @@ namespace SandBox.Advanced.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("SandBox.Models.Telegram.Account", b =>
+            modelBuilder.Entity("SandBox.Models.Members.Account", b =>
                 {
                     b.Property<long>("IdTelegram")
                         .ValueGeneratedOnAdd()
@@ -109,7 +109,7 @@ namespace SandBox.Advanced.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("SandBox.Models.Telegram.ChatProps", b =>
+            modelBuilder.Entity("SandBox.Models.Members.ChatProps", b =>
                 {
                     b.Property<long>("IdChat")
                         .ValueGeneratedOnAdd()
@@ -141,7 +141,7 @@ namespace SandBox.Advanced.Migrations
                     b.ToTable("Chats");
                 });
 
-            modelBuilder.Entity("SandBox.Models.Telegram.MemberInChat", b =>
+            modelBuilder.Entity("SandBox.Models.Members.MemberChat", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -177,7 +177,7 @@ namespace SandBox.Advanced.Migrations
                     b.ToTable("MembersInChats");
                 });
 
-            modelBuilder.Entity("SandBox.Models.Telegram.Question", b =>
+            modelBuilder.Entity("SandBox.Models.Members.Question", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -220,9 +220,9 @@ namespace SandBox.Advanced.Migrations
                     b.HasDiscriminator().HasValue("EventJoined");
                 });
 
-            modelBuilder.Entity("SandBox.Models.Blackbox.Captcha", b =>
+            modelBuilder.Entity("SandBox.Models.Captchas.Captcha", b =>
                 {
-                    b.HasOne("SandBox.Models.Telegram.Account", "Account")
+                    b.HasOne("SandBox.Models.Members.Account", "Account")
                         .WithMany()
                         .HasForeignKey("IdTelegram");
 
@@ -231,11 +231,11 @@ namespace SandBox.Advanced.Migrations
 
             modelBuilder.Entity("SandBox.Models.Common.Event", b =>
                 {
-                    b.HasOne("SandBox.Models.Telegram.ChatProps", "Chat")
+                    b.HasOne("SandBox.Models.Members.ChatProps", "Chat")
                         .WithMany()
                         .HasForeignKey("ChatId");
 
-                    b.HasOne("SandBox.Models.Telegram.Account", "Account")
+                    b.HasOne("SandBox.Models.Members.Account", "Account")
                         .WithMany()
                         .HasForeignKey("IdTelegram");
 
@@ -244,13 +244,13 @@ namespace SandBox.Advanced.Migrations
                     b.Navigation("Chat");
                 });
 
-            modelBuilder.Entity("SandBox.Models.Telegram.MemberInChat", b =>
+            modelBuilder.Entity("SandBox.Models.Members.MemberChat", b =>
                 {
-                    b.HasOne("SandBox.Models.Telegram.ChatProps", "Chat")
+                    b.HasOne("SandBox.Models.Members.ChatProps", "Chat")
                         .WithMany()
                         .HasForeignKey("IdChat");
 
-                    b.HasOne("SandBox.Models.Telegram.Account", "Account")
+                    b.HasOne("SandBox.Models.Members.Account", "Account")
                         .WithMany()
                         .HasForeignKey("IdTelegram");
 

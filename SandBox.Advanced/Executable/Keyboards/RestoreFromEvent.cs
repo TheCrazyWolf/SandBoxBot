@@ -1,7 +1,7 @@
 using SandBox.Advanced.Abstract;
 using SandBox.Advanced.Database;
 using SandBox.Models.Events;
-using SandBox.Models.Telegram;
+using SandBox.Models.Members;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 

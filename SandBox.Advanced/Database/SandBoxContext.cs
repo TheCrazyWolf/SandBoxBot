@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SandBox.Models.Blackbox;
+using SandBox.Models.Chats;
 using SandBox.Models.Common;
 using SandBox.Models.Events;
-using SandBox.Models.Telegram;
+using SandBox.Models.FAQ;
+using SandBox.Models.Members;
 
 namespace SandBox.Advanced.Database;
 
@@ -15,7 +17,7 @@ public sealed class SandBoxContext : DbContext
     public DbSet<EventContent> EventsContent { get; set; }
     public DbSet<Captcha> Captchas { get; set; }
     public DbSet<ChatProps> Chats { get; set; }
-    public DbSet<MemberInChat> MembersInChats { get; set; } 
+    public DbSet<MemberChat> MembersInChats { get; set; } 
     public DbSet<Question> Questions { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

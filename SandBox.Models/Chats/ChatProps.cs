@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using SandBox.Interfaces.Chats;
 using Telegram.Bot.Types.Enums;
 
-namespace SandBox.Models.Telegram;
+namespace SandBox.Models.Chats;
 
-public class ChatProps
+public class ChatProps : IChat
 {
     [Key] public long IdChat { get; set; }
     public string? Title { get; set; } = string.Empty;
