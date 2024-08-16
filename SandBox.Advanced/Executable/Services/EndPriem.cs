@@ -2,6 +2,7 @@ using SandBox.Advanced.Database;
 using SandBox.Advanced.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace SandBox.Advanced.Executable.Services;
 
@@ -19,7 +20,7 @@ public class EndPriem(SandBoxRepository repository, ITelegramBotClient botClient
 
             if (_messageCounter is null || ChatId is 0)
             {
-                await Task.Delay(1000); // Проверка каждую секунду
+                await Task.Delay(3000); // Проверка каждую секунду
                 continue;
             }
 
@@ -28,19 +29,19 @@ public class EndPriem(SandBoxRepository repository, ITelegramBotClient botClient
             if (now >= endPriem)
             {
                 await TryEditMessage(BuildNotifyMessage());
-                await Task.Delay(1000); // Проверка каждую секунду
+                await Task.Delay(3000); // Проверка каждую секунду
                 return;
             }
 
             await TryEditMessage(BuildNotifyMessage(endPriem - now));
-            await Task.Delay(1000); // Проверка каждую секунду
+            await Task.Delay(3000); // Проверка каждую секунду
         }
     }
 
     private string BuildNotifyMessage(TimeSpan timeSpan)
     {
         return
-            $"\u23f0 До конца приёмной кампании {timeSpan.TotalDays} д. {timeSpan.Hours} ч. {timeSpan.Minutes} м. {timeSpan.Seconds} с.";
+            $"\u23f0 Осталось <b>{timeSpan.Days} д. {timeSpan.Hours} ч. {timeSpan.Minutes} м. {timeSpan.Seconds} с. </b> до конца приемной кампании";
     }
     
     private string BuildNotifyMessage()
@@ -54,7 +55,7 @@ public class EndPriem(SandBoxRepository repository, ITelegramBotClient botClient
         try
         {
             if (_messageCounter != null)
-                await botClient.EditMessageTextAsync(chatId: ChatId, _messageCounter.MessageId, message);
+                await botClient.EditMessageTextAsync(chatId: ChatId, _messageCounter.MessageId, message, parseMode: ParseMode.Html);
         }
         catch
         {
