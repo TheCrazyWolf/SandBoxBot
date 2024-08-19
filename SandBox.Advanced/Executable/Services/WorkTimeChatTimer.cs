@@ -8,7 +8,7 @@ namespace SandBox.Advanced.Executable.Services;
 public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IService
 {
     private static readonly TimeOnly StartWorkTime = new(08, 00, 00);
-    private static readonly TimeOnly EndWorkTimeMonday = new(19, 00, 00);
+    private static readonly TimeOnly EndWorkTimeMonday = new(16, 00, 00);
     private static readonly TimeOnly EndWorkTimeDefault = new(16, 00, 00);
 
     private static DateTime _lastSendStartMessageDay;
@@ -135,7 +135,7 @@ public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient 
     {
         return
             "\u2764\ufe0f Мы хотим помогать Вам круглосуточно\n" +
-            "\n\u2705 Но получить ответы на вопросы Вы можете в рабочее время: \n\n\u23f0 ПН с 8.00 по 19.00, ВТ-ПТ до 16.00 (Самарское)";
+            "\n\u2705 Но получить ответы на вопросы Вы можете в рабочее время: \n\n\u23f0 ПН-ПТ с 8.00 до 16.00 (Самарское)";
     }
 
     private static string BuildMessageIfTimeWorkStarted()

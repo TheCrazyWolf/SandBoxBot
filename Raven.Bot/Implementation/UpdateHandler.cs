@@ -1,13 +1,6 @@
 using Microsoft.Extensions.Options;
 using SandBox.Advanced.Configs;
 using SandBox.Advanced.Database;
-using SandBox.Advanced.Executable.Activity;
-using SandBox.Advanced.Executable.Analyzers;
-using SandBox.Advanced.Executable.Analyzers.Misc;
-using SandBox.Advanced.Executable.Commands;
-using SandBox.Advanced.Executable.Keyboards;
-using SandBox.Advanced.Executable.Services;
-using SandBox.Advanced.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -19,12 +12,6 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     : IUpdateHandler
 {
     public static BotConfiguration Configuration { get; set; } = new();
-    
-    private static IList<ICommand> _commands = new List<ICommand>();
-    private static IList<IAnalyzer> _analyzerActivity = new List<IAnalyzer>();
-    private static IList<IAnalyzer> _analyzers = new List<IAnalyzer>();
-    private static IList<ICallQuery> _callBackQueryies = new List<ICallQuery>();
-    private static IList<IService> _services = new List<IService>();
 
     private static bool _isFirstPool = true;
     private static SandBoxRepository _repository = default!;
@@ -62,32 +49,9 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     {
         logger.LogInformation("Receive message type: {MessageType}", update.Type);
 
-        if (update.EditedMessage is not null)
-            update.Message = update.EditedMessage;
+        if (update.EditedMessage is not null) update.Message = update.EditedMessage;
 
-        if (update.Message is null)
-            return Task.CompletedTask;
-
-        // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
-        foreach (var command in _analyzerActivity)
-        {
-            command.Execute(update.Message);
-        }
-
-        // Проверка на наличие команда и исполнение
-        foreach (var command in _commands)
-        {
-            if (!command.Contains(update.Message))
-                continue;
-            command.Execute(update.Message);
-            return Task.CompletedTask;
-        }
-
-        // Первочередные анализаторы (добавление пользователей в бд, заходы в чаты и тд
-        foreach (var command in _analyzers)
-        {
-            command.Execute(update.Message);
-        }
+        if (update.Message is null) return Task.CompletedTask;
 
         return Task.CompletedTask;
     }
@@ -96,15 +60,7 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
     private Task OnCallbackQuery(CallbackQuery callbackQuery)
     {
         logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", callbackQuery.Id);
-
-        foreach (var callBack in _callBackQueryies)
-        {
-            if (!callBack.Contains(callbackQuery))
-                continue;
-            callBack.Execute(callbackQuery);
-            return Task.CompletedTask;
-        }
-
+        
         return Task.CompletedTask;
     }
 
@@ -123,18 +79,6 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
         BotConfiguration.BotInfo = bot.GetMeAsync().Result;
         BotConfiguration.BotInfo.Username = $"@{BotConfiguration.BotInfo.Username}";
         
-        CreateScopeAndGetCurrentService();
-        ConfiguringCommands();
-        ConfiguringAnalyzers();
-        ConfiguringActivityAnalyzers();
-        ConfiguringCallBackQueryies();
-        ConfiguringServices();
-
-        foreach (var service in _services)
-        {
-            Task.Run(() => service.Execute());
-        }
-
         return Task.CompletedTask;
     }
 
@@ -147,68 +91,23 @@ public class UpdateHandler(ITelegramBotClient bot, ILogger<UpdateHandler> logger
 
     private void ConfiguringCommands()
     {
-        _commands = new List<ICommand>
-        {
-            new CaptchaCommand(_repository, bot),
-            new CheckMessageForMachineLearn(_repository, bot),
-            new QuestionCommand(_repository, bot),
-            new SetMeManager(_repository, bot),
-            new StartCommand(_repository, bot),
-            new TimeCommand(bot),
-            new MenuCommand(bot),
-            new PrivacyCommand(bot),
-            new AccountCheckCommand(_repository, bot),
-            new PurgeCommand(_repository, bot),
-            new CountDownCommand(_repository, bot)
-            // ETC
-        };
+        
     }
 
     private void ConfiguringActivityAnalyzers()
     {
-        _analyzerActivity = new List<IAnalyzer>
-        {
-            new UpdateChatAndDetailsUser(_repository, bot),
-            new UpdateChatAndUserAfterInvited(_repository),
-        };
+       
     }
 
 
     private void ConfiguringAnalyzers()
     {
-        _analyzers.Add(new DetectAsyncServerTime(_repository, bot));
-        _analyzers.Add(new DetectSpamMachineLearn(_repository, bot));
-        _analyzers.Add(new DetectEventFromRestrictedAccount(_repository, bot));
-        _analyzers.Add(new DetectFastActivityFromUser(_repository, bot));
-
-        foreach (var keyValue in Configuration.TrainerFaqChats)
-            _analyzers.Add( new TrainerSgk(_repository, keyValue[1], keyValue[0]));
-        
-        foreach (var idChat in Configuration.TimeWorkChats)
-            _analyzers.Add( new DetectNonWorkingTime(_repository, bot, idChat));
-        
+       
     }
 
     private void ConfiguringCallBackQueryies()
     {
-        _callBackQueryies = new List<ICallQuery>
-        {
-            new BanKeyboard(bot),
-            new KickKeyboard(bot),
-            new CaptchaFromChat(_repository, bot),
-            new NoSpamFromEvent(_repository, bot),
-            new QuestionFromDb(_repository, bot),
-            new RestoreFromEvent(_repository, bot),
-        };
-    }
-
-    private void ConfiguringServices()
-    {
-        foreach (var idChat in Configuration.TimeWorkChats)
-        {
-            _services.Add(new WorkTimeChatTimer(_repository, bot, idChat));
-        }
         
-        _services.Add(new EndPriem(_repository, bot));
     }
+    
 }
