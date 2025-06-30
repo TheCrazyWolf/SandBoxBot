@@ -8,12 +8,12 @@ namespace SandBox.Advanced.Executable.Services;
 public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient botClient, long idChat) : IService
 {
     private static readonly TimeOnly StartWorkTime = new(08, 00, 00);
-    private static readonly TimeOnly EndWorkTimeMonday = new(19, 00, 00);
+    private static readonly TimeOnly EndWorkTimeThursday = new(19, 00, 00);
     private static readonly TimeOnly EndWorkTimeDefault = new(16, 00, 00);
 
     private static DateTime _lastSendStartMessageDay;
     private static DateTime _lastSendEndMessageDay;
-    
+
     public async Task Execute()
     {
         while (true)
@@ -107,8 +107,8 @@ public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient 
         if (now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             return false;
 
-        if (now.DayOfWeek is DayOfWeek.Monday)
-            return timeOnlyNow.Hour == EndWorkTimeMonday.Hour && timeOnlyNow.Minute == EndWorkTimeMonday.Minute;
+        if (now.DayOfWeek is DayOfWeek.Thursday)
+            return timeOnlyNow.Hour == EndWorkTimeThursday.Hour && timeOnlyNow.Minute == EndWorkTimeThursday.Minute;
 
         return timeOnlyNow.Hour == EndWorkTimeDefault.Hour && timeOnlyNow.Minute == EndWorkTimeDefault.Minute;
     }
@@ -121,8 +121,8 @@ public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient 
 
         var timeOnlyNow = TimeOnly.FromTimeSpan(DateTime.Now.TimeOfDay);
 
-        if (DateTime.Now.DayOfWeek is DayOfWeek.Monday &&
-            (timeOnlyNow >= StartWorkTime && timeOnlyNow <= EndWorkTimeMonday))
+        if (DateTime.Now.DayOfWeek is DayOfWeek.Thursday &&
+            (timeOnlyNow >= StartWorkTime && timeOnlyNow <= EndWorkTimeThursday))
             return true;
 
         if (!(timeOnlyNow >= StartWorkTime && timeOnlyNow <= EndWorkTimeDefault))
@@ -135,7 +135,7 @@ public class WorkTimeChatTimer(SandBoxRepository repository, ITelegramBotClient 
     {
         return
             "\u2764\ufe0f Мы хотим помогать Вам круглосуточно\n" +
-            "\n\u2705 Но получить ответы на вопросы Вы можете в рабочее время: \n\n\u23f0 ПН с 8.00 по 19.00, ВТ-ПТ до 16.00 (Самарское)";
+            "\n\u2705 Но получить ответы на вопросы Вы можете в рабочее время: \n\n\u23f0 ПН-СР, ПТ с 8.00 по 16.00, ЧТ до 19.00 (Самарское)";
     }
 
     private static string BuildMessageIfTimeWorkStarted()

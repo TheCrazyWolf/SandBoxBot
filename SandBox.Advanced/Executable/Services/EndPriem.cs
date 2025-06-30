@@ -7,7 +7,7 @@ namespace SandBox.Advanced.Executable.Services;
 
 public class EndPriem(SandBoxRepository repository, ITelegramBotClient botClient) : IService
 {
-    private static readonly DateTime endPriem = new(2024, 08, 15, 16, 00, 00);
+    private static readonly DateTime endPriem = new(2025, 08, 15, 16, 00, 00);
     public static Message? _messageCounter = default!;
     public static long ChatId { get; set; }
     public async Task Execute()
